@@ -40,7 +40,7 @@ class PagerConfig(private val viewer: PagerViewer, preferences: PreferencesHelpe
 
     var shiftDoublePage = false
 
-    var doublePages = false
+    var doublePages = preferences.doublePages().get()
 
     init {
         preferences.pageTransitions()
@@ -80,7 +80,12 @@ class PagerConfig(private val viewer: PagerViewer, preferences: PreferencesHelpe
             .register({ readerTheme = it }, { imagePropertyChangedListener?.invoke() })
 
         preferences.doublePages()
-            .register({ doublePages = it })
+            .register({
+                doublePages = it
+                if (!it) {
+                    shiftDoublePage = false
+                }
+            })
 
         navigationOverlayForNewUser = preferences.showNavigationOverlayNewUser().get()
         if (navigationOverlayForNewUser) {

@@ -58,7 +58,7 @@
 
 
         <com.google.android.material.switchmaterial.SwitchMaterial
-            android:id="@+id/dual_page"
+            android:id="@+id/double_page"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"

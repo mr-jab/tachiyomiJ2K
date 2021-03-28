@@ -280,6 +280,12 @@ class ReaderActivity :
         return true
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        val splitItem = menu?.findItem(R.id.action_shift_double_page)
+        splitItem?.isVisible = preferences.doublePages().get()
+        return super.onPrepareOptionsMenu(menu)
+    }
+
     /**
      * Called when an item of the options menu was clicked. Used to handle clicks on our menu
      * entries.
@@ -908,11 +914,17 @@ class ReaderActivity :
             preferences.doublePages().asFlow()
                 .drop(1)
                 .onEach {
+                    invalidateOptionsMenu()
                     (viewer as? PagerViewer)?.config?.let { config ->
                         config.doublePages = it
                     }
+                    val currentChapter = presenter.getCurrentChapter()
+                    val page = currentChapter?.pages?.getOrNull(page_seekbar.progress)
                     presenter.viewerChapters?.let {
                         viewer?.setChapters(it)
+                        page?.let {
+                            viewer?.moveToPage(page, false)
+                        }
                     }
                 }
                 .launchIn(scope)
