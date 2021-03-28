@@ -127,14 +127,14 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
     /**
      * Called when a new page (either a [ReaderPage] or [ChapterTransition]) is marked as active
      */
-    private fun onPageChange(position: Int) {
-        val page = adapter.items.getOrNull(position)
+    fun onPageChange(position: Int) {
+        val page = adapter.joinedItems.getOrNull(position)
         if (page != null && currentPage != page) {
-            val allowPreload = checkAllowPreload(page as? ReaderPage)
-            currentPage = page
-            when (page) {
-                is ReaderPage -> onReaderPageSelected(page, allowPreload)
-                is ChapterTransition -> onTransitionSelected(page)
+            val allowPreload = checkAllowPreload(page.first as? ReaderPage)
+            currentPage = page.first
+            when (val aPage = page.first) {
+                is ReaderPage -> onReaderPageSelected(aPage, allowPreload, page.second != null)
+                is ChapterTransition -> onTransitionSelected(aPage)
             }
         }
     }
@@ -162,11 +162,16 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
      * Called when a [ReaderPage] is marked as active. It notifies the
      * activity of the change and requests the preload of the next chapter if this is the last page.
      */
-    private fun onReaderPageSelected(page: ReaderPage, allowPreload: Boolean) {
-        activity.onPageSelected(page)
+    private fun onReaderPageSelected(page: ReaderPage, allowPreload: Boolean, hasExtraPage: Boolean) {
+        activity.onPageSelected(page, hasExtraPage)
 
+        val offset = if (hasExtraPage) 1 else 0
         val pages = page.chapter.pages ?: return
-        Timber.d("onReaderPageSelected: ${page.number}/${pages.size}")
+        if (hasExtraPage) {
+            Timber.d("onReaderPageSelected: ${page.number}-${page.number + offset}/${pages.size}")
+        } else {
+            Timber.d("onReaderPageSelected: ${page.number}/${pages.size}")
+        }
         // Preload next chapter once we're within the last 5 pages of the current chapter
         val inPreloadRange = pages.size - page.number < 5
         if (inPreloadRange && allowPreload && page.chapter == adapter.currentChapter) {
@@ -210,7 +215,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
      */
     private fun setChaptersInternal(chapters: ViewerChapters) {
         Timber.d("setChaptersInternal")
-        val forceTransition = config.alwaysShowChapterTransition || adapter.items.getOrNull(
+        val forceTransition = config.alwaysShowChapterTransition || adapter.joinedItems.getOrNull(
             pager
                 .currentItem
         ) is ChapterTransition
@@ -228,12 +233,12 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
     /**
      * Tells this viewer to move to the given [page].
      */
-    override fun moveToPage(page: ReaderPage) {
+    override fun moveToPage(page: ReaderPage, smoothScroll: Boolean) {
         Timber.d("moveToPage ${page.number}")
-        val position = adapter.items.indexOf(page)
+        val position = adapter.joinedItems.indexOfFirst { it.first == page || it.second == page }
         if (position != -1) {
             val currentPosition = pager.currentItem
-            pager.setCurrentItem(position, true)
+            pager.setCurrentItem(position, smoothScroll)
             // manually call onPageChange since ViewPager listener is not triggered in this case
             if (currentPosition == position) {
                 onPageChange(position)
@@ -331,6 +336,10 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
             else -> return false
         }
         return true
+    }
+
+    fun onPageSplit(currentPage: ReaderPage, newPage: ReaderPage) {
+        adapter.onPageSplit(currentPage, newPage, this::class.java)
     }
 
     /**

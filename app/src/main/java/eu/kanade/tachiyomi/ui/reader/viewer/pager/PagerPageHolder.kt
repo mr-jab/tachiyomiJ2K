@@ -3,9 +3,12 @@ package eu.kanade.tachiyomi.ui.reader.viewer.pager
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.PointF
+import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.view.GestureDetector
 import android.view.Gravity
@@ -27,6 +30,7 @@ import com.github.chrisbanes.photoview.PhotoView
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.model.Page
+import eu.kanade.tachiyomi.ui.reader.model.InsertPage
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderProgressBar
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig.Companion.CUTOUT_IGNORE
@@ -41,15 +45,20 @@ import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.visible
 import eu.kanade.tachiyomi.widget.GifViewTarget
 import eu.kanade.tachiyomi.widget.ViewPagerAdapter
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.withContext
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 import uy.kohesive.injekt.injectLazy
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.util.concurrent.TimeUnit
+import kotlin.math.max
 
 /**
  * View of the ViewPager that contains a page of a chapter.
@@ -57,7 +66,8 @@ import java.util.concurrent.TimeUnit
 @SuppressLint("ViewConstructor")
 class PagerPageHolder(
     val viewer: PagerViewer,
-    val page: ReaderPage
+    val page: ReaderPage,
+    private var extraPage: ReaderPage? = null
 ) : FrameLayout(viewer.activity), ViewPagerAdapter.PositionableView {
 
     /**
@@ -65,6 +75,8 @@ class PagerPageHolder(
      */
     override val item
         get() = page
+
+    private var scope = CoroutineScope(Job() + Default)
 
     /**
      * Loading progress bar to indicate the current progress.
@@ -102,10 +114,27 @@ class PagerPageHolder(
     private var progressSubscription: Subscription? = null
 
     /**
+     * Subscription for status changes of the page.
+     */
+    private var statusSubscription2: Subscription? = null
+
+    /**
+     * Subscription for progress changes of the page.
+     */
+    private var progressSubscription2: Subscription? = null
+
+    /**
      * Subscription used to read the header of the image. This is needed in order to instantiate
      * the appropiate image view depending if the image is animated (GIF).
      */
     private var readImageHeaderSubscription: Subscription? = null
+
+    var status1: Int = 0
+    var status2: Int = 0
+    var progress1: Int = 0
+    var progress2: Int = 0
+    private var skipExtra = false
+    var job: Job? = null
 
     init {
         addView(progressBar)
@@ -124,8 +153,10 @@ class PagerPageHolder(
     @SuppressLint("ClickableViewAccessibility")
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        unsubscribeProgress()
-        unsubscribeStatus()
+        unsubscribeProgress(1)
+        unsubscribeStatus(1)
+        unsubscribeProgress(2)
+        unsubscribeStatus(2)
         unsubscribeReadImageHeader()
         subsamplingImageView?.setOnImageEventListener(null)
     }
@@ -141,7 +172,18 @@ class PagerPageHolder(
         val loader = page.chapter.pageLoader ?: return
         statusSubscription = loader.getPage(page)
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { processStatus(it) }
+            .subscribe {
+                status1 = it
+                processStatus(it)
+            }
+        val extraPage = extraPage ?: return
+        val loader2 = extraPage.chapter.pageLoader ?: return
+        statusSubscription2 = loader2.getPage(extraPage)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                status2 = it
+                processStatus2(it)
+            }
     }
 
     /**
@@ -155,7 +197,24 @@ class PagerPageHolder(
             .distinctUntilChanged()
             .onBackpressureLatest()
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { value -> progressBar.setProgress(value) }
+            .subscribe { value ->
+                progress1 = value
+                progressBar.setProgress((progress1 + progress2) / 2)
+            }
+    }
+
+    private fun observeProgress2() {
+        progressSubscription2?.unsubscribe()
+        val extraPage = extraPage ?: return
+        progressSubscription2 = Observable.interval(100, TimeUnit.MILLISECONDS)
+            .map { extraPage.progress }
+            .distinctUntilChanged()
+            .onBackpressureLatest()
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { value ->
+                progress2 = value
+                progressBar.setProgress((progress1 + progress2) / 2)
+            }
     }
 
     /**
@@ -172,12 +231,40 @@ class PagerPageHolder(
                 setDownloading()
             }
             Page.READY -> {
-                setImage()
-                unsubscribeProgress()
+                if (status2 == Page.READY || extraPage == null) {
+                    setImage()
+                }
+                unsubscribeProgress(1)
             }
             Page.ERROR -> {
                 setError()
-                unsubscribeProgress()
+                unsubscribeProgress(1)
+            }
+        }
+    }
+
+    /**
+     * Called when the status of the page changes.
+     *
+     * @param status the new status of the page.
+     */
+    private fun processStatus2(status: Int) {
+        when (status) {
+            Page.QUEUE -> setQueued()
+            Page.LOAD_PAGE -> setLoading()
+            Page.DOWNLOAD_IMAGE -> {
+                observeProgress2()
+                setDownloading()
+            }
+            Page.READY -> {
+                if (status1 == Page.READY) {
+                    setImage()
+                }
+                unsubscribeProgress(2)
+            }
+            Page.ERROR -> {
+                setError()
+                unsubscribeProgress(2)
             }
         }
     }
@@ -185,23 +272,27 @@ class PagerPageHolder(
     /**
      * Unsubscribes from the status subscription.
      */
-    private fun unsubscribeStatus() {
-        statusSubscription?.unsubscribe()
-        statusSubscription = null
+    private fun unsubscribeStatus(page: Int) {
+        val subscription = if (page == 1) statusSubscription else statusSubscription2
+        subscription?.unsubscribe()
+        if (page == 1) statusSubscription = null else statusSubscription2 = null
     }
 
     /**
      * Unsubscribes from the progress subscription.
      */
-    private fun unsubscribeProgress() {
-        progressSubscription?.unsubscribe()
-        progressSubscription = null
+    private fun unsubscribeProgress(page: Int) {
+        val subscription = if (page == 1) progressSubscription else progressSubscription2
+        subscription?.unsubscribe()
+        if (page == 1) progressSubscription = null else progressSubscription2 = null
     }
 
     /**
      * Unsubscribes from the read image header subscription.
      */
     private fun unsubscribeReadImageHeader() {
+        job?.cancel()
+        job = null
         readImageHeaderSubscription?.unsubscribe()
         readImageHeaderSubscription = null
     }
@@ -244,18 +335,25 @@ class PagerPageHolder(
 
         unsubscribeReadImageHeader()
         val streamFn = page.stream ?: return
+        val streamFn2 = extraPage?.stream
 
         var openStream: InputStream? = null
+
         readImageHeaderSubscription = Observable
             .fromCallable {
                 val stream = streamFn().buffered(16)
-                openStream = stream
 
-                ImageUtil.findImageType(stream) == ImageUtil.ImageType.GIF
+                val stream2 = if (extraPage != null) streamFn2?.invoke()?.buffered(16) else null
+                openStream = this@PagerPageHolder.mergePages(stream, stream2)
+                ImageUtil.findImageType(stream) == ImageUtil.ImageType.GIF ||
+                    if (stream2 != null) ImageUtil.findImageType(stream2) == ImageUtil.ImageType.GIF else false
             }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnNext { isAnimated ->
+                if (skipExtra) {
+                    onPageSplit()
+                }
                 if (!isAnimated) {
                     if (viewer.config.readerTheme >= 2) {
                         val imageView = initSubsamplingImageView()
@@ -293,7 +391,9 @@ class PagerPageHolder(
             // Keep the Rx stream alive to close the input stream only when unsubscribed
             .flatMap { Observable.never<Unit>() }
             .doOnUnsubscribe {
-                try { openStream?.close() } catch (e: Exception) {}
+                try {
+                    openStream?.close()
+                } catch (e: Exception) {}
             }
             .subscribe({}, {})
     }
@@ -531,6 +631,86 @@ class PagerPageHolder(
     }
 
     /**
+     * Extract the 'side' part from imageStream and return it as InputStream.
+     */
+    fun splitInHalf(imageStream: InputStream, side: Side): InputStream {
+        val imageBytes = imageStream.readBytes()
+
+        val imageBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+        val height = imageBitmap.height
+        val width = imageBitmap.width
+
+        val singlePage = Rect(0, 0, width / 2, height)
+
+        val half = Bitmap.createBitmap(width / 2, height, Bitmap.Config.ARGB_8888)
+        val part = when (side) {
+            Side.RIGHT -> Rect(width - width / 2, 0, width, height)
+            Side.LEFT -> Rect(0, 0, width / 2, height)
+        }
+        val canvas = Canvas(half)
+        canvas.drawBitmap(imageBitmap, part, singlePage, null)
+        val output = ByteArrayOutputStream()
+        half.compress(Bitmap.CompressFormat.JPEG, 100, output)
+
+        return ByteArrayInputStream(output.toByteArray())
+    }
+
+    private fun mergePages(imageStream: InputStream, imageStream2: InputStream?): InputStream {
+        imageStream2 ?: return imageStream
+        if (page is InsertPage || skipExtra) return imageStream
+        val imageBytes = imageStream.readBytes()
+
+        val imageBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+        val height = imageBitmap.height
+        val width = imageBitmap.width
+
+        if (height < width) {
+            imageStream2.close()
+            imageStream.close()
+            skipExtra = true
+            val bytesStream = imageBytes.inputStream()
+            return bytesStream
+        }
+
+        val imageBytes2 = imageStream2.readBytes()
+        val imageBitmap2 = BitmapFactory.decodeByteArray(imageBytes2, 0, imageBytes2.size)
+        val height2 = imageBitmap2.height
+        val width2 = imageBitmap2.width
+
+        if (height2 < width2) {
+            imageStream2.close()
+            imageStream.close()
+            val bytesStream = imageBytes.inputStream()
+            skipExtra = true
+            return bytesStream
+        }
+
+        val maxHeight = max(height, height2)
+
+        val result = Bitmap.createBitmap(width + width2, max(height, height2), Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(result)
+        val upperPart = Rect(width2, (maxHeight - imageBitmap.height) / 2, width2 + imageBitmap.width, imageBitmap.height)
+        canvas.drawBitmap(imageBitmap, imageBitmap.rect, upperPart, null)
+        val bottomPart = Rect(0, (maxHeight - imageBitmap2.height) / 2, imageBitmap2.width, imageBitmap2.height)
+        canvas.drawBitmap(imageBitmap2, imageBitmap2.rect, bottomPart, null)
+
+        val output = ByteArrayOutputStream()
+        result.compress(Bitmap.CompressFormat.JPEG, 100, output)
+        imageStream.close()
+        imageStream2.close()
+        return ByteArrayInputStream(output.toByteArray())
+    }
+
+    private fun onPageSplit() {
+        val ePage = extraPage ?: return
+        viewer.onPageSplit(page, ePage)
+    }
+
+    enum class Side {
+        RIGHT, LEFT
+    }
+
+    /**
      * Extension method to set a [stream] into this ImageView.
      */
     private fun ImageView.setImage(stream: InputStream) {
@@ -540,6 +720,9 @@ class PagerPageHolder(
             target(GifViewTarget(this@setImage, progressBar, decodeErrorLayout))
         }
     }
+
+    private val Bitmap.rect: Rect
+        get() = Rect(0, 0, width, height)
 
     companion object {
         fun getBGType(readerTheme: Int, context: Context): Int {

@@ -614,14 +614,20 @@ class ReaderActivity :
      * bottom menu and delegates the change to the presenter.
      */
     @SuppressLint("SetTextI18n")
-    fun onPageSelected(page: ReaderPage) {
+    fun onPageSelected(page: ReaderPage, hasExtraPage: Boolean) {
         val newChapter = presenter.onPageSelected(page)
         val pages = page.chapter.pages ?: return
 
+        val currentPage = if (hasExtraPage) {
+            "${page.number}-${page.number + 1}"
+        } else {
+            "${page.number}"
+        }
+
         // Set bottom page number
-        page_number.text = "${page.number}/${pages.size}"
+        page_number.text = "$currentPage/${pages.size}"
         // Set seekbar page number
-        page_text.text = "${page.number} / ${pages.size}"
+        page_text.text = "$currentPage / ${pages.size}"
 
         if (!newChapter && chapters_bottom_sheet.shouldCollapse && chapters_bottom_sheet.sheetBehavior.isExpanded()) {
             chapters_bottom_sheet.sheetBehavior?.collapse()
