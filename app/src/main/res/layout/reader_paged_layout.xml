@@ -58,6 +58,14 @@
 
 
         <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/dual_page"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/double_pages"
+            android:textColor="?android:attr/textColorPrimary" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/crop_borders"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

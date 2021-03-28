@@ -353,6 +353,7 @@
     <string name="original_size">Original size</string>
     <string name="smart_fit">Smart fit</string>
     <string name="zoom_start_position">Zoom start position</string>
+    <string name="double_pages">Double pages</string>
     <string name="force_portrait">Force portrait</string>
     <string name="force_landscape">Force landscape</string>
     <string name="red_initial">R</string>

@@ -155,6 +155,15 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
     }
 
     private fun setJoinedItems(currentChapter: ReaderChapter, currentPage: ReaderPage? = null) {
+        if (!viewer.config.doublePages) {
+            subItems = subItems.filterNotNull().toMutableList()
+            this.joinedItems = subItems.map { Pair<Any, Any?>(it as Any, null) }.toMutableList()
+            if (viewer is R2LPagerViewer) {
+                joinedItems.reverse()
+            }
+            notifyDataSetChanged()
+            return
+        }
         val cleanItems: MutableList<ReaderPage?> = subItems.filterIsInstance<ReaderPage>().filter { it.chapter == currentChapter }.toMutableList()
         (cleanItems.indices).reversed().forEach {
             if (cleanItems[it]?.fullPage == true) {

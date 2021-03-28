@@ -63,6 +63,8 @@ object PreferenceKeys {
 
     const val webtoonNavInverted = "reader_tapping_inverted_webtoon"
 
+    const val doublePages = "double_pages"
+
     const val showNavigationOverlayNewUser = "reader_navigation_overlay_new_user"
     const val showNavigationOverlayNewUserWebtoon = "reader_navigation_overlay_new_user_webtoon"
 

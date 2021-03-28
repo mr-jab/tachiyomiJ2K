@@ -630,31 +630,6 @@ class PagerPageHolder(
         return decodeLayout
     }
 
-    /**
-     * Extract the 'side' part from imageStream and return it as InputStream.
-     */
-    fun splitInHalf(imageStream: InputStream, side: Side): InputStream {
-        val imageBytes = imageStream.readBytes()
-
-        val imageBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-        val height = imageBitmap.height
-        val width = imageBitmap.width
-
-        val singlePage = Rect(0, 0, width / 2, height)
-
-        val half = Bitmap.createBitmap(width / 2, height, Bitmap.Config.ARGB_8888)
-        val part = when (side) {
-            Side.RIGHT -> Rect(width - width / 2, 0, width, height)
-            Side.LEFT -> Rect(0, 0, width / 2, height)
-        }
-        val canvas = Canvas(half)
-        canvas.drawBitmap(imageBitmap, part, singlePage, null)
-        val output = ByteArrayOutputStream()
-        half.compress(Bitmap.CompressFormat.JPEG, 100, output)
-
-        return ByteArrayInputStream(output.toByteArray())
-    }
-
     private fun mergePages(imageStream: InputStream, imageStream2: InputStream?): InputStream {
         imageStream2 ?: return imageStream
         if (page is InsertPage || page.fullPage) return imageStream
@@ -669,8 +644,7 @@ class PagerPageHolder(
             imageStream.close()
             page.fullPage = true
             skipExtra = true
-            val bytesStream = imageBytes.inputStream()
-            return bytesStream
+            return imageBytes.inputStream()
         }
 
         val imageBytes2 = imageStream2.readBytes()
@@ -682,9 +656,8 @@ class PagerPageHolder(
             imageStream2.close()
             imageStream.close()
             extraPage?.fullPage = true
-            val bytesStream = imageBytes.inputStream()
             skipExtra = true
-            return bytesStream
+            return imageBytes.inputStream()
         }
 
         val maxHeight = max(height, height2)

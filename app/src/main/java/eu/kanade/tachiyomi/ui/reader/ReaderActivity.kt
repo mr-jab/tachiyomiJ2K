@@ -904,6 +904,18 @@ class ReaderActivity :
             preferences.alwaysShowChapterTransition().asFlow()
                 .onEach { showNewChapter = it }
                 .launchIn(scope)
+
+            preferences.doublePages().asFlow()
+                .drop(1)
+                .onEach {
+                    (viewer as? PagerViewer)?.config?.let { config ->
+                        config.doublePages = it
+                    }
+                    presenter.viewerChapters?.let {
+                        viewer?.setChapters(it)
+                    }
+                }
+                .launchIn(scope)
         }
 
         /**

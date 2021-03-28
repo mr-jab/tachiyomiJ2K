@@ -39,6 +39,9 @@ class PagerConfig(private val viewer: PagerViewer, preferences: PreferencesHelpe
         private set
 
     var shiftDoublePage = false
+
+    var doublePages = false
+
     init {
         preferences.pageTransitions()
             .register({ usePageTransitions = it })
@@ -75,6 +78,9 @@ class PagerConfig(private val viewer: PagerViewer, preferences: PreferencesHelpe
 
         preferences.readerTheme()
             .register({ readerTheme = it }, { imagePropertyChangedListener?.invoke() })
+
+        preferences.doublePages()
+            .register({ doublePages = it })
 
         navigationOverlayForNewUser = preferences.showNavigationOverlayNewUser().get()
         if (navigationOverlayForNewUser) {
