@@ -45,6 +45,7 @@ import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.settings.TabbedReaderSettingsSheet
 import eu.kanade.tachiyomi.ui.reader.viewer.BaseViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.L2RPagerViewer
+import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.R2LPagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.VerticalPagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
@@ -299,6 +300,14 @@ class ReaderActivity :
             R.id.action_reader_settings -> {
                 val intent = SearchActivity.openReaderSettings(this)
                 startActivity(intent)
+            }
+            R.id.action_shift_double_page -> {
+                (viewer as? PagerViewer)?.config?.let { config ->
+                    config.shiftDoublePage = !config.shiftDoublePage
+                    presenter.viewerChapters?.let {
+                        viewer?.setChapters(it)
+                    }
+                }
             }
             else -> return super.onOptionsItemSelected(item)
         }

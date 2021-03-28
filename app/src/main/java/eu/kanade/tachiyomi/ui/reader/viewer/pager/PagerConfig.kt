@@ -38,6 +38,7 @@ class PagerConfig(private val viewer: PagerViewer, preferences: PreferencesHelpe
     var cutoutBehavior = 0
         private set
 
+    var shiftDoublePage = false
     init {
         preferences.pageTransitions()
             .register({ usePageTransitions = it })

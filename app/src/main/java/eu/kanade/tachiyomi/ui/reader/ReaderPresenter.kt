@@ -86,6 +86,9 @@ class ReaderPresenter(
      */
     private val viewerChaptersRelay = BehaviorRelay.create<ViewerChapters>()
 
+    val viewerChapters: ViewerChapters?
+        get() = viewerChaptersRelay.value
+
     /**
      * Relay used when loading prev/next chapter needed to lock the UI (with a dialog).
      */

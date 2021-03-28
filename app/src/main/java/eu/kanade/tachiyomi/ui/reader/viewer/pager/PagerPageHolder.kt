@@ -74,7 +74,7 @@ class PagerPageHolder(
      * Item that identifies this view. Needed by the adapter to not recreate views.
      */
     override val item
-        get() = page
+        get() = page to extraPage
 
     private var scope = CoroutineScope(Job() + Default)
 
@@ -657,7 +657,7 @@ class PagerPageHolder(
 
     private fun mergePages(imageStream: InputStream, imageStream2: InputStream?): InputStream {
         imageStream2 ?: return imageStream
-        if (page is InsertPage || skipExtra) return imageStream
+        if (page is InsertPage || page.fullPage) return imageStream
         val imageBytes = imageStream.readBytes()
 
         val imageBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
@@ -667,6 +667,7 @@ class PagerPageHolder(
         if (height < width) {
             imageStream2.close()
             imageStream.close()
+            page.fullPage = true
             skipExtra = true
             val bytesStream = imageBytes.inputStream()
             return bytesStream
@@ -680,6 +681,7 @@ class PagerPageHolder(
         if (height2 < width2) {
             imageStream2.close()
             imageStream.close()
+            extraPage?.fullPage = true
             val bytesStream = imageBytes.inputStream()
             skipExtra = true
             return bytesStream
@@ -689,6 +691,7 @@ class PagerPageHolder(
 
         val result = Bitmap.createBitmap(width + width2, max(height, height2), Bitmap.Config.ARGB_8888)
         val canvas = Canvas(result)
+        canvas.drawColor(Color.TRANSPARENT)
         val upperPart = Rect(width2, (maxHeight - imageBitmap.height) / 2, width2 + imageBitmap.width, imageBitmap.height)
         canvas.drawBitmap(imageBitmap, imageBitmap.rect, upperPart, null)
         val bottomPart = Rect(0, (maxHeight - imageBitmap2.height) / 2, imageBitmap2.width, imageBitmap2.height)

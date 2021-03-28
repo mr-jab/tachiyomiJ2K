@@ -9,6 +9,12 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/action_shift_double_page"
+        android:icon="@drawable/ic_arrow_split_vertical_24dp"
+        android:title="@string/shift_double_page"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/action_share_page"
         android:icon="@drawable/ic_share_24dp"
         android:title="@string/share_page"

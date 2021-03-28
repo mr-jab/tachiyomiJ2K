@@ -11,8 +11,14 @@ open class ReaderPage(
     var stream: (() -> InputStream)? = null,
     var bg: Drawable? = null,
     var bgType: Int? = null,
-    var fullPage: Boolean = false
+    var shiftedPage: Boolean = false
 ) : Page(index, url, imageUrl, null) {
 
     open lateinit var chapter: ReaderChapter
+
+    var fullPage: Boolean = false
+        set(value) {
+            field = value
+            if (value) shiftedPage = false
+        }
 }
