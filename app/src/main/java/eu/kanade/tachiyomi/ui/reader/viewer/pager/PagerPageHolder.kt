@@ -665,9 +665,18 @@ class PagerPageHolder(
         val result = Bitmap.createBitmap(width + width2, max(height, height2), Bitmap.Config.ARGB_8888)
         val canvas = Canvas(result)
         canvas.drawColor(Color.TRANSPARENT)
-        val upperPart = Rect(width2, (maxHeight - imageBitmap.height) / 2, width2 + imageBitmap.width, imageBitmap.height)
+        val isLTR = viewer !is R2LPagerViewer
+        val upperPart = Rect(
+            if (isLTR) 0 else width2,
+            (maxHeight - imageBitmap.height) / 2,
+            (if (isLTR) 0 else width2) + imageBitmap.width,
+            imageBitmap.height)
         canvas.drawBitmap(imageBitmap, imageBitmap.rect, upperPart, null)
-        val bottomPart = Rect(0, (maxHeight - imageBitmap2.height) / 2, imageBitmap2.width, imageBitmap2.height)
+        val bottomPart = Rect(
+            if (!isLTR) 0 else width,
+            (maxHeight - imageBitmap2.height) / 2,
+            (if (!isLTR) 0 else width) + imageBitmap2.width,
+            imageBitmap2.height)
         canvas.drawBitmap(imageBitmap2, imageBitmap2.rect, bottomPart, null)
 
         val output = ByteArrayOutputStream()
