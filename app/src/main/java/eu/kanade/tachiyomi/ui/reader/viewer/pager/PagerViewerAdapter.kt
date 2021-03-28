@@ -59,8 +59,6 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
             }
         }
 
-        prevChapter = chapters.prevChapter
-
         // Skip transition page if the chapter is loaded & current page is not a transition page
         if (forceTransition || chapters.prevChapter?.state !is ReaderChapter.State.Loaded) {
             prevTransition = ChapterTransition.Prev(chapters.currChapter, chapters.prevChapter)
@@ -73,6 +71,10 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
             newItems.addAll(currPages)
         }
 
+        if (currentChapter != chapters.currChapter) {
+            viewer.config.shiftDoublePage = false
+        }
+        prevChapter = chapters.prevChapter
         currentChapter = chapters.currChapter
         nextChapter = chapters.nextChapter
 
