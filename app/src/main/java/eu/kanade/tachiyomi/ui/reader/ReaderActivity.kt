@@ -931,7 +931,7 @@ class ReaderActivity :
                     val currentChapter = presenter.getCurrentChapter()
                     val page = currentChapter?.pages?.getOrNull(binding.readerChaptersSheet.pageSeekBar.progress)
                     presenter.viewerChapters?.let {
-                        viewer?.setChapters(it)
+                        (viewer as? PagerViewer)?.setChaptersDoubleShift(it)
                         page?.let {
                             viewer?.moveToPage(page, false)
                         }

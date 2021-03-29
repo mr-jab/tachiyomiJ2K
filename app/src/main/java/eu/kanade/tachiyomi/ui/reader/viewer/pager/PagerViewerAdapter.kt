@@ -159,6 +159,9 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
     private fun setJoinedItems(currentChapter: ReaderChapter, currentPage: ReaderPage? = null) {
         if (!viewer.config.doublePages) {
             subItems = subItems.filterNotNull().toMutableList()
+            subItems.forEach {
+                (it as? ReaderPage)?.shiftedPage = false
+            }
             this.joinedItems = subItems.map { Pair<Any, Any?>(it as Any, null) }.toMutableList()
             if (viewer is R2LPagerViewer) {
                 joinedItems.reverse()
