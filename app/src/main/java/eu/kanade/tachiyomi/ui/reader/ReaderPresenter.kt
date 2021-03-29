@@ -485,7 +485,13 @@ class ReaderPresenter(
         selectedChapter.chapter.last_page_read = page.index
         selectedChapter.chapter.pages_left =
             (selectedChapter.pages?.size ?: page.index) - page.index
-        if (selectedChapter.pages?.lastIndex == page.index) {
+        if (selectedChapter.pages?.lastIndex == page.index ||
+            (
+                selectedChapter.pages?.lastIndex?.minus(1) == page.index &&
+                    !page.fullPage &&
+                    selectedChapter.pages?.last()?.fullPage == false
+                )
+        ) {
             selectedChapter.chapter.read = true
             updateTrackChapterRead(selectedChapter)
             deleteChapterIfNeeded(selectedChapter)
