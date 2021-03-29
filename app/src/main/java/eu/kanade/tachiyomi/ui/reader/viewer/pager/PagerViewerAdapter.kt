@@ -181,6 +181,7 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
                 )
                 (fullPageBeforeIndex until cleanItems.size).forEach {
                     if (cleanItems[it]?.shiftedPage == true) {
+                        cleanItems.add(it + 1, null)
                         return@loop
                     }
                     if (cleanItems[it]?.fullPage == false) {
