@@ -22,6 +22,7 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import com.afollestad.materialdialogs.MaterialDialog
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
@@ -285,6 +286,12 @@ class ReaderActivity :
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
         val splitItem = menu?.findItem(R.id.action_shift_double_page)
         splitItem?.isVisible = preferences.doublePages().get()
+        (viewer as? PagerViewer)?.config?.let { config ->
+            splitItem?.icon = ContextCompat.getDrawable(
+                this,
+                if (config.shiftDoublePage) R.drawable.ic_page_previous_outline_24dp else R.drawable.ic_page_next_outline_24dp
+            )
+        }
         return super.onPrepareOptionsMenu(menu)
     }
 
@@ -314,6 +321,7 @@ class ReaderActivity :
                     config.shiftDoublePage = !config.shiftDoublePage
                     presenter.viewerChapters?.let {
                         viewer?.setChapters(it)
+                        invalidateOptionsMenu()
                     }
                 }
             }

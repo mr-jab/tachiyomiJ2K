@@ -165,7 +165,7 @@
     <string name="hide_category_hopper">Hide category hopper</string>
     <string name="hide_hopper_on_scroll">Hide category hopper on scroll</string>
     <string name="more_library_settings">More library settings</string>
-    <string name="shift_double_page">Shift double page</string>
+    <string name="shift_one_page_over">Shift one page over</string>
 
     <!-- Library update service notifications -->
     <string name="new_chapters_found">New chapters found</string>

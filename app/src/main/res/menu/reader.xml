@@ -10,8 +10,8 @@
 
     <item
         android:id="@+id/action_shift_double_page"
-        android:icon="@drawable/ic_arrow_split_vertical_24dp"
-        android:title="@string/shift_double_page"
+        android:icon="@drawable/ic_page_next_outline_24dp"
+        android:title="@string/shift_one_page_over"
         app:showAsAction="ifRoom" />
 
     <item
