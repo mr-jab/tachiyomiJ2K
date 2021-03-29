@@ -52,6 +52,7 @@ import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.getOrDefault
+import eu.kanade.tachiyomi.databinding.LibraryListControllerBinding
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.ui.base.MaterialMenuSheet
 import eu.kanade.tachiyomi.ui.base.controller.BaseController
@@ -76,6 +77,7 @@ import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.getBottomGestureInsets
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.launchUI
+import eu.kanade.tachiyomi.util.view.activityBinding
 import eu.kanade.tachiyomi.util.view.collapse
 import eu.kanade.tachiyomi.util.view.expand
 import eu.kanade.tachiyomi.util.view.getItemView
@@ -95,15 +97,6 @@ import eu.kanade.tachiyomi.util.view.visible
 import eu.kanade.tachiyomi.util.view.visibleIf
 import eu.kanade.tachiyomi.util.view.withFadeTransaction
 import eu.kanade.tachiyomi.widget.EndAnimatorListener
-import kotlinx.android.synthetic.main.filter_bottom_sheet.*
-import kotlinx.android.synthetic.main.filter_bottom_sheet.view.*
-import kotlinx.android.synthetic.main.library_grid_recycler.*
-import kotlinx.android.synthetic.main.library_grid_recycler.recycler
-import kotlinx.android.synthetic.main.library_list_controller.*
-import kotlinx.android.synthetic.main.library_list_controller.shadow2
-import kotlinx.android.synthetic.main.main_activity.*
-import kotlinx.android.synthetic.main.rounded_category_hopper.*
-import kotlinx.android.synthetic.main.source_controller.*
 import kotlinx.coroutines.delay
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -116,7 +109,7 @@ import kotlin.random.nextInt
 class LibraryController(
     bundle: Bundle? = null,
     val preferences: PreferencesHelper = Injekt.get()
-) : BaseController(bundle),
+) : BaseController<LibraryListControllerBinding>(bundle),
     ActionMode.Callback,
     ChangeMangaCategoriesDialog.Listener,
     FlexibleAdapter.OnItemClickListener,
@@ -182,10 +175,10 @@ class LibraryController(
     private var hasExpanded = false
 
     var hopperGravity: Int = preferences.hopperGravity().get()
+        @SuppressLint("RtlHardcoded")
         set(value) {
             field = value
-            if (category_hopper_frame == null) return
-            jumper_category_text.updateLayoutParams<CoordinatorLayout.LayoutParams> {
+            binding.jumperCategoryText.updateLayoutParams<CoordinatorLayout.LayoutParams> {
                 anchorGravity = when (value) {
                     0 -> Gravity.RIGHT or Gravity.CENTER_VERTICAL
                     2 -> Gravity.LEFT or Gravity.CENTER_VERTICAL
@@ -206,17 +199,17 @@ class LibraryController(
     private var hopperOffset = 0f
 
     override fun getTitle(): String? {
-        return if (!showCategoryInTitle || header_title.text.isNullOrBlank() || recycler_cover?.isClickable == true) {
+        return if (!showCategoryInTitle || binding.headerTitle.text.isNullOrBlank() || binding.recyclerCover.isClickable) {
             view?.context?.getString(R.string.library)
         } else {
-            header_title.text.toString()
+            binding.headerTitle.text.toString()
         }
     }
 
     private var scrollListener = object : RecyclerView.OnScrollListener() {
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
             super.onScrolled(recyclerView, dx, dy)
-            val recyclerCover = recycler_cover ?: return
+            val recyclerCover = binding.recyclerCover
             if (!recyclerCover.isClickable && isAnimatingHopper != true) {
                 if (preferences.autohideHopper().get()) {
                     hopperOffset += dy
@@ -225,13 +218,13 @@ class LibraryController(
                 if (!preferences.hideBottomNavOnScroll().get()) {
                     updateFilterSheetY()
                 }
-                up_category.alpha = if (isAtTop()) 0.25f else 1f
-                down_category.alpha = if (isAtBottom()) 0.25f else 1f
+                binding.roundedCategoryHopper.upCategory.alpha = if (isAtTop()) 0.25f else 1f
+                binding.roundedCategoryHopper.downCategory.alpha = if (isAtBottom()) 0.25f else 1f
             }
-            if (!filter_bottom_sheet.sheetBehavior.isHidden()) {
+            if (!binding.filterBottomSheet.filterBottomSheet.sheetBehavior.isHidden()) {
                 scrollDistance += abs(dy)
                 if (scrollDistance > scrollDistanceTilHidden) {
-                    filter_bottom_sheet.sheetBehavior?.hide()
+                    binding.filterBottomSheet.filterBottomSheet.sheetBehavior?.hide()
                     scrollDistance = 0f
                 }
             } else scrollDistance = 0f
@@ -251,10 +244,9 @@ class LibraryController(
 
         override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
             super.onScrollStateChanged(recyclerView, newState)
-            recycler_cover ?: return
             when (newState) {
                 RecyclerView.SCROLL_STATE_DRAGGING -> {
-                    fast_scroller.showScrollbar()
+                    binding.fastScroller.showScrollbar()
                 }
                 RecyclerView.SCROLL_STATE_IDLE -> {
                     updateHopperPosition()
@@ -264,18 +256,17 @@ class LibraryController(
     }
 
     fun updateFilterSheetY() {
-        val bottomBar = activity?.bottom_nav
-        filter_bottom_sheet ?: return
+        val bottomBar = activityBinding?.bottomNav
         if (bottomBar != null) {
-            if (filter_bottom_sheet.sheetBehavior.isHidden()) {
+            if (binding.filterBottomSheet.filterBottomSheet.sheetBehavior.isHidden()) {
                 val pad = bottomBar.translationY - bottomBar.height
-                filter_bottom_sheet.translationY = pad
+                binding.filterBottomSheet.filterBottomSheet.translationY = pad
             } else {
-                filter_bottom_sheet.translationY = 0f
+                binding.filterBottomSheet.filterBottomSheet.translationY = 0f
             }
             val pad = bottomBar.translationY - bottomBar.height
-            shadow2.translationY = pad
-            filter_bottom_sheet.updatePaddingRelative(
+            binding.shadow2.translationY = pad
+            binding.filterBottomSheet.filterBottomSheet.updatePaddingRelative(
                 bottom = max(
                     (-pad).toInt(),
                     view?.rootWindowInsets?.getBottomGestureInsets() ?: 0
@@ -286,9 +277,9 @@ class LibraryController(
                 (-pad).toInt(),
                 view?.rootWindowInsets?.getBottomGestureInsets() ?: 0
             )
-            filter_bottom_sheet.sheetBehavior?.peekHeight = 60.dpToPx + padding
+            binding.filterBottomSheet.filterBottomSheet.sheetBehavior?.peekHeight = 60.dpToPx + padding
             updateHopperY()
-            fast_scroller.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            binding.fastScroller.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 bottomMargin = -pad.toInt()
             }
         }
@@ -301,9 +292,9 @@ class LibraryController(
         if (preferences.autohideHopper().get()) {
             // Flow same snap rules as bottom nav
             val closerToHopperBottom = hopperOffset > 25f.dpToPx
-            val halfWayBottom = activity!!.bottom_nav.height.toFloat() / 2
-            val closerToBottom = activity!!.bottom_nav.translationY > halfWayBottom
-            val atTop = !recycler.canScrollVertically(-1)
+            val halfWayBottom = activityBinding?.bottomNav?.height?.toFloat()?.div(2) ?: 0f
+            val closerToBottom = (activityBinding?.bottomNav?.translationY ?: 0f) > halfWayBottom
+            val atTop = !binding.libraryGridRecycler.recycler.canScrollVertically(-1)
             val closerToEdge = if (preferences.hideBottomNavOnScroll().get()) (closerToBottom && !atTop) else closerToHopperBottom
             val end = if (closerToEdge) 55f.dpToPx else 0f
             val alphaAnimation = ValueAnimator.ofFloat(hopperOffset, end)
@@ -325,55 +316,55 @@ class LibraryController(
     fun saveActiveCategory(category: Category) {
         activeCategory = category.order
         val headerItem = getHeader() ?: return
-        header_title.text = headerItem.category.name
+        binding.headerTitle.text = headerItem.category.name
         setActiveCategory()
     }
 
     private fun setActiveCategory() {
-        category_recycler ?: return
         val currentCategory = presenter.categories.indexOfFirst {
             if (presenter.showAllCategories) it.order == activeCategory else presenter.currentCategory == it.id
         }
         if (currentCategory > -1) {
-            category_recycler.setCategories(currentCategory)
-            header_title.text = presenter.categories[currentCategory].name
+            binding.categoryRecycler.setCategories(currentCategory)
+            binding.headerTitle.text = presenter.categories[currentCategory].name
             setTitle()
         }
     }
 
     fun showMiniBar() {
-        header_title.visibleIf(showCategoryInTitle)
+        binding.headerTitle.visibleIf(showCategoryInTitle)
         setTitle()
     }
 
     fun showCategoryText(name: String) {
         textAnim?.cancel()
-        textAnim = jumper_category_text.animate().alpha(0f).setDuration(250L).setStartDelay(2000)
+        textAnim = binding.jumperCategoryText.animate().alpha(0f).setDuration(250L).setStartDelay(2000)
         textAnim?.start()
-        jumper_category_text.alpha = 1f
-        jumper_category_text.text = name
+        binding.jumperCategoryText.alpha = 1f
+        binding.jumperCategoryText.text = name
     }
 
     fun isAtTop(): Boolean {
         return if (presenter.showAllCategories) {
-            !recycler.canScrollVertically(-1)
+            !binding.libraryGridRecycler.recycler.canScrollVertically(-1)
         } else {
-            getVisibleHeader()?.category?.order == presenter.categories.minBy { it.order }?.order
+            getVisibleHeader()?.category?.order == presenter.categories.minOfOrNull { it.order }
         }
     }
 
     fun isAtBottom(): Boolean {
         return if (presenter.showAllCategories) {
-            !recycler.canScrollVertically(1)
+            !binding.libraryGridRecycler.recycler.canScrollVertically(1)
         } else {
-            getVisibleHeader()?.category?.order == presenter.categories.maxBy { it.order }?.order
+            getVisibleHeader()?.category?.order == presenter.categories.maxOfOrNull { it.order }
         }
     }
 
     private fun showFilterTip() {
         if (preferences.shownFilterTutorial().get() || !hasExpanded) return
+        val activityBinding = activityBinding ?: return
         val activity = activity ?: return
-        val icon = activity.bottom_nav.getItemView(R.id.nav_library) ?: return
+        val icon = activityBinding.bottomNav.getItemView(R.id.nav_library) ?: return
         filterTooltip =
             ViewTooltip.on(activity, icon).autoHide(false, 0L).align(ViewTooltip.ALIGN.START)
                 .position(ViewTooltip.Position.TOP).text(R.string.tap_library_to_show_filters)
@@ -399,36 +390,36 @@ class LibraryController(
         adapter = LibraryCategoryAdapter(this)
         setRecyclerLayout()
 
-        recycler.manager.spanSizeLookup = (
+        binding.libraryGridRecycler.recycler.manager.spanSizeLookup = (
             object : GridLayoutManager.SpanSizeLookup() {
                 override fun getSpanSize(position: Int): Int {
                     if (libraryLayout == 0) return 1
                     val item = this@LibraryController.adapter.getItem(position)
                     return if (item is LibraryHeaderItem || item is SearchGlobalItem || (item is LibraryItem && item.manga.isBlank())) {
-                        recycler?.manager?.spanCount ?: 1
+                        binding.libraryGridRecycler.recycler.manager.spanCount
                     } else {
                         1
                     }
                 }
             }
             )
-        recycler.setHasFixedSize(true)
-        recycler.adapter = adapter
+        binding.libraryGridRecycler.recycler.setHasFixedSize(true)
+        binding.libraryGridRecycler.recycler.adapter = adapter
 
-        adapter.fastScroller = fast_scroller
-        recycler.addOnScrollListener(scrollListener)
+        adapter.fastScroller = binding.fastScroller
+        binding.libraryGridRecycler.recycler.addOnScrollListener(scrollListener)
 
-        swipe_refresh.setStyle()
+        binding.swipeRefresh.setStyle()
 
-        recycler_cover.setOnClickListener {
+        binding.recyclerCover.setOnClickListener {
             showCategories(false)
         }
-        category_recycler.onCategoryClicked = {
-            recycler.itemAnimator = null
+        binding.categoryRecycler.onCategoryClicked = {
+            binding.libraryGridRecycler.recycler.itemAnimator = null
             scrollToHeader(it)
             showCategories(show = false)
         }
-        category_recycler.onShowAllClicked = { isChecked ->
+        binding.categoryRecycler.onShowAllClicked = { isChecked ->
             preferences.showAllCategories().set(isChecked)
             presenter.getLibrary()
         }
@@ -437,27 +428,27 @@ class LibraryController(
 
         elevateAppBar =
             scrollViewWith(
-                recycler,
-                swipeRefreshLayout = swipe_refresh,
+                binding.libraryGridRecycler.recycler,
+                swipeRefreshLayout = binding.swipeRefresh,
                 afterInsets = { insets ->
-                    category_recycler?.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                        topMargin = recycler?.paddingTop ?: 0
+                    binding.categoryRecycler.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                        topMargin = binding.libraryGridRecycler.recycler.paddingTop
                     }
-                    fast_scroller?.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                        topMargin = recycler?.paddingTop ?: 0
+                    binding.fastScroller.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                        topMargin = binding.libraryGridRecycler.recycler.paddingTop
                     }
-                    header_title?.updatePaddingRelative(top = insets.systemWindowInsetTop + 2.dpToPx)
+                    binding.headerTitle.updatePaddingRelative(top = insets.systemWindowInsetTop + 2.dpToPx)
                 },
                 onLeavingController = {
-                    header_title?.gone()
+                    binding.headerTitle.gone()
                 },
                 onBottomNavUpdate = {
                     updateFilterSheetY()
                 }
             )
 
-        swipe_refresh.setOnRefreshListener {
-            swipe_refresh.isRefreshing = false
+        binding.swipeRefresh.setOnRefreshListener {
+            binding.swipeRefresh.isRefreshing = false
             if (!LibraryUpdateService.isRunning()) {
                 when {
                     !presenter.showAllCategories && presenter.groupType == BY_DEFAULT -> {
@@ -508,15 +499,15 @@ class LibraryController(
         if (presenter.libraryItems.isNotEmpty()) {
             presenter.restoreLibrary()
         } else {
-            recycler_layout.alpha = 0f
+            binding.recyclerLayout.alpha = 0f
             presenter.getLibrary()
         }
     }
 
     private fun setupFilterSheet() {
-        filter_bottom_sheet.onCreate(this)
+        binding.filterBottomSheet.filterBottomSheet.onCreate(this)
 
-        filter_bottom_sheet.onGroupClicked = {
+        binding.filterBottomSheet.filterBottomSheet.onGroupClicked = {
             when (it) {
                 FilterBottomSheet.ACTION_REFRESH -> onRefresh()
                 FilterBottomSheet.ACTION_FILTER -> onFilterChanged()
@@ -560,22 +551,22 @@ class LibraryController(
 
     @SuppressLint("RtlHardcoded", "ClickableViewAccessibility")
     private fun setUpHopper() {
-        category_hopper_frame.gone()
-        down_category.setOnClickListener {
+        binding.categoryHopperFrame.gone()
+        binding.roundedCategoryHopper.downCategory.setOnClickListener {
             jumpToNextCategory(true)
         }
-        up_category.setOnClickListener {
+        binding.roundedCategoryHopper.upCategory.setOnClickListener {
             jumpToNextCategory(false)
         }
-        down_category.setOnLongClickListener {
-            recycler.scrollToPosition(adapter.itemCount - 1)
+        binding.roundedCategoryHopper.downCategory.setOnLongClickListener {
+            binding.libraryGridRecycler.recycler.scrollToPosition(adapter.itemCount - 1)
             true
         }
-        up_category.setOnLongClickListener {
-            recycler.scrollToPosition(0)
+        binding.roundedCategoryHopper.upCategory.setOnLongClickListener {
+            binding.libraryGridRecycler.recycler.scrollToPosition(0)
             true
         }
-        category_button.setOnClickListener {
+        binding.roundedCategoryHopper.categoryButton.setOnClickListener {
             val items = presenter.categories.map { category ->
                 MaterialMenuSheet.MenuSheetItem(category.order, text = category.name)
             }
@@ -591,8 +582,8 @@ class LibraryController(
             }.show()
         }
 
-        category_button.setOnLongClickListener {
-            activity?.toolbar?.menu?.performIdentifierAction(R.id.action_search, 0)
+        binding.roundedCategoryHopper.categoryButton.setOnLongClickListener {
+            activityBinding?.toolbar?.menu?.performIdentifierAction(R.id.action_search, 0)
             true
         }
 
@@ -602,7 +593,7 @@ class LibraryController(
             preferences.hopperGravity().get()
         }
         hideHopper(preferences.hideHopper().get())
-        category_hopper_frame.updateLayoutParams<CoordinatorLayout.LayoutParams> {
+        binding.categoryHopperFrame.updateLayoutParams<CoordinatorLayout.LayoutParams> {
             gravity = Gravity.TOP or when (gravityPref) {
                 0 -> Gravity.LEFT
                 2 -> Gravity.RIGHT
@@ -612,19 +603,22 @@ class LibraryController(
         hopperGravity = gravityPref
 
         val gestureDetector = GestureDetectorCompat(activity, LibraryGestureDetector(this))
-        listOf(category_hopper_layout, up_category, down_category, category_button).forEach {
-            it.setOnTouchListener { _, event ->
-                if (event?.action == MotionEvent.ACTION_DOWN) {
-                    animatorSet?.end()
-                }
-                if (event?.action == MotionEvent.ACTION_UP) {
-                    val result = gestureDetector.onTouchEvent(event)
-                    if (!result) {
-                        category_hopper_frame.animate().setDuration(150L).translationX(0f).start()
+        with(binding.roundedCategoryHopper) {
+            listOf(categoryHopperLayout, upCategory, downCategory, categoryButton).forEach {
+                it.setOnTouchListener { _, event ->
+                    if (event?.action == MotionEvent.ACTION_DOWN) {
+                        animatorSet?.end()
                     }
-                    result
-                } else {
-                    gestureDetector.onTouchEvent(event)
+                    if (event?.action == MotionEvent.ACTION_UP) {
+                        val result = gestureDetector.onTouchEvent(event)
+                        if (!result) {
+                            binding.categoryHopperFrame.animate().setDuration(150L).translationX(0f)
+                                .start()
+                        }
+                        result
+                    } else {
+                        gestureDetector.onTouchEvent(event)
+                    }
                 }
             }
         }
@@ -633,21 +627,23 @@ class LibraryController(
     fun updateHopperY() {
         val view = view ?: return
         val listOfYs = mutableListOf(
-            filter_bottom_sheet.y,
-            activity?.bottom_nav?.y ?: filter_bottom_sheet.y
+            binding.filterBottomSheet.filterBottomSheet.y,
+            activityBinding?.bottomNav?.y ?: binding.filterBottomSheet.filterBottomSheet.y
         )
         val insetBottom = view.rootWindowInsets?.systemWindowInsetBottom ?: 0
         if (!preferences.autohideHopper().get()) {
             listOfYs.add(view.height - (insetBottom).toFloat())
         }
-        category_hopper_frame.y = -category_hopper_frame.height +
-            (listOfYs.minOrNull() ?: filter_bottom_sheet.y) +
+        binding.categoryHopperFrame.y = -binding.categoryHopperFrame.height +
+            (listOfYs.minOrNull() ?: binding.filterBottomSheet.filterBottomSheet.y) +
             hopperOffset +
-            recycler.translationY
-        if (view.height - insetBottom < category_hopper_frame.y) {
-            jumper_category_text.translationY = -(category_hopper_frame.y - (view.height - insetBottom)) + recycler.translationY
+            binding.libraryGridRecycler.recycler.translationY
+        if (view.height - insetBottom < binding.categoryHopperFrame.y) {
+            binding.jumperCategoryText.translationY =
+                -(binding.categoryHopperFrame.y - (view.height - insetBottom)) +
+                binding.libraryGridRecycler.recycler.translationY
         } else {
-            jumper_category_text.translationY = recycler.translationY
+            binding.jumperCategoryText.translationY = binding.libraryGridRecycler.recycler.translationY
         }
     }
 
@@ -656,8 +652,8 @@ class LibraryController(
     }
 
     fun hideHopper(hide: Boolean) {
-        category_hopper_frame.visibleIf(!hide)
-        jumper_category_text.visibleIf(!hide)
+        binding.categoryHopperFrame.visibleIf(!hide)
+        binding.jumperCategoryText.visibleIf(!hide)
     }
 
     private fun jumpToNextCategory(next: Boolean) {
@@ -665,7 +661,7 @@ class LibraryController(
         if (presenter.showAllCategories) {
             if (!next) {
                 val fPosition =
-                    (recycler.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+                    (binding.libraryGridRecycler.recycler.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
                 if (fPosition != adapter.currentItems.indexOf(category)) {
                     scrollToHeader(category.category.order)
                     return
@@ -678,7 +674,7 @@ class LibraryController(
                 scrollToHeader(newOrder)
                 showCategoryText(newCategory.name)
             } else {
-                recycler.scrollToPosition(if (next) adapter.itemCount - 1 else 0)
+                binding.libraryGridRecycler.recycler.scrollToPosition(if (next) adapter.itemCount - 1 else 0)
             }
         } else {
             val newOffset =
@@ -700,7 +696,7 @@ class LibraryController(
 
     private fun getHeader(firstCompletelyVisible: Boolean = false): LibraryHeaderItem? {
         val position = if (firstCompletelyVisible) {
-            (recycler.layoutManager as LinearLayoutManager).findFirstCompletelyVisibleItemPosition()
+            (binding.libraryGridRecycler.recycler.layoutManager as LinearLayoutManager).findFirstCompletelyVisibleItemPosition()
         } else {
             -1
         }
@@ -711,7 +707,7 @@ class LibraryController(
             }
         } else {
             val fPosition =
-                (recycler.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+                (binding.libraryGridRecycler.recycler.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
             when (val item = adapter.getItem(fPosition)) {
                 is LibraryHeaderItem -> return item
                 is LibraryItem -> return item.header
@@ -722,7 +718,7 @@ class LibraryController(
 
     private fun getVisibleHeader(): LibraryHeaderItem? {
         val fPosition =
-            (recycler.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+            (binding.libraryGridRecycler.recycler.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
         when (val item = adapter.getItem(fPosition)) {
             is LibraryHeaderItem -> return item
             is LibraryItem -> return item.header
@@ -731,14 +727,15 @@ class LibraryController(
     }
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        return inflater.inflate(R.layout.library_list_controller, container, false)
+        binding = LibraryListControllerBinding.inflate(inflater)
+        return binding.root
     }
 
-    private fun anchorView(): View? {
-        return if (category_hopper_frame.isVisible()) {
-            category_hopper_frame
+    private fun anchorView(): View {
+        return if (binding.categoryHopperFrame.isVisible()) {
+            binding.categoryHopperFrame
         } else {
-            filter_bottom_sheet
+            binding.filterBottomSheet.filterBottomSheet
         }
     }
 
@@ -756,24 +753,24 @@ class LibraryController(
     }
 
     private fun setRecyclerLayout() {
-        recycler.post {
-            recycler?.updatePaddingRelative(bottom = 50.dpToPx + (activity?.bottom_nav?.height ?: 0))
+        binding.libraryGridRecycler.recycler.post {
+            binding.libraryGridRecycler.recycler.updatePaddingRelative(bottom = 50.dpToPx + (activityBinding?.bottomNav?.height ?: 0))
         }
         if (libraryLayout == 0) {
-            recycler.spanCount = 1
-            recycler.updatePaddingRelative(
+            binding.libraryGridRecycler.recycler.spanCount = 1
+            binding.libraryGridRecycler.recycler.updatePaddingRelative(
                 start = 0,
                 end = 0
             )
         } else {
-            recycler.columnWidth = when (preferences.gridSize().getOrDefault()) {
+            binding.libraryGridRecycler.recycler.columnWidth = when (preferences.gridSize().getOrDefault()) {
                 1 -> 1f
                 2 -> 1.25f
                 3 -> 1.66f
                 4 -> 3f
                 else -> .75f
             }
-            recycler.updatePaddingRelative(
+            binding.libraryGridRecycler.recycler.updatePaddingRelative(
                 start = 5.dpToPx,
                 end = 5.dpToPx
             )
@@ -783,27 +780,27 @@ class LibraryController(
     override fun onChangeStarted(handler: ControllerChangeHandler, type: ControllerChangeType) {
         super.onChangeStarted(handler, type)
         if (type.isEnter) {
-            filter_bottom_sheet.visible()
+            binding.filterBottomSheet.filterBottomSheet.visible()
             presenter.getLibrary()
             DownloadService.callListeners()
             LibraryUpdateService.setListener(this)
-            recycler_cover.isClickable = false
-            recycler_cover.isFocusable = false
+            binding.recyclerCover.isClickable = false
+            binding.recyclerCover.isFocusable = false
             showDropdown()
         } else {
             updateFilterSheetY()
             closeTip()
-            if (filter_bottom_sheet.sheetBehavior.isHidden()) {
-                filter_bottom_sheet.invisible()
+            if (binding.filterBottomSheet.filterBottomSheet.sheetBehavior.isHidden()) {
+                binding.filterBottomSheet.filterBottomSheet.invisible()
             }
-            activity?.toolbar?.hideDropdown()
+            activityBinding?.toolbar?.hideDropdown()
         }
     }
 
     override fun onChangeEnded(handler: ControllerChangeHandler, type: ControllerChangeType) {
         super.onChangeEnded(handler, type)
         if (!type.isEnter) {
-            activity?.toolbar?.hideDropdown()
+            activityBinding?.toolbar?.hideDropdown()
         }
     }
 
@@ -829,7 +826,7 @@ class LibraryController(
     override fun onDestroyView(view: View) {
         LibraryUpdateService.removeListener(this)
         destroyActionModeIfNeeded()
-        recycler.removeOnScrollListener(scrollListener)
+        binding.libraryGridRecycler.recycler.removeOnScrollListener(scrollListener)
         super.onDestroyView(view)
     }
 
@@ -837,52 +834,52 @@ class LibraryController(
         view ?: return
         destroyActionModeIfNeeded()
         if (mangaMap.isNotEmpty()) {
-            empty_view?.hide()
+            binding.emptyView.hide()
         } else {
-            empty_view?.show(
+            binding.emptyView.show(
                 R.drawable.ic_heart_off_24dp,
-                if (filter_bottom_sheet.hasActiveFilters()) R.string.no_matches_for_filters
+                if (binding.filterBottomSheet.filterBottomSheet.hasActiveFilters()) R.string.no_matches_for_filters
                 else R.string.library_is_empty_add_from_browse
             )
         }
         adapter.setItems(mangaMap)
-        if (recycler.itemAnimator == null) {
-            recycler.post {
-                recycler?.itemAnimator = DefaultItemAnimator()
+        if (binding.libraryGridRecycler.recycler.itemAnimator == null) {
+            binding.libraryGridRecycler.recycler.post {
+                binding.libraryGridRecycler.recycler.itemAnimator = DefaultItemAnimator()
             }
         }
         singleCategory = presenter.categories.size <= 1
         showDropdown()
-        progress.gone()
+        binding.progress.gone()
         if (!freshStart) {
             justStarted = false
-            if (recycler_layout.alpha == 0f) recycler_layout.animate().alpha(1f).setDuration(500)
+            if (binding.recyclerLayout.alpha == 0f) binding.recyclerLayout.animate().alpha(1f).setDuration(500)
                 .start()
-        } else recycler_layout.alpha = 1f
+        } else binding.recyclerLayout.alpha = 1f
         if (justStarted && freshStart) {
             scrollToHeader(activeCategory)
         }
-        recycler?.post {
-            elevateAppBar(recycler?.canScrollVertically(-1) == true)
+        binding.libraryGridRecycler.recycler.post {
+            elevateAppBar(binding.libraryGridRecycler.recycler.canScrollVertically(-1))
             setActiveCategory()
         }
 
-        category_hopper_frame.visibleIf(!singleCategory && !preferences.hideHopper().get())
-        filter_bottom_sheet.updateButtons(
+        binding.categoryHopperFrame.visibleIf(!singleCategory && !preferences.hideHopper().get())
+        binding.filterBottomSheet.filterBottomSheet.updateButtons(
             showExpand = !singleCategory && presenter.showAllCategories,
             groupType = presenter.groupType
         )
         adapter.isLongPressDragEnabled = canDrag()
-        category_recycler.setCategories(presenter.categories)
-        filter_bottom_sheet.setExpandText(preferences.collapsedCategories().getOrDefault().isNotEmpty())
+        binding.categoryRecycler.setCategories(presenter.categories)
+        binding.filterBottomSheet.filterBottomSheet.setExpandText(preferences.collapsedCategories().getOrDefault().isNotEmpty())
         if (shouldScrollToTop) {
-            recycler.scrollToPosition(0)
+            binding.libraryGridRecycler.recycler.scrollToPosition(0)
             shouldScrollToTop = false
         }
         if (onRoot) {
-            listOf(activity?.toolbar, header_title).forEach {
+            listOf(activityBinding?.toolbar, binding.headerTitle).forEach {
                 it?.setOnClickListener {
-                    val recycler = recycler ?: return@setOnClickListener
+                    val recycler = binding.libraryGridRecycler.recycler
                     if (singleCategory) {
                         recycler.scrollToPosition(0)
                     } else {
@@ -900,9 +897,9 @@ class LibraryController(
     private fun showDropdown() {
         if (onRoot) {
             if (!singleCategory) {
-                activity?.toolbar?.showDropdown()
+                activityBinding?.toolbar?.showDropdown()
             } else {
-                activity?.toolbar?.hideDropdown()
+                activityBinding?.toolbar?.hideDropdown()
             }
         }
     }
@@ -923,7 +920,7 @@ class LibraryController(
         animatorSet.startDelay = 1250
         animatorSet.addListener(
             EndAnimatorListener {
-                category_hopper_frame?.translationX = 0f
+                binding.categoryHopperFrame.translationX = 0f
                 isAnimatingHopper = false
                 this.animatorSet = null
             }
@@ -932,36 +929,36 @@ class LibraryController(
     }
 
     private fun slideAnimation(from: Float, to: Float, duration: Long = 400): ObjectAnimator {
-        return ObjectAnimator.ofFloat(category_hopper_frame, View.TRANSLATION_X, from, to)
+        return ObjectAnimator.ofFloat(binding.categoryHopperFrame, View.TRANSLATION_X, from, to)
             .setDuration(duration)
     }
 
     private fun showCategories(show: Boolean) {
-        recycler_cover.isClickable = show
-        recycler_cover.isFocusable = show
-        val full = category_recycler.height.toFloat() + recycler.paddingTop
+        binding.recyclerCover.isClickable = show
+        binding.recyclerCover.isFocusable = show
+        val full = binding.categoryRecycler.height.toFloat() + binding.libraryGridRecycler.recycler.paddingTop
         val translateY = if (show) full else 0f
-        recycler.animate().translationY(translateY).apply {
+        binding.libraryGridRecycler.recycler.animate().translationY(translateY).apply {
             setUpdateListener {
-                activity?.appbar?.y = 0f
+                activityBinding?.appBar?.y = 0f
                 updateHopperY()
             }
         }.start()
-        recycler_shadow.animate().translationY(translateY - 8.dpToPx).start()
-        recycler_cover.animate().translationY(translateY).start()
-        recycler_cover.animate().alpha(if (show) 0.75f else 0f).start()
-        recycler.suppressLayout(show)
-        activity?.toolbar?.showDropdown(!show)
-        swipe_refresh.isEnabled = !show
+        binding.recyclerShadow.animate().translationY(translateY - 8.dpToPx).start()
+        binding.recyclerCover.animate().translationY(translateY).start()
+        binding.recyclerCover.animate().alpha(if (show) 0.75f else 0f).start()
+        binding.libraryGridRecycler.recycler.suppressLayout(show)
+        activityBinding?.toolbar?.showDropdown(!show)
+        binding.swipeRefresh.isEnabled = !show
         setTitle()
         if (show) {
-            category_recycler.scrollToCategory(activeCategory)
-            fast_scroller?.hideScrollbar()
-            activity?.appbar?.y = 0f
+            binding.categoryRecycler.scrollToCategory(activeCategory)
+            binding.fastScroller.hideScrollbar()
+            activityBinding?.appBar?.y = 0f
             elevateAppBar(false)
-            filter_bottom_sheet?.sheetBehavior?.hide()
+            binding.filterBottomSheet.filterBottomSheet.sheetBehavior?.hide()
         } else {
-            val notAtTop = recycler.canScrollVertically(-1)
+            val notAtTop = binding.libraryGridRecycler.recycler.canScrollVertically(-1)
             elevateAppBar(notAtTop)
         }
     }
@@ -976,15 +973,15 @@ class LibraryController(
         }
         val headerPosition = adapter.indexOf(pos)
         if (headerPosition > -1) {
-            val appbar = activity?.appbar
-            recycler.suppressLayout(true)
+            val appbar = activityBinding?.appBar
+            binding.libraryGridRecycler.recycler.suppressLayout(true)
             val appbarOffset = if (appbar?.y ?: 0f > -20) 0 else (
                 appbar?.y?.plus(
                     view?.rootWindowInsets?.systemWindowInsetTop ?: 0
                 ) ?: 0f
                 ).roundToInt() + 30.dpToPx
             val previousHeader = adapter.getItem(adapter.indexOf(pos - 1)) as? LibraryHeaderItem
-            (recycler.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+            (binding.libraryGridRecycler.recycler.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                 headerPosition,
                 (
                     when {
@@ -999,7 +996,7 @@ class LibraryController(
             }
             activeCategory = pos
             preferences.lastUsedCategory().set(pos)
-            recycler.suppressLayout(false)
+            binding.libraryGridRecycler.recycler.suppressLayout(false)
         }
     }
 
@@ -1023,10 +1020,10 @@ class LibraryController(
         libraryLayout = preferences.libraryLayout().getOrDefault()
         setRecyclerLayout()
         val position =
-            (recycler.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
-        recycler.adapter = adapter
+            (binding.libraryGridRecycler.recycler.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+        binding.libraryGridRecycler.recycler.adapter = adapter
 
-        (recycler.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, 0)
+        (binding.libraryGridRecycler.recycler.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, 0)
     }
 
     fun search(query: String?): Boolean {
@@ -1036,7 +1033,7 @@ class LibraryController(
             adapter.addScrollableHeader(searchItem)
         } else if (this.query.isNotBlank()) {
             searchItem.string = this.query
-            (recycler.findViewHolderForAdapterPosition(0) as? SearchGlobalItem.Holder)?.bind(this.query)
+            (binding.libraryGridRecycler.recycler.findViewHolderForAdapterPosition(0) as? SearchGlobalItem.Holder)?.bind(this.query)
         } else if (this.query.isBlank() && adapter.scrollableHeaders.isNotEmpty()) {
             adapter.removeAllScrollableHeaders()
         }
@@ -1070,7 +1067,7 @@ class LibraryController(
                 }
                 positions.forEach { position ->
                     adapter.addSelection(position)
-                    (recycler.findViewHolderForAdapterPosition(position) as? LibraryHolder)?.toggleActivation()
+                    (binding.libraryGridRecycler.recycler.findViewHolderForAdapterPosition(position) as? LibraryHolder)?.toggleActivation()
                 }
             }
         } else {
@@ -1083,7 +1080,7 @@ class LibraryController(
                 }
                 positions.forEach { position ->
                     adapter.removeSelection(position)
-                    (recycler.findViewHolderForAdapterPosition(position) as? LibraryHolder)?.toggleActivation()
+                    (binding.libraryGridRecycler.recycler.findViewHolderForAdapterPosition(position) as? LibraryHolder)?.toggleActivation()
                 }
             }
         }
@@ -1096,7 +1093,7 @@ class LibraryController(
             if (changedMode) {
                 adapter.notifyItemChanged(it)
             } else {
-                (recycler.findViewHolderForAdapterPosition(it) as? LibraryHeaderHolder)?.setSelection()
+                (binding.libraryGridRecycler.recycler.findViewHolderForAdapterPosition(it) as? LibraryHeaderHolder)?.setSelection()
             }
         }
     }
@@ -1122,8 +1119,7 @@ class LibraryController(
     }
 
     override fun canDrag(): Boolean {
-        filter_bottom_sheet ?: return false
-        val filterOff = !filter_bottom_sheet.hasActiveFilters() && presenter.groupType == BY_DEFAULT
+        val filterOff = !binding.filterBottomSheet.filterBottomSheet.hasActiveFilters() && presenter.groupType == BY_DEFAULT
         return filterOff && adapter.mode != SelectableAdapter.Mode.MULTI
     }
 
@@ -1178,7 +1174,7 @@ class LibraryController(
 
     override fun onActionStateChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
         val position = viewHolder?.bindingAdapterPosition ?: return
-        swipe_refresh.isEnabled = actionState != ItemTouchHelper.ACTION_STATE_DRAG
+        binding.swipeRefresh.isEnabled = actionState != ItemTouchHelper.ACTION_STATE_DRAG
         if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) {
             if (lastItemPosition != null &&
                 position != lastItemPosition &&
@@ -1186,7 +1182,7 @@ class LibraryController(
             ) {
                 // because for whatever reason you can repeatedly tap on a currently dragging manga
                 adapter.removeSelection(position)
-                (recycler.findViewHolderForAdapterPosition(position) as? LibraryHolder)?.toggleActivation()
+                (binding.libraryGridRecycler.recycler.findViewHolderForAdapterPosition(position) as? LibraryHolder)?.toggleActivation()
                 adapter.moveItem(position, lastItemPosition!!)
             } else {
                 lastItem = adapter.getItem(position)
@@ -1216,7 +1212,7 @@ class LibraryController(
             ) ||
             adapter.getItem(fromPosition) == null
         ) {
-            recycler.scrollBy(0, recycler.paddingTop)
+            binding.libraryGridRecycler.recycler.scrollBy(0, binding.libraryGridRecycler.recycler.paddingTop)
         }
         if (lastItemPosition == toPosition) lastItemPosition = null
         else if (lastItemPosition == null) lastItemPosition = fromPosition
@@ -1290,8 +1286,8 @@ class LibraryController(
         }
     }
 
-    override fun updateCategory(position: Int): Boolean {
-        val category = (adapter.getItem(position) as? LibraryHeaderItem)?.category ?: return false
+    override fun updateCategory(catId: Int): Boolean {
+        val category = (adapter.getItem(catId) as? LibraryHeaderItem)?.category ?: return false
         val inQueue = LibraryUpdateService.categoryInQueue(category.id)
         snack?.dismiss()
         snack = view?.snack(
@@ -1364,8 +1360,8 @@ class LibraryController(
     override fun showSheet() {
         closeTip()
         when {
-            filter_bottom_sheet.sheetBehavior.isHidden() -> filter_bottom_sheet.sheetBehavior?.collapse()
-            !filter_bottom_sheet.sheetBehavior.isExpanded() -> filter_bottom_sheet.sheetBehavior?.expand()
+            binding.filterBottomSheet.filterBottomSheet.sheetBehavior.isHidden() -> binding.filterBottomSheet.filterBottomSheet.sheetBehavior?.collapse()
+            !binding.filterBottomSheet.filterBottomSheet.sheetBehavior.isExpanded() -> binding.filterBottomSheet.filterBottomSheet.sheetBehavior?.expand()
             else -> TabbedLibraryDisplaySheet(this).show()
         }
     }
@@ -1373,21 +1369,21 @@ class LibraryController(
     override fun toggleSheet() {
         closeTip()
         when {
-            filter_bottom_sheet.sheetBehavior.isHidden() -> filter_bottom_sheet.sheetBehavior?.collapse()
-            !filter_bottom_sheet.sheetBehavior.isExpanded() -> filter_bottom_sheet.sheetBehavior?.expand()
-            else -> filter_bottom_sheet.sheetBehavior?.hide()
+            binding.filterBottomSheet.filterBottomSheet.sheetBehavior.isHidden() -> binding.filterBottomSheet.filterBottomSheet.sheetBehavior?.collapse()
+            !binding.filterBottomSheet.filterBottomSheet.sheetBehavior.isExpanded() -> binding.filterBottomSheet.filterBottomSheet.sheetBehavior?.expand()
+            else -> binding.filterBottomSheet.filterBottomSheet.sheetBehavior?.hide()
         }
     }
 
     override fun sheetIsExpanded(): Boolean = false
 
     override fun handleSheetBack(): Boolean {
-        if (recycler_cover.isClickable) {
+        if (binding.recyclerCover.isClickable) {
             showCategories(false)
             return true
         }
-        if (filter_bottom_sheet.sheetBehavior.isExpanded()) {
-            filter_bottom_sheet.sheetBehavior?.collapse()
+        if (binding.filterBottomSheet.filterBottomSheet.sheetBehavior.isExpanded()) {
+            binding.filterBottomSheet.filterBottomSheet.sheetBehavior?.collapse()
             return true
         }
         return false
@@ -1418,7 +1414,7 @@ class LibraryController(
             R.id.action_search -> expandActionViewFromInteraction = true
             R.id.action_filter -> {
                 hasExpanded = true
-                filter_bottom_sheet.sheetBehavior?.expand()
+                binding.filterBottomSheet.filterBottomSheet.sheetBehavior?.expand()
             }
             else -> return super.onOptionsItemSelected(item)
         }
