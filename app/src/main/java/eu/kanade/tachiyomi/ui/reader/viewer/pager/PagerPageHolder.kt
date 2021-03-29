@@ -358,7 +358,7 @@ class PagerPageHolder(
                     if (viewer.config.readerTheme >= 2) {
                         val imageView = initSubsamplingImageView()
                         if (page.bg != null &&
-                            page.bgType == getBGType(viewer.config.readerTheme, context)
+                            page.bgType == getBGType(viewer.config.readerTheme, context) + item.hashCode()
                         ) {
                             imageView.setImage(ImageSource.inputStream(openStream!!))
                             imageView.background = page.bg
@@ -373,7 +373,7 @@ class PagerPageHolder(
                             launchUI {
                                 imageView.background = setBG(bytesArray)
                                 page.bg = imageView.background
-                                page.bgType = getBGType(viewer.config.readerTheme, context)
+                                page.bgType = getBGType(viewer.config.readerTheme, context) + item.hashCode()
                             }
                         }
                     } else {
@@ -670,14 +670,14 @@ class PagerPageHolder(
             if (isLTR) 0 else width2,
             (maxHeight - imageBitmap.height) / 2,
             (if (isLTR) 0 else width2) + imageBitmap.width,
-            imageBitmap.height
+            imageBitmap.height + (maxHeight - imageBitmap.height) / 2
         )
         canvas.drawBitmap(imageBitmap, imageBitmap.rect, upperPart, null)
         val bottomPart = Rect(
             if (!isLTR) 0 else width,
             (maxHeight - imageBitmap2.height) / 2,
             (if (!isLTR) 0 else width) + imageBitmap2.width,
-            imageBitmap2.height
+            imageBitmap2.height + (maxHeight - imageBitmap2.height) / 2
         )
         canvas.drawBitmap(imageBitmap2, imageBitmap2.rect, bottomPart, null)
 
