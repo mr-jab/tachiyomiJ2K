@@ -289,7 +289,7 @@ class ReaderActivity :
         (viewer as? PagerViewer)?.config?.let { config ->
             splitItem?.icon = ContextCompat.getDrawable(
                 this,
-                if (config.shiftDoublePage) R.drawable.ic_page_previous_outline_24dp else R.drawable.ic_page_next_outline_24dp
+                if ((!config.shiftDoublePage).xor(viewer is R2LPagerViewer)) R.drawable.ic_page_previous_outline_24dp else R.drawable.ic_page_next_outline_24dp
             )
         }
         return super.onPrepareOptionsMenu(menu)
