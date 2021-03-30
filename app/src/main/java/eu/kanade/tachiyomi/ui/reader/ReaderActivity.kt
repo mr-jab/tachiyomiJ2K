@@ -668,29 +668,67 @@ class ReaderActivity :
      * Called from the viewer whenever a [page] is long clicked. A bottom sheet with a list of
      * actions to perform is shown.
      */
-    fun onPageLongTap(page: ReaderPage) {
-        val items = listOf(
-            MaterialMenuSheet.MenuSheetItem(
-                0,
-                R.drawable.ic_share_24dp,
-                R.string.share
-            ),
-            MaterialMenuSheet.MenuSheetItem(
-                1,
-                R.drawable.ic_save_24dp,
-                R.string.save
-            ),
-            MaterialMenuSheet.MenuSheetItem(
-                2,
-                R.drawable.ic_photo_24dp,
-                R.string.set_as_cover
+    fun onPageLongTap(page: ReaderPage, extraPage: ReaderPage? = null) {
+        val items = if (extraPage != null) {
+            listOf(
+                MaterialMenuSheet.MenuSheetItem(
+                    3,
+                    R.drawable.ic_outline_share_24dp,
+                    R.string.share_second_page
+                ),
+                MaterialMenuSheet.MenuSheetItem(
+                    4,
+                    R.drawable.ic_outline_save_24dp,
+                    R.string.save_second_page
+                ),
+                MaterialMenuSheet.MenuSheetItem(
+                    5,
+                    R.drawable.ic_outline_photo_24dp,
+                    R.string.set_second_page_as_cover
+                ),
+                MaterialMenuSheet.MenuSheetItem(
+                    0,
+                    R.drawable.ic_share_24dp,
+                    R.string.share_first_page
+                ),
+                MaterialMenuSheet.MenuSheetItem(
+                    1,
+                    R.drawable.ic_save_24dp,
+                    R.string.save_first_page
+                ),
+                MaterialMenuSheet.MenuSheetItem(
+                    2,
+                    R.drawable.ic_photo_24dp,
+                    R.string.set_first_page_as_cover
+                )
             )
-        )
+        } else {
+            listOf(
+                MaterialMenuSheet.MenuSheetItem(
+                    0,
+                    R.drawable.ic_share_24dp,
+                    R.string.share
+                ),
+                MaterialMenuSheet.MenuSheetItem(
+                    1,
+                    R.drawable.ic_save_24dp,
+                    R.string.save
+                ),
+                MaterialMenuSheet.MenuSheetItem(
+                    2,
+                    R.drawable.ic_photo_24dp,
+                    R.string.set_as_cover
+                )
+            )
+        }
         MaterialMenuSheet(this, items) { _, item ->
             when (item) {
                 0 -> shareImage(page)
                 1 -> saveImage(page)
                 2 -> showSetCoverPrompt(page)
+                3 -> extraPage?.let { shareImage(it) }
+                4 -> extraPage?.let { saveImage(it) }
+                5 -> extraPage?.let { showSetCoverPrompt(it) }
             }
             true
         }.show()

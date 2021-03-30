@@ -111,7 +111,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
                 val firstPage = item?.first as? ReaderPage
                 val secondPage = item?.second as? ReaderPage
                 if (firstPage is ReaderPage) {
-                    activity.onPageLongTap(firstPage)
+                    activity.onPageLongTap(firstPage, secondPage)
                     return@f true
                 }
             }
