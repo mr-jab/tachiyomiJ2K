@@ -81,7 +81,7 @@ import eu.kanade.tachiyomi.ui.manga.track.TrackingBottomSheet
 import eu.kanade.tachiyomi.ui.migration.manga.design.PreMigrationController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.security.SecureActivityDelegate
-import eu.kanade.tachiyomi.ui.source.SourceController
+import eu.kanade.tachiyomi.ui.source.BrowseController
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchController
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.storage.getUriCompat
@@ -123,7 +123,7 @@ class MangaDetailsController :
     constructor(
         manga: Manga?,
         fromCatalogue: Boolean = false,
-        smartSearchConfig: SourceController.SmartSearchConfig? = null,
+        smartSearchConfig: BrowseController.SmartSearchConfig? = null,
         update: Boolean = false
     ) : super(
         Bundle().apply {
@@ -183,10 +183,7 @@ class MangaDetailsController :
         return null
     }
 
-    override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        binding = MangaDetailsControllerBinding.inflate(inflater)
-        return binding.root
-    }
+    override fun createBinding(inflater: LayoutInflater) = MangaDetailsControllerBinding.inflate(inflater)
 
     //region UI Methods
     override fun onViewCreated(view: View) {

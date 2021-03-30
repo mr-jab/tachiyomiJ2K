@@ -24,6 +24,7 @@ import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
+import androidx.core.view.isVisible
 import com.afollestad.materialdialogs.MaterialDialog
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -35,6 +36,7 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.ReaderActivityBinding
 import eu.kanade.tachiyomi.source.model.Page
+import eu.kanade.tachiyomi.ui.base.MaterialMenuSheet
 import eu.kanade.tachiyomi.ui.base.activity.BaseRxActivity
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.main.SearchActivity
@@ -44,7 +46,6 @@ import eu.kanade.tachiyomi.ui.reader.ReaderPresenter.SetAsCoverResult.Success
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
-import eu.kanade.tachiyomi.ui.reader.settings.TabbedReaderSettingsSheet
 import eu.kanade.tachiyomi.ui.reader.viewer.BaseViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.L2RPagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerViewer
@@ -56,7 +57,6 @@ import eu.kanade.tachiyomi.util.storage.getUriCompat
 import eu.kanade.tachiyomi.util.system.GLUtil
 import eu.kanade.tachiyomi.util.system.ThemeUtil
 import eu.kanade.tachiyomi.util.system.dpToPx
-import eu.kanade.tachiyomi.util.system.getBottomGestureInsets
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.hasSideNavBar
 import eu.kanade.tachiyomi.util.system.isBottomTappable
@@ -224,9 +224,9 @@ class ReaderActivity :
             menuVisible = savedInstanceState.getBoolean(::menuVisible.name)
         }
 
-        binding.readerChaptersSheet.chaptersBottomSheet.setup(this)
+        binding.chaptersSheet.chaptersBottomSheet.setup(this)
         if (ThemeUtil.isBlueTheme(preferences.theme())) {
-            binding.readerChaptersSheet.chapterRecycler.setBackgroundColor(getResourceColor(android.R.attr.colorBackground))
+            binding.chaptersSheet.chapterRecycler.setBackgroundColor(getResourceColor(android.R.attr.colorBackground))
         }
         config = ReaderConfig()
         initializeMenu()
@@ -238,7 +238,7 @@ class ReaderActivity :
     override fun onDestroy() {
         super.onDestroy()
         viewer?.destroy()
-        binding.readerChaptersSheet.chaptersBottomSheet.adapter = null
+        binding.chaptersSheet.chaptersBottomSheet.adapter = null
         viewer = null
         config = null
         bottomSheet?.dismiss()
@@ -300,22 +300,7 @@ class ReaderActivity :
      * entries.
      */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        coroutine?.cancel()
         when (item.itemId) {
-            R.id.action_display_settings -> TabbedReaderSettingsSheet(this).show()
-            R.id.action_share_page, R.id.action_set_page_as_cover, R.id.action_save_page -> {
-                val currentChapter = presenter.getCurrentChapter() ?: return true
-                val page = currentChapter.pages?.getOrNull(binding.readerChaptersSheet.pageSeekBar.progress) ?: return true
-                when (item.itemId) {
-                    R.id.action_share_page -> shareImage(page)
-                    R.id.action_set_page_as_cover -> showSetCoverPrompt(page)
-                    R.id.action_save_page -> saveImage(page)
-                }
-            }
-            R.id.action_reader_settings -> {
-                val intent = SearchActivity.openReaderSettings(this)
-                startActivity(intent)
-            }
             R.id.action_shift_double_page -> {
                 (viewer as? PagerViewer)?.config?.let { config ->
                     config.shiftDoublePage = !config.shiftDoublePage
@@ -348,8 +333,8 @@ class ReaderActivity :
      * delegated to the presenter.
      */
     override fun onBackPressed() {
-        if (binding.readerChaptersSheet.chaptersBottomSheet.sheetBehavior.isExpanded()) {
-            binding.readerChaptersSheet.chaptersBottomSheet.sheetBehavior?.collapse()
+        if (binding.chaptersSheet.chaptersBottomSheet.sheetBehavior.isExpanded()) {
+            binding.chaptersSheet.chaptersBottomSheet.sheetBehavior?.collapse()
             return
         }
         presenter.onBackPressed()
@@ -408,8 +393,12 @@ class ReaderActivity :
             }
         }
 
+        binding.chaptersSheet.doublePage.setOnClickListener {
+            preferences.doublePages().set(!preferences.doublePages().get())
+        }
+
         // Init listeners on bottom menu
-        binding.readerChaptersSheet.pageSeekBar.setOnSeekBarChangeListener(
+        binding.readerNav.pageSeekbar.setOnSeekBarChangeListener(
             object : SimpleSeekBarListener() {
                 override fun onProgressChanged(seekBar: SeekBar, value: Int, fromUser: Boolean) {
                     if (viewer != null && fromUser) {
@@ -421,9 +410,9 @@ class ReaderActivity :
 
         // Set initial visibility
         setMenuVisibility(menuVisible)
-        binding.readerChaptersSheet.chaptersBottomSheet.sheetBehavior?.isHideable = !menuVisible
-        if (!menuVisible) binding.readerChaptersSheet.chaptersBottomSheet.sheetBehavior?.hide()
-        val peek = binding.readerChaptersSheet.chaptersBottomSheet.sheetBehavior?.peekHeight ?: 30.dpToPx
+        binding.chaptersSheet.chaptersBottomSheet.sheetBehavior?.isHideable = !menuVisible
+        if (!menuVisible) binding.chaptersSheet.chaptersBottomSheet.sheetBehavior?.hide()
+        // val peek = binding.chaptersSheet.chaptersBottomSheet.sheetBehavior?.peekHeight ?: 30.dpToPx
         binding.readerLayout.doOnApplyWindowInsets { v, insets, _ ->
             sheetManageNavColor = when {
                 insets.isBottomTappable() -> {
@@ -447,13 +436,16 @@ class ReaderActivity :
             binding.toolbar.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 topMargin = insets.systemWindowInsetTop
             }
-            binding.readerChaptersSheet.chaptersBottomSheet.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            binding.chaptersSheet.chaptersBottomSheet.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 leftMargin = insets.systemWindowInsetLeft
                 rightMargin = insets.systemWindowInsetRight
                 height = 280.dpToPx + insets.systemWindowInsetBottom
             }
-            binding.readerChaptersSheet.chaptersBottomSheet.sheetBehavior?.peekHeight = peek + insets.getBottomGestureInsets()
-            binding.readerChaptersSheet.chapterRecycler.updatePaddingRelative(bottom = insets.systemWindowInsetBottom)
+            binding.navLayout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                leftMargin = 6.dpToPx + insets.systemWindowInsetLeft
+                rightMargin = 6.dpToPx + insets.systemWindowInsetRight
+            }
+            binding.chaptersSheet.chapterRecycler.updatePaddingRelative(bottom = insets.systemWindowInsetBottom)
             binding.viewerContainer.requestLayout()
         }
     }
@@ -471,10 +463,10 @@ class ReaderActivity :
             systemUi?.show()
             binding.readerMenu.visible()
 
-            if (binding.readerChaptersSheet.chaptersBottomSheet.sheetBehavior.isExpanded()) {
-                binding.readerChaptersSheet.chaptersBottomSheet.sheetBehavior?.isHideable = false
+            if (binding.chaptersSheet.chaptersBottomSheet.sheetBehavior.isExpanded()) {
+                binding.chaptersSheet.chaptersBottomSheet.sheetBehavior?.isHideable = false
             }
-            if (!binding.readerChaptersSheet.chaptersBottomSheet.sheetBehavior.isExpanded() && sheetManageNavColor) {
+            if (!binding.chaptersSheet.chaptersBottomSheet.sheetBehavior.isExpanded() && sheetManageNavColor) {
                 window.navigationBarColor = Color.TRANSPARENT
             }
             if (animate) {
@@ -489,7 +481,7 @@ class ReaderActivity :
                     )
                     binding.appBar.startAnimation(toolbarAnimation)
                 }
-                binding.readerChaptersSheet.chaptersBottomSheet.sheetBehavior?.collapse()
+                binding.chaptersSheet.chaptersBottomSheet.sheetBehavior?.collapse()
             }
         } else {
             systemUi?.hide()
@@ -504,8 +496,8 @@ class ReaderActivity :
                     }
                 )
                 binding.appBar.startAnimation(toolbarAnimation)
-                BottomSheetBehavior.from(binding.readerChaptersSheet.chaptersBottomSheet).isHideable = true
-                binding.readerChaptersSheet.chaptersBottomSheet.sheetBehavior?.hide()
+                BottomSheetBehavior.from(binding.chaptersSheet.chaptersBottomSheet).isHideable = true
+                binding.chaptersSheet.chaptersBottomSheet.sheetBehavior?.hide()
             } else {
                 binding.readerMenu.gone()
             }
@@ -557,6 +549,7 @@ class ReaderActivity :
             binding.viewerContainer.removeAllViews()
         }
         viewer = newViewer
+        binding.chaptersSheet.doublePage.isVisible = viewer is PagerViewer
         binding.viewerContainer.addView(newViewer.getView())
 
         binding.navigationOverlay.isLTR = !(viewer is L2RPagerViewer)
@@ -570,7 +563,7 @@ class ReaderActivity :
 
         binding.toolbar.title = manga.title
 
-        binding.readerChaptersSheet.pageSeekBar.isRTL = newViewer is R2LPagerViewer
+        binding.readerNav.pageSeekbar.isRTL = newViewer is R2LPagerViewer
 
         binding.pleaseWait.visible()
         binding.pleaseWait.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_in_long))
@@ -631,7 +624,7 @@ class ReaderActivity :
     }
 
     fun refreshChapters() {
-        binding.readerChaptersSheet.chaptersBottomSheet.refreshList()
+        binding.chaptersSheet.chaptersBottomSheet.refreshList()
     }
 
     /**
@@ -649,22 +642,61 @@ class ReaderActivity :
             "${page.number}"
         }
 
-        // Set bottom page number
-        binding.pageNumber.text = "$currentPage/${pages.size}"
-        // Set seekbar page number
-        binding.readerChaptersSheet.pageText.text = "$currentPage / ${pages.size}"
+        val totalPages = pages.size.toString()
 
-        if (!newChapter && binding.readerChaptersSheet.chaptersBottomSheet.shouldCollapse && binding.readerChaptersSheet.chaptersBottomSheet.sheetBehavior.isExpanded()) {
-            binding.readerChaptersSheet.chaptersBottomSheet.sheetBehavior?.collapse()
+        if (viewer is R2LPagerViewer) {
+            binding.readerNav.rightPageText.text = currentPage
+            binding.readerNav.leftPageText.text = totalPages
+        } else {
+            binding.readerNav.leftPageText.text = currentPage
+            binding.readerNav.rightPageText.text = totalPages
         }
-        if (binding.readerChaptersSheet.chaptersBottomSheet.selectedChapterId != page.chapter.chapter.id) {
-            binding.readerChaptersSheet.chaptersBottomSheet.refreshList()
+        if (!newChapter && binding.chaptersSheet.chaptersBottomSheet.shouldCollapse && binding.chaptersSheet.chaptersBottomSheet.sheetBehavior.isExpanded()) {
+            binding.chaptersSheet.chaptersBottomSheet.sheetBehavior?.collapse()
         }
-        binding.readerChaptersSheet.chaptersBottomSheet.shouldCollapse = true
+        if (binding.chaptersSheet.chaptersBottomSheet.selectedChapterId != page.chapter.chapter.id) {
+            binding.chaptersSheet.chaptersBottomSheet.refreshList()
+        }
+        binding.chaptersSheet.chaptersBottomSheet.shouldCollapse = true
 
         // Set seekbar progress
-        binding.readerChaptersSheet.pageSeekBar.max = pages.lastIndex
-        binding.readerChaptersSheet.pageSeekBar.progress = page.index
+        binding.readerNav.pageSeekbar.max = pages.lastIndex
+        binding.readerNav.pageSeekbar.progress = page.index
+    }
+
+    /**
+     * Called from the viewer whenever a [page] is long clicked. A bottom sheet with a list of
+     * actions to perform is shown.
+     */
+    fun onPageLongTap(page: ReaderPage) {
+        val items = listOf(
+            MaterialMenuSheet.MenuSheetItem(
+                0,
+                R.drawable.ic_share_24dp,
+                R.string.share
+            ),
+            MaterialMenuSheet.MenuSheetItem(
+                1,
+                R.drawable.ic_save_24dp,
+                R.string.save
+            ),
+            MaterialMenuSheet.MenuSheetItem(
+                2,
+                R.drawable.ic_photo_24dp,
+                R.string.set_as_cover
+            )
+        )
+        MaterialMenuSheet(this, items) { _, item ->
+            when (item) {
+                0 -> shareImage(page)
+                1 -> saveImage(page)
+                2 -> showSetCoverPrompt(page)
+            }
+            true
+        }.show()
+        if (binding.chaptersSheet.root.sheetBehavior.isExpanded()) {
+            binding.chaptersSheet.root.sheetBehavior?.collapse()
+        }
     }
 
     /**
@@ -922,6 +954,24 @@ class ReaderActivity :
                 .launchIn(scope)
 
             preferences.doublePages().asFlow()
+                .onEach {
+                    binding.chaptersSheet.doublePage.setImageDrawable(
+                        ContextCompat.getDrawable(
+                            this@ReaderActivity,
+                            if (it) R.drawable.ic_book_24dp
+                            else R.drawable.ic_book_open_variant_24dp
+                        )
+                    )
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        binding.chaptersSheet.doublePage.tooltipText =
+                            this@ReaderActivity.getString(
+                                if (it) R.string.single_page
+                                else R.string.double_pages
+                            )
+                    }
+                }
+                .launchIn(scope)
+            preferences.doublePages().asFlow()
                 .drop(1)
                 .onEach {
                     invalidateOptionsMenu()
@@ -929,7 +979,7 @@ class ReaderActivity :
                         config.doublePages = it
                     }
                     val currentChapter = presenter.getCurrentChapter()
-                    val page = currentChapter?.pages?.getOrNull(binding.readerChaptersSheet.pageSeekBar.progress)
+                    val page = currentChapter?.pages?.getOrNull(binding.readerNav.pageSeekbar.progress)
                     presenter.viewerChapters?.let {
                         (viewer as? PagerViewer)?.setChaptersDoubleShift(it)
                         page?.let {

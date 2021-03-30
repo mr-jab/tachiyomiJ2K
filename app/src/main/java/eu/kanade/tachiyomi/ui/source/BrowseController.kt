@@ -24,7 +24,7 @@ import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.getOrDefault
-import eu.kanade.tachiyomi.databinding.SourceControllerBinding
+import eu.kanade.tachiyomi.databinding.BrowseControllerBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
@@ -54,17 +54,6 @@ import eu.kanade.tachiyomi.util.view.updateLayoutParams
 import eu.kanade.tachiyomi.util.view.updatePaddingRelative
 import eu.kanade.tachiyomi.util.view.withFadeTransaction
 import kotlinx.android.parcel.Parcelize
-import kotlinx.android.synthetic.main.extensions_bottom_sheet.*
-import kotlinx.android.synthetic.main.extensions_bottom_sheet.ext_bottom_sheet
-import kotlinx.android.synthetic.main.extensions_bottom_sheet.sheet_layout
-import kotlinx.android.synthetic.main.extensions_bottom_sheet.view.*
-import kotlinx.android.synthetic.main.filter_bottom_sheet.*
-import kotlinx.android.synthetic.main.library_list_controller.*
-import kotlinx.android.synthetic.main.main_activity.*
-import kotlinx.android.synthetic.main.recycler_with_scroller.view.*
-import kotlinx.android.synthetic.main.rounded_category_hopper.*
-import kotlinx.android.synthetic.main.source_controller.*
-import kotlinx.android.synthetic.main.source_controller.shadow2
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import kotlin.math.max
@@ -76,8 +65,8 @@ import kotlin.math.min
  * [SourceAdapter.SourceListener] call function data on browse item click.
  * [SourceAdapter.OnLatestClickListener] call function data on latest item click
  */
-class SourceController :
-    NucleusController<SourceControllerBinding, SourcePresenter>(),
+class BrowseController :
+    NucleusController<BrowseControllerBinding, SourcePresenter>(),
     FlexibleAdapter.OnItemClickListener,
     SourceAdapter.SourceListener,
     RootSearchInterface,
@@ -112,70 +101,60 @@ class SourceController :
     override fun getTitle(): String? {
         return if (showingExtensions) {
             view?.context?.getString(
-                when (ext_bottom_sheet.tabs.selectedTabPosition) {
+                when (binding.bottomSheet.tabs.selectedTabPosition) {
                     0 -> R.string.extensions
                     else -> R.string.source_migration
                 }
             )
-        } else view?.context?.getString(R.string.sources)
+        } else view?.context?.getString(R.string.browse)
     }
 
     override fun createPresenter(): SourcePresenter {
         return SourcePresenter()
     }
 
-    /**
-     * Initiate the view with [R.layout.source_controller].
-     *
-     * @param inflater used to load the layout xml.
-     * @param container containing parent views.
-     * @return inflated view.
-     */
-    override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        return inflater.inflate(R.layout.source_controller, container, false)
-    }
+    override fun createBinding(inflater: LayoutInflater) = BrowseControllerBinding.inflate(inflater)
 
     override fun onViewCreated(view: View) {
         super.onViewCreated(view)
 
         adapter = SourceAdapter(this)
 
-        // Create recycler and set adapter.
-        recycler.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(view.context)
-        recycler.adapter = adapter
+        // Create binding.recycler and set adapter.
+        binding.recycler.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(view.context)
+        binding.recycler.adapter = adapter
         adapter?.isSwipeEnabled = true
-        // recycler.addItemDecoration(SourceDividerItemDecoration(view.context))
+        // binding.recycler.addItemDecoration(SourceDividerItemDecoration(view.context))
         val attrsArray = intArrayOf(android.R.attr.actionBarSize)
         val array = view.context.obtainStyledAttributes(attrsArray)
         val appBarHeight = array.getDimensionPixelSize(0, 0)
         array.recycle()
         scrollViewWith(
-            recycler,
+            binding.recycler,
             afterInsets = {
                 headerHeight = it.systemWindowInsetTop + appBarHeight
-                recycler.updatePaddingRelative(bottom = activity?.bottom_nav?.height ?: 0)
+                binding.recycler.updatePaddingRelative(bottom = activityBinding?.bottomNav?.height ?: 0)
             },
             onBottomNavUpdate = {
                 setBottomPadding()
             }
         )
 
-        recycler?.post {
-            setBottomSheetTabs(if (ext_bottom_sheet?.sheetBehavior.isCollapsed()) 0f else 1f)
+        binding.recycler.post {
+            setBottomSheetTabs(if (binding.bottomSheet.root.sheetBehavior.isCollapsed()) 0f else 1f)
         }
 
         requestPermissionsSafe(arrayOf(WRITE_EXTERNAL_STORAGE), 301)
-        ext_bottom_sheet.onCreate(this)
+        binding.bottomSheet.root.onCreate(this)
 
-        ext_bottom_sheet.sheetBehavior?.addBottomSheetCallback(
+        binding.bottomSheet.root.sheetBehavior?.addBottomSheetCallback(
             object : BottomSheetBehavior
             .BottomSheetCallback() {
                 override fun onSlide(bottomSheet: View, progress: Float) {
-                    val recycler = recycler ?: return
-                    shadow2?.alpha = (1 - max(0f, progress)) * 0.25f
+                    binding.shadow2.alpha = (1 - max(0f, progress)) * 0.25f
                     activityBinding?.appBar?.elevation = min(
                         (1f - progress) * 15f,
-                        if (recycler.canScrollVertically(-1)) 15f else 0f
+                        if (binding.recycler.canScrollVertically(-1)) 15f else 0f
                     )
                     activityBinding?.appBar?.y = max(activityBinding!!.appBar.y, -headerHeight * (1 - progress))
                     val oldShow = showingExtensions
@@ -188,7 +167,10 @@ class SourceController :
                 }
 
                 override fun onStateChanged(p0: View, state: Int) {
-                    val extBottomSheet = ext_bottom_sheet ?: return
+                    if (state == BottomSheetBehavior.STATE_SETTLING) {
+                        binding.bottomSheet.root.updatedNestedRecyclers()
+                    }
+                    val extBottomSheet = binding.bottomSheet.root
                     if (state == BottomSheetBehavior.STATE_EXPANDED) {
                         activityBinding?.appBar?.y = 0f
                     }
@@ -206,8 +188,8 @@ class SourceController :
                     retainViewMode = if (state == BottomSheetBehavior.STATE_EXPANDED) {
                         RetainViewMode.RETAIN_DETACH
                     } else RetainViewMode.RELEASE_DETACH
-                    sheet_layout.isClickable = state == BottomSheetBehavior.STATE_COLLAPSED
-                    sheet_layout.isFocusable = state == BottomSheetBehavior.STATE_COLLAPSED
+                    binding.bottomSheet.sheetLayout.isClickable = state == BottomSheetBehavior.STATE_COLLAPSED
+                    binding.bottomSheet.sheetLayout.isFocusable = state == BottomSheetBehavior.STATE_COLLAPSED
                     if (state == BottomSheetBehavior.STATE_COLLAPSED || state == BottomSheetBehavior.STATE_EXPANDED) {
                         setBottomSheetTabs(if (state == BottomSheetBehavior.STATE_COLLAPSED) 0f else 1f)
                     }
@@ -216,7 +198,7 @@ class SourceController :
         )
 
         if (showingExtensions) {
-            ext_bottom_sheet.sheetBehavior?.expand()
+            binding.bottomSheet.root.sheetBehavior?.expand()
         }
     }
 
@@ -226,22 +208,22 @@ class SourceController :
     }
 
     fun setBottomSheetTabs(progress: Float) {
-        val bottomSheet = ext_bottom_sheet ?: return
-        ext_bottom_sheet.tabs.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+        val bottomSheet = binding.bottomSheet.root
+        binding.bottomSheet.tabs.updateLayoutParams<ViewGroup.MarginLayoutParams> {
             topMargin = ((activityBinding?.appBar?.height?.minus(9f.dpToPx) ?: 0f) * progress).toInt()
         }
         val selectedColor = ColorUtils.setAlphaComponent(
-            ContextCompat.getColor(ext_bottom_sheet.tabs.context, R.color.colorAccent),
+            ContextCompat.getColor(binding.bottomSheet.tabs.context, R.color.colorAccent),
             (progress * 255).toInt()
         )
         val unselectedColor = ColorUtils.setAlphaComponent(
             bottomSheet.context.getResourceColor(R.attr.colorOnBackground),
             153
         )
-        ext_bottom_sheet.sheet_layout.elevation = progress * 5
-        ext_bottom_sheet.pager.alpha = progress * 10
-        ext_bottom_sheet.tabs.setSelectedTabIndicatorColor(selectedColor)
-        ext_bottom_sheet.tabs.setTabTextColors(
+        binding.bottomSheet.sheetLayout.elevation = progress * 5
+        binding.bottomSheet.pager.alpha = progress * 10
+        binding.bottomSheet.tabs.setSelectedTabIndicatorColor(selectedColor)
+        binding.bottomSheet.tabs.setTabTextColors(
             ColorUtils.blendARGB(
                 bottomSheet.context.getResourceColor(R.attr.actionBarTintColor),
                 unselectedColor,
@@ -254,7 +236,7 @@ class SourceController :
             )
         )
 
-        ext_bottom_sheet.sheet_layout.backgroundTintList = ColorStateList.valueOf(
+        binding.bottomSheet.sheetLayout.backgroundTintList = ColorStateList.valueOf(
             ColorUtils.blendARGB(
                 bottomSheet.context.getResourceColor(R.attr.colorPrimaryVariant),
                 bottomSheet.context.getResourceColor(R.attr.colorSecondary),
@@ -264,43 +246,42 @@ class SourceController :
     }
 
     private fun setBottomPadding() {
-        val bottomBar = activity?.bottom_nav ?: return
-        ext_bottom_sheet ?: return
+        val bottomBar = activityBinding?.bottomNav ?: return
         val pad = bottomBar.translationY - bottomBar.height
         val padding = max(
             (-pad).toInt(),
-            if (ext_bottom_sheet.sheetBehavior.isExpanded()) 0 else {
+            if (binding.bottomSheet.root.sheetBehavior.isExpanded()) 0 else {
                 view?.rootWindowInsets?.systemWindowInsetBottom ?: 0
             }
         )
-        shadow2.translationY = pad
-        ext_bottom_sheet.sheetBehavior?.peekHeight = 58.spToPx + padding
-        ext_bottom_sheet.extensionFrameLayout.fast_scroller.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+        binding.shadow2.translationY = pad
+        binding.bottomSheet.root.sheetBehavior?.peekHeight = 58.spToPx + padding
+        binding.bottomSheet.root.extensionFrameLayout.fastScroller.updateLayoutParams<ViewGroup.MarginLayoutParams> {
             bottomMargin = -pad.toInt()
         }
-        ext_bottom_sheet.migrationFrameLayout.fast_scroller.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+        binding.bottomSheet.root.migrationFrameLayout.fastScroller.updateLayoutParams<ViewGroup.MarginLayoutParams> {
             bottomMargin = -pad.toInt()
         }
     }
 
     override fun showSheet() {
-        ext_bottom_sheet.sheetBehavior?.expand()
+        binding.bottomSheet.root.sheetBehavior?.expand()
     }
 
     override fun toggleSheet() {
-        if (!ext_bottom_sheet.sheetBehavior.isCollapsed()) {
-            ext_bottom_sheet.sheetBehavior?.collapse()
+        if (!binding.bottomSheet.root.sheetBehavior.isCollapsed()) {
+            binding.bottomSheet.root.sheetBehavior?.collapse()
         } else {
-            ext_bottom_sheet.sheetBehavior?.expand()
+            binding.bottomSheet.root.sheetBehavior?.expand()
         }
     }
 
-    override fun sheetIsExpanded(): Boolean = ext_bottom_sheet.sheetBehavior.isExpanded()
+    override fun sheetIsExpanded(): Boolean = binding.bottomSheet.root.sheetBehavior.isExpanded()
 
     override fun handleSheetBack(): Boolean {
-        if (!ext_bottom_sheet.sheetBehavior.isCollapsed()) {
-            if (ext_bottom_sheet.canGoBack()) {
-                ext_bottom_sheet.sheetBehavior?.collapse()
+        if (!binding.bottomSheet.root.sheetBehavior.isCollapsed()) {
+            if (binding.bottomSheet.root.canGoBack()) {
+                binding.bottomSheet.root.sheetBehavior?.collapse()
             }
             return true
         }
@@ -315,20 +296,20 @@ class SourceController :
     override fun onChangeStarted(handler: ControllerChangeHandler, type: ControllerChangeType) {
         super.onChangeStarted(handler, type)
         if (!type.isPush) {
-            ext_bottom_sheet.updateExtTitle()
-            ext_bottom_sheet.presenter.refreshExtensions()
+            binding.bottomSheet.root.updateExtTitle()
+            binding.bottomSheet.root.presenter.refreshExtensions()
             presenter.updateSources()
         }
         if (!type.isEnter) {
-            ext_bottom_sheet.canExpand = false
+            binding.bottomSheet.root.canExpand = false
             activityBinding?.appBar?.elevation =
                 when {
-                    ext_bottom_sheet.sheetBehavior.isExpanded() -> 0f
-                    recycler.canScrollVertically(-1) -> 15f
+                    binding.bottomSheet.root.sheetBehavior.isExpanded() -> 0f
+                    binding.recycler.canScrollVertically(-1) -> 15f
                     else -> 0f
                 }
         } else {
-            ext_bottom_sheet.presenter.refreshMigrations()
+            binding.bottomSheet.root.presenter.refreshMigrations()
         }
         setBottomPadding()
     }
@@ -336,15 +317,15 @@ class SourceController :
     override fun onChangeEnded(handler: ControllerChangeHandler, type: ControllerChangeType) {
         super.onChangeEnded(handler, type)
         if (type.isEnter) {
-            ext_bottom_sheet.canExpand = true
+            binding.bottomSheet.root.canExpand = true
             setBottomPadding()
         }
     }
 
     override fun onActivityResumed(activity: Activity) {
         super.onActivityResumed(activity)
-        ext_bottom_sheet?.presenter?.refreshExtensions()
-        ext_bottom_sheet?.presenter?.refreshMigrations()
+        binding.bottomSheet.root.presenter.refreshExtensions()
+        binding.bottomSheet.root.presenter.refreshMigrations()
         setBottomPadding()
     }
 
@@ -364,7 +345,7 @@ class SourceController :
         presenter.updateSources()
 
         snackbar = view?.snack(R.string.source_hidden, Snackbar.LENGTH_INDEFINITE) {
-            anchorView = ext_bottom_sheet
+            anchorView = binding.bottomSheet.root
             setAction(R.string.undo) {
                 val newCurrent = preferences.hiddenSources().get()
                 preferences.hiddenSources().set(newCurrent - source.id.toString())
@@ -412,8 +393,8 @@ class SourceController :
     }
 
     override fun expandSearch() {
-        if (showingExtensions) ext_bottom_sheet.sheetBehavior?.collapse()
-        else activity?.toolbar?.menu?.findItem(R.id.action_search)?.expandActionView()
+        if (showingExtensions) binding.bottomSheet.root.sheetBehavior?.collapse()
+        else activityBinding?.toolbar?.menu?.findItem(R.id.action_search)?.expandActionView()
     }
 
     /**
@@ -425,7 +406,7 @@ class SourceController :
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         if (onRoot) (activity as? MainActivity)?.setDismissIcon(showingExtensions)
         if (showingExtensions) {
-            if (ext_bottom_sheet.tabs.selectedTabPosition == 0) {
+            if (binding.bottomSheet.tabs.selectedTabPosition == 0) {
                 // Inflate menu
                 inflater.inflate(R.menu.extension_main, menu)
 
@@ -439,7 +420,7 @@ class SourceController :
                 // Create query listener which opens the global search view.
                 setOnQueryTextChangeListener(searchView) {
                     extQuery = it ?: ""
-                    ext_bottom_sheet.drawExtensions()
+                    binding.bottomSheet.root.drawExtensions()
                     true
                 }
             } else {

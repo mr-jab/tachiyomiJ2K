@@ -6,7 +6,6 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
 import com.jakewharton.rxbinding.support.v7.widget.queryTextChangeEvents
 import eu.kanade.tachiyomi.R
@@ -15,11 +14,10 @@ import eu.kanade.tachiyomi.databinding.SourceGlobalSearchControllerBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.manga.MangaDetailsController
+import eu.kanade.tachiyomi.util.view.activityBinding
 import eu.kanade.tachiyomi.util.view.scrollViewWith
 import eu.kanade.tachiyomi.util.view.updatePaddingRelative
 import eu.kanade.tachiyomi.util.view.withFadeTransaction
-import kotlinx.android.synthetic.main.main_activity.*
-import kotlinx.android.synthetic.main.source_global_search_controller.*
 
 /**
  * This controller shows and manages the different search result in global search.
@@ -46,16 +44,7 @@ open class GlobalSearchController(
         setHasOptionsMenu(true)
     }
 
-    /**
-     * Initiate the view with [R.layout.source_global_search_controller].
-     *
-     * @param inflater used to load the layout xml.
-     * @param container containing parent views.
-     * @return inflated view
-     */
-    override fun inflateView(inflater: LayoutInflater, container: ViewGroup): android.view.View {
-        return inflater.inflate(R.layout.source_global_search_controller, container, false)
-    }
+    override fun createBinding(inflater: LayoutInflater) = SourceGlobalSearchControllerBinding.inflate(inflater)
 
     /**
      * Set the title of controller.
@@ -142,15 +131,15 @@ open class GlobalSearchController(
         super.onViewCreated(view)
         adapter = GlobalSearchAdapter(this)
 
-        recycler.updatePaddingRelative(
-            top = (activity?.toolbar?.height ?: 0) +
+        binding.recycler.updatePaddingRelative(
+            top = (activityBinding?.toolbar?.height ?: 0) +
                 (activity?.window?.decorView?.rootWindowInsets?.systemWindowInsetTop ?: 0)
         )
 
         // Create recycler and set adapter.
-        recycler.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(view.context)
-        recycler.adapter = adapter
-        scrollViewWith(recycler, padBottom = true)
+        binding.recycler.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(view.context)
+        binding.recycler.adapter = adapter
+        scrollViewWith(binding.recycler, padBottom = true)
         if (extensionFilter != null) {
             customTitle = view.context?.getString(R.string.loading)
             setTitle()

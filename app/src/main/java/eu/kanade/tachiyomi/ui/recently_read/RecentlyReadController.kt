@@ -7,7 +7,6 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import eu.davidea.flexibleadapter.FlexibleAdapter
@@ -26,7 +25,6 @@ import eu.kanade.tachiyomi.util.view.RecyclerWindowInsetsListener
 import eu.kanade.tachiyomi.util.view.scrollViewWith
 import eu.kanade.tachiyomi.util.view.setOnQueryTextChangeListener
 import eu.kanade.tachiyomi.util.view.withFadeTransaction
-import kotlinx.android.synthetic.main.recently_read_controller.*
 
 /**
  * Fragment that shows recently read manga.
@@ -66,9 +64,7 @@ class RecentlyReadController(bundle: Bundle? = null) :
         return resources?.getString(R.string.history)
     }
 
-    override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        return inflater.inflate(R.layout.recently_read_controller, container, false)
-    }
+    override fun createBinding(inflater: LayoutInflater) = RecentlyReadControllerBinding.inflate(inflater)
 
     /**
      * Called when view is created
@@ -80,12 +76,12 @@ class RecentlyReadController(bundle: Bundle? = null) :
         // view.applyWindowInsetsForController()
         // Initialize adapter
         adapter = RecentlyReadAdapter(this)
-        recycler.adapter = adapter
-        recycler.layoutManager = LinearLayoutManager(view.context)
-        recycler.setHasFixedSize(true)
-        recycler.setOnApplyWindowInsetsListener(RecyclerWindowInsetsListener)
+        binding.recycler.adapter = adapter
+        binding.recycler.layoutManager = LinearLayoutManager(view.context)
+        binding.recycler.setHasFixedSize(true)
+        binding.recycler.setOnApplyWindowInsetsListener(RecyclerWindowInsetsListener)
         resetProgressItem()
-        scrollViewWith(recycler, padBottom = true)
+        scrollViewWith(binding.recycler, padBottom = true)
 
         if (recentItems != null) {
             adapter?.updateDataSet(recentItems!!.toList())
@@ -132,9 +128,9 @@ class RecentlyReadController(bundle: Bundle? = null) :
 
     override fun onUpdateEmptyView(size: Int) {
         if (size > 0) {
-            empty_view?.hide()
+            binding.emptyView.hide()
         } else {
-            empty_view.show(
+            binding.emptyView.show(
                 R.drawable.ic_history_24dp,
                 R.string
                     .no_recently_read_manga

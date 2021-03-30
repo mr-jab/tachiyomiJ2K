@@ -4,7 +4,6 @@ import android.app.Activity
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -28,9 +27,6 @@ import eu.kanade.tachiyomi.util.view.scrollViewWith
 import eu.kanade.tachiyomi.util.view.setStyle
 import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.util.view.withFadeTransaction
-import kotlinx.android.synthetic.main.download_bottom_sheet.*
-import kotlinx.android.synthetic.main.recent_chapters_controller.*
-import kotlinx.android.synthetic.main.recent_chapters_controller.empty_view
 import timber.log.Timber
 
 /**
@@ -60,9 +56,7 @@ class RecentChaptersController(bundle: Bundle? = null) :
         return resources?.getString(R.string.recent_updates)
     }
 
-    override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        return inflater.inflate(R.layout.recent_chapters_controller, container, false)
-    }
+    override fun createBinding(inflater: LayoutInflater) = RecentChaptersControllerBinding.inflate(inflater)
 
     /**
      * Called when view is created
@@ -75,29 +69,29 @@ class RecentChaptersController(bundle: Bundle? = null) :
         view.context.notificationManager.cancel(Notifications.ID_NEW_CHAPTERS)
         // Init RecyclerView and adapter
         val layoutManager = LinearLayoutManager(view.context)
-        recycler.layoutManager = layoutManager
-        recycler.addItemDecoration(DividerItemDecoration(view.context, DividerItemDecoration.VERTICAL))
-        recycler.setHasFixedSize(true)
+        binding.recycler.layoutManager = layoutManager
+        binding.recycler.addItemDecoration(DividerItemDecoration(view.context, DividerItemDecoration.VERTICAL))
+        binding.recycler.setHasFixedSize(true)
         adapter = RecentChaptersAdapter(this@RecentChaptersController)
-        recycler.adapter = adapter
+        binding.recycler.adapter = adapter
 
         adapter?.isSwipeEnabled = true
         adapter?.itemTouchHelperCallback?.setSwipeFlags(
             ItemTouchHelper.LEFT
         )
         if (presenter.chapters.isNotEmpty()) adapter?.updateDataSet(presenter.chapters.toList())
-        swipe_refresh.setStyle()
-        swipe_refresh.setDistanceToTriggerSync((2 * 64 * view.resources.displayMetrics.density).toInt())
-        swipe_refresh.setOnRefreshListener {
+        binding.swipeRefresh.setStyle()
+        binding.swipeRefresh.setDistanceToTriggerSync((2 * 64 * view.resources.displayMetrics.density).toInt())
+        binding.swipeRefresh.setOnRefreshListener {
             if (!LibraryUpdateService.isRunning()) {
                 LibraryUpdateService.start(view.context)
                 snack = view.snack(R.string.updating_library)
             }
             // It can be a very long operation, so we disable swipe refresh and show a snackbar.
-            swipe_refresh.isRefreshing = false
+            binding.swipeRefresh.isRefreshing = false
         }
 
-        scrollViewWith(recycler, swipeRefreshLayout = swipe_refresh, padBottom = true)
+        scrollViewWith(binding.recycler, swipeRefreshLayout = binding.swipeRefresh, padBottom = true)
 
         presenter.onCreate()
     }
@@ -117,7 +111,6 @@ class RecentChaptersController(bundle: Bundle? = null) :
         super.onActivityResumed(activity)
         if (view != null) {
             refresh()
-            dl_bottom_sheet?.update()
         }
     }
 
@@ -157,15 +150,15 @@ class RecentChaptersController(bundle: Bundle? = null) :
     fun updateChapterDownload(download: Download) {
         if (view == null) return
         val id = download.chapter.id ?: return
-        val holder = recycler.findViewHolderForItemId(id) as? RecentChapterHolder ?: return
+        val holder = binding.recycler.findViewHolderForItemId(id) as? RecentChapterHolder ?: return
         holder.notifyStatus(download.status, download.progress)
     }
 
     override fun onUpdateEmptyView(size: Int) {
         if (size > 0) {
-            empty_view?.hide()
+            binding.emptyView.hide()
         } else {
-            empty_view?.show(R.drawable.ic_update_24dp, R.string.no_recent_chapters)
+            binding.emptyView.show(R.drawable.ic_update_24dp, R.string.no_recent_chapters)
         }
     }
 
@@ -173,7 +166,7 @@ class RecentChaptersController(bundle: Bundle? = null) :
     override fun shouldMoveItem(fromPosition: Int, toPosition: Int) = true
 
     override fun onActionStateChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
-        swipe_refresh.isEnabled = actionState != ItemTouchHelper.ACTION_STATE_SWIPE
+        binding.swipeRefresh.isEnabled = actionState != ItemTouchHelper.ACTION_STATE_SWIPE
     }
 
     /**
@@ -189,7 +182,7 @@ class RecentChaptersController(bundle: Bundle? = null) :
      * @param download [Download] object containing download progress.
      */
     private fun getHolder(download: Download): RecentChapterHolder? {
-        return recycler?.findViewHolderForItemId(download.chapter.id!!) as? RecentChapterHolder
+        return binding.recycler.findViewHolderForItemId(download.chapter.id!!) as? RecentChapterHolder
     }
 
     /**

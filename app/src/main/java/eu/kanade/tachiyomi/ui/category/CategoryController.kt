@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.ui.category
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
@@ -18,7 +17,6 @@ import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.liftAppbarWith
 import eu.kanade.tachiyomi.util.view.snack
-import kotlinx.android.synthetic.main.categories_controller.*
 
 /**
  * Controller to manage the categories for the users' library.
@@ -51,15 +49,7 @@ class CategoryController(bundle: Bundle? = null) :
         return resources?.getString(R.string.edit_categories)
     }
 
-    /**
-     * Returns the view of this controller.
-     *
-     * @param inflater The layout inflater to create the view from XML.
-     * @param container The parent view for this one.
-     */
-    override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        return inflater.inflate(R.layout.categories_controller, container, false)
-    }
+    override fun createBinding(inflater: LayoutInflater) = CategoriesControllerBinding.inflate(inflater)
 
     /**
      * Called after view inflation. Used to initialize the view.
@@ -68,12 +58,12 @@ class CategoryController(bundle: Bundle? = null) :
      */
     override fun onViewCreated(view: View) {
         super.onViewCreated(view)
-        liftAppbarWith(recycler)
+        liftAppbarWith(binding.recycler)
 
         adapter = CategoryAdapter(this@CategoryController)
-        recycler.layoutManager = LinearLayoutManager(view.context)
-        recycler.setHasFixedSize(true)
-        recycler.adapter = adapter
+        binding.recycler.layoutManager = LinearLayoutManager(view.context)
+        binding.recycler.setHasFixedSize(true)
+        binding.recycler.adapter = adapter
         adapter?.isHandleDragEnabled = true
         adapter?.isPermanentDelete = false
 

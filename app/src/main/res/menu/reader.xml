@@ -3,39 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_display_settings"
-        android:icon="@drawable/ic_tune_24dp"
-        android:title="@string/display_options"
-        app:showAsAction="ifRoom" />
-
-    <item
         android:id="@+id/action_shift_double_page"
         android:icon="@drawable/ic_page_next_outline_24dp"
         android:title="@string/shift_one_page_over"
         app:showAsAction="ifRoom" />
-
-    <item
-        android:id="@+id/action_share_page"
-        android:icon="@drawable/ic_share_24dp"
-        android:title="@string/share_page"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_save_page"
-        android:icon="@drawable/ic_save_24dp"
-        android:title="@string/save_page"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_set_page_as_cover"
-        android:icon="@drawable/ic_photo_24dp"
-        android:title="@string/set_page_as_cover"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_reader_settings"
-        android:icon="@drawable/ic_settings_24dp"
-        android:title="@string/reader_settings"
-        app:showAsAction="never" />
-
 </menu>
