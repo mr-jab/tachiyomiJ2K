@@ -182,6 +182,11 @@ class SettingsReaderController : SettingsController() {
                 defaultValue = 1
             }
             switchPreference {
+                key = Keys.doublePages
+                titleRes = R.string.double_pages
+                defaultValue = false
+            }
+            switchPreference {
                 key = Keys.cropBorders
                 titleRes = R.string.crop_borders
                 defaultValue = false
