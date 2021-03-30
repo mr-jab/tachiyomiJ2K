@@ -60,6 +60,7 @@ import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.hasSideNavBar
 import eu.kanade.tachiyomi.util.system.isBottomTappable
+import eu.kanade.tachiyomi.util.system.isLTR
 import eu.kanade.tachiyomi.util.system.launchUI
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.toast
@@ -643,7 +644,7 @@ class ReaderActivity :
         }
 
         val totalPages = pages.size.toString()
-
+        binding.pageNumber.text = if (resources.isLTR) "$currentPage/$totalPages" else "$totalPages/$currentPage"
         if (viewer is R2LPagerViewer) {
             binding.readerNav.rightPageText.text = currentPage
             binding.readerNav.leftPageText.text = totalPages
