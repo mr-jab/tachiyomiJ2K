@@ -1013,9 +1013,11 @@ class ReaderActivity :
             preferences.doublePages().asFlow()
                 .drop(1)
                 .onEach {
-                    invalidateOptionsMenu()
                     (viewer as? PagerViewer)?.config?.let { config ->
                         config.doublePages = it
+                        if (it) {
+                            config.shiftDoublePage = binding.readerNav.pageSeekbar.progress % 2 != 0
+                        }
                     }
                     val currentChapter = presenter.getCurrentChapter()
                     val page = currentChapter?.pages?.getOrNull(binding.readerNav.pageSeekbar.progress)
@@ -1025,6 +1027,7 @@ class ReaderActivity :
                             viewer?.moveToPage(page, false)
                         }
                     }
+                    invalidateOptionsMenu()
                 }
                 .launchIn(scope)
         }

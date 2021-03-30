@@ -101,7 +101,6 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
 
         var currentPage = joinedItems.getOrNull(viewer.pager.currentItem)
         setJoinedItems(chapters.currChapter, (currentPage?.second ?: currentPage?.first) as? ReaderPage)
-        currentPage = joinedItems.getOrNull(viewer.pager.currentItem)
         (currentPage?.first as? ReaderPage)?.let {
             viewer.moveToPage(it, false)
         }
