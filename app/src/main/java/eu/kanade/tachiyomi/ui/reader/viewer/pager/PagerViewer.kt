@@ -251,6 +251,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
             moveToPage(pages[chapters.currChapter.requestedPage])
             pager.visible()
         }
+        activity.invalidateOptionsMenu()
     }
 
     /**
