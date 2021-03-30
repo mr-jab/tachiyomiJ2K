@@ -638,7 +638,7 @@ class ReaderActivity :
         val pages = page.chapter.pages ?: return
 
         val currentPage = if (hasExtraPage) {
-            "${page.number}-${page.number + 1}"
+            if (resources.isLTR) "${page.number}-${page.number + 1}" else "${page.number + 1}-${page.number}"
         } else {
             "${page.number}"
         }
