@@ -27,7 +27,6 @@ class ReaderPagedView @JvmOverloads constructor(context: Context, attrs: Attribu
         binding.pagerNav.bindToPreference(preferences.navigationModePager())
         binding.pagerInvert.bindToPreference(preferences.pagerNavInverted())
         binding.extendPastCutout.bindToPreference(preferences.pagerCutoutBehavior())
-        binding.doublePage.bindToPreference(preferences.doublePages())
 
         val mangaViewer = (context as? ReaderActivity)?.presenter?.getMangaViewer() ?: 0
         val isWebtoonView = mangaViewer == ReaderActivity.WEBTOON || mangaViewer == ReaderActivity.VERTICAL_PLUS
@@ -50,7 +49,7 @@ class ReaderPagedView @JvmOverloads constructor(context: Context, attrs: Attribu
     }
 
     private fun updatePagedGroup(show: Boolean) {
-        listOf(binding.scaleType, binding.zoomStart, binding.cropBorders, binding.pageTransitions, binding.pagerNav, binding.pagerInvert, binding.doublePage).forEach { it.visibleIf(show) }
+        listOf(binding.scaleType, binding.zoomStart, binding.cropBorders, binding.pageTransitions, binding.pagerNav, binding.pagerInvert).forEach { it.visibleIf(show) }
         listOf(binding.cropBordersWebtoon, binding.webtoonSidePadding, binding.webtoonEnableZoomOut, binding.webtoonNav, binding.webtoonInvert).forEach { it.visibleIf(!show) }
         val isFullFit = when (preferences.imageScaleType().get()) {
             SubsamplingScaleImageView.SCALE_TYPE_FIT_HEIGHT,

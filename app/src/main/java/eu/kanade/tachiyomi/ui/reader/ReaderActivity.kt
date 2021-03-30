@@ -958,7 +958,7 @@ class ReaderActivity :
                     binding.chaptersSheet.doublePage.setImageDrawable(
                         ContextCompat.getDrawable(
                             this@ReaderActivity,
-                            if (it) R.drawable.ic_book_24dp
+                            if (it) R.drawable.ic_single_page_24dp
                             else R.drawable.ic_book_open_variant_24dp
                         )
                     )

@@ -107,9 +107,11 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
         }
         pager.longTapListener = f@{
             if (activity.menuVisible || config.longTapEnabled) {
-                val item = adapter.items.getOrNull(pager.currentItem)
-                if (item is ReaderPage) {
-                    activity.onPageLongTap(item)
+                val item = adapter.joinedItems.getOrNull(pager.currentItem)
+                val firstPage = item?.first as? ReaderPage
+                val secondPage = item?.second as? ReaderPage
+                if (firstPage is ReaderPage) {
+                    activity.onPageLongTap(firstPage)
                     return@f true
                 }
             }
