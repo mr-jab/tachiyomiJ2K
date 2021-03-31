@@ -301,8 +301,8 @@
     <string name="webtoon_style">webtoon style</string>
     <string name="next_page">Next page</string>
     <string name="previous_page">Previous page</string>
-    <string name="next_chapter">Next page</string>
-    <string name="previous_chapter">Previous page</string>
+    <string name="next_chapter">Next chapter</string>
+    <string name="previous_chapter">Previous chapter</string>
 
     <string name="set_first_page_as_cover">Set first page as cover</string>
     <string name="share_first_page">Share first page</string>
@@ -620,7 +620,7 @@
     <string name="saves_error_logs">Saves error logs to a file for sharing with the developers</string>
     <string name="crash_log_saved">Crash logs saved</string>
     <string name="network">Network</string>
-    <string name="dns_over_https" translatable="false">DNS over HTTPS (Cloudflare)</string>
+    <string name="dns_over_https">DNS over HTTPS (Cloudflare)</string>
     <string name="requires_app_restart">Requires app restart to take effect</string>
     <string name="used_">Used: %1$s</string>
     <plurals name="cache_cleared">
@@ -848,6 +848,7 @@
     <string name="picture_saved">Picture saved</string>
     <string name="pin">Pin</string>
     <string name="pinned">Pinned</string>
+    <string name="preview">Preview</string>
     <string name="previous">Previous</string>
     <string name="refresh">Refresh</string>
     <string name="refreshing">Refreshing</string>

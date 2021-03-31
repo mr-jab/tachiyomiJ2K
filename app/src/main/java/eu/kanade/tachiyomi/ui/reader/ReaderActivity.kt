@@ -25,6 +25,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.view.isVisible
+import androidx.core.view.GestureDetectorCompat
 import com.afollestad.materialdialogs.MaterialDialog
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -68,6 +69,7 @@ import eu.kanade.tachiyomi.util.view.collapse
 import eu.kanade.tachiyomi.util.view.doOnApplyWindowInsets
 import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.hide
+import eu.kanade.tachiyomi.util.view.isCollapsed
 import eu.kanade.tachiyomi.util.view.isExpanded
 import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.util.view.updateLayoutParams
@@ -373,6 +375,7 @@ class ReaderActivity :
     /**
      * Initializes the reader menu. It sets up click listeners and the initial visibility.
      */
+    @SuppressLint("ClickableViewAccessibility")
     private fun initializeMenu() {
         // Set binding.toolbar
         setSupportActionBar(binding.toolbar)
@@ -396,6 +399,52 @@ class ReaderActivity :
 
         binding.chaptersSheet.doublePage.setOnClickListener {
             preferences.doublePages().set(!preferences.doublePages().get())
+        }
+        binding.readerNav.leftChapter.setOnClickListener {
+            if (viewer is R2LPagerViewer) {
+                presenter.loadNextChapter()
+            } else {
+                presenter.loadPreviousChapter()
+            }
+        }
+
+        binding.readerNav.rightChapter.setOnClickListener {
+            if (viewer !is R2LPagerViewer) {
+                presenter.loadNextChapter()
+            } else {
+                presenter.loadPreviousChapter()
+            }
+        }
+
+        val readerNavGestureDetector = ReaderNavGestureDetector(this)
+        val gestureDetector = GestureDetectorCompat(this, readerNavGestureDetector)
+        with(binding.readerNav) {
+            listOf(root, leftChapter, rightChapter, pageSeekbar).forEach {
+                it.setOnTouchListener { _, event ->
+                    val result = gestureDetector.onTouchEvent(event)
+                    if (event?.action == MotionEvent.ACTION_UP) {
+                        if (!result) {
+                            val sheetBehavior = binding.chaptersSheet.root.sheetBehavior
+                            binding.chaptersSheet.root.dispatchTouchEvent(event)
+                            if (sheetBehavior?.state != BottomSheetBehavior.STATE_SETTLING && !sheetBehavior.isCollapsed()) {
+                                sheetBehavior?.collapse()
+                            }
+                        }
+                        if (readerNavGestureDetector.lockVertical) {
+                            // event.action = MotionEvent.ACTION_CANCEL
+                            return@setOnTouchListener true
+                        }
+                    } else if ((event?.action != MotionEvent.ACTION_UP || event.action != MotionEvent.ACTION_DOWN) && result) {
+                        event.action = MotionEvent.ACTION_CANCEL
+                        return@setOnTouchListener false
+                    }
+                    if (it == pageSeekbar) {
+                        readerNavGestureDetector.lockVertical
+                    } else {
+                        result
+                    }
+                }
+            }
         }
 
         // Init listeners on bottom menu
@@ -443,8 +492,8 @@ class ReaderActivity :
                 height = 280.dpToPx + insets.systemWindowInsetBottom
             }
             binding.navLayout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                leftMargin = 6.dpToPx + insets.systemWindowInsetLeft
-                rightMargin = 6.dpToPx + insets.systemWindowInsetRight
+                leftMargin = 12.dpToPx + insets.systemWindowInsetLeft
+                rightMargin = 12.dpToPx + insets.systemWindowInsetRight
             }
             binding.chaptersSheet.chapterRecycler.updatePaddingRelative(bottom = insets.systemWindowInsetBottom)
             binding.viewerContainer.requestLayout()
@@ -552,6 +601,16 @@ class ReaderActivity :
         viewer = newViewer
         binding.chaptersSheet.doublePage.isVisible = viewer is PagerViewer
         binding.viewerContainer.addView(newViewer.getView())
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (newViewer is R2LPagerViewer) {
+                binding.readerNav.leftChapter.tooltipText = getString(R.string.next_chapter)
+                binding.readerNav.rightChapter.tooltipText = getString(R.string.previous_chapter)
+            } else {
+                binding.readerNav.leftChapter.tooltipText = getString(R.string.previous_chapter)
+                binding.readerNav.rightChapter.tooltipText = getString(R.string.next_chapter)
+            }
+        }
 
         binding.navigationOverlay.isLTR = !(viewer is L2RPagerViewer)
         binding.viewerContainer.setBackgroundColor(
