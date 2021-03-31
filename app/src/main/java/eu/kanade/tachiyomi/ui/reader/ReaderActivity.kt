@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.ui.reader
 
 import android.annotation.SuppressLint
-import android.app.ProgressDialog
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
@@ -64,6 +63,7 @@ import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.hasSideNavBar
 import eu.kanade.tachiyomi.util.system.isBottomTappable
 import eu.kanade.tachiyomi.util.system.isLTR
+import eu.kanade.tachiyomi.util.system.launchIO
 import eu.kanade.tachiyomi.util.system.launchUI
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.toast
@@ -160,15 +160,11 @@ class ReaderActivity :
 
     var lightStatusBar = false
 
-    /**
-     * Progress dialog used when switching chapters from the menu buttons.
-     */
-    @Suppress("DEPRECATION")
-    private var progressDialog: ProgressDialog? = null
-
     private var snackbar: Snackbar? = null
 
     var intentPageNumber: Int? = null
+
+    var isLoading = false
 
     companion object {
         @Suppress("unused")
@@ -251,8 +247,6 @@ class ReaderActivity :
         config = null
         bottomSheet?.dismiss()
         bottomSheet = null
-        progressDialog?.dismiss()
-        progressDialog = null
         snackbar?.dismiss()
         snackbar = null
     }
@@ -433,18 +427,32 @@ class ReaderActivity :
             }
         }
         binding.readerNav.leftChapter.setOnClickListener {
-            if (viewer is R2LPagerViewer) {
+            if (isLoading) {
+                return@setOnClickListener
+            }
+            val result = if (viewer is R2LPagerViewer) {
                 presenter.loadNextChapter()
             } else {
                 presenter.loadPreviousChapter()
             }
+            if (result) {
+                binding.readerNav.leftChapter.gone()
+                binding.readerNav.leftProgress.visible()
+            }
         }
 
         binding.readerNav.rightChapter.setOnClickListener {
-            if (viewer !is R2LPagerViewer) {
+            if (isLoading) {
+                return@setOnClickListener
+            }
+            val result = if (viewer !is R2LPagerViewer) {
                 presenter.loadNextChapter()
             } else {
                 presenter.loadPreviousChapter()
+            }
+            if (result) {
+                binding.readerNav.rightChapter.gone()
+                binding.readerNav.rightProgress.visible()
             }
         }
 
@@ -703,6 +711,13 @@ class ReaderActivity :
         intentPageNumber?.let { moveToPageIndex(it) }
         intentPageNumber = null
         binding.toolbar.subtitle = viewerChapters.currChapter.chapter.name
+        if (viewer is R2LPagerViewer) {
+            binding.readerNav.leftChapter.alpha = if (viewerChapters.nextChapter != null) 1f else 0.5f
+            binding.readerNav.rightChapter.alpha = if (viewerChapters.prevChapter != null) 1f else 0.5f
+        } else {
+            binding.readerNav.rightChapter.alpha = if (viewerChapters.nextChapter != null) 1f else 0.5f
+            binding.readerNav.leftChapter.alpha = if (viewerChapters.prevChapter != null) 1f else 0.5f
+        }
     }
 
     /**
@@ -721,13 +736,22 @@ class ReaderActivity :
      * [show]. This is only used when the next/previous buttons on the binding.toolbar are clicked; the
      * other cases are handled with chapter transitions on the viewers and chapter preloading.
      */
-    @Suppress("DEPRECATION")
     fun setProgressDialog(show: Boolean) {
-        progressDialog?.dismiss()
-        progressDialog = if (show) {
-            ProgressDialog.show(this, null, getString(R.string.loading), true)
+        if (!show) {
+            binding.readerNav.leftChapter.visible()
+            binding.readerNav.rightChapter.visible()
+
+            binding.readerNav.leftProgress.gone()
+            binding.readerNav.rightProgress.gone()
+            binding.chaptersSheet.root.resetChapter()
+        }
+        if (show) {
+            isLoading = show
         } else {
-            null
+            scope.launchIO {
+                delay(100)
+                isLoading = show
+            }
         }
     }
 
