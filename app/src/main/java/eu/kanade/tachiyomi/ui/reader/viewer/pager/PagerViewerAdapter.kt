@@ -71,6 +71,7 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
             newItems.addAll(currPages)
         }
 
+        val chapterChange = currentChapter != chapters.currChapter
         if (currentChapter != chapters.currChapter) {
             viewer.config.shiftDoublePage = false
         }
@@ -99,10 +100,15 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
 
         subItems = newItems.toMutableList()
 
-        var currentPage = joinedItems.getOrNull(viewer.pager.currentItem)
+        val currentPage = joinedItems.getOrNull(viewer.pager.currentItem)
+        if (chapterChange) {
+            viewer.doublePageShift = true
+        }
         setJoinedItems(chapters.currChapter, (currentPage?.second ?: currentPage?.first) as? ReaderPage)
-        (currentPage?.first as? ReaderPage)?.let {
-            viewer.moveToPage(it, false)
+        if (!chapterChange) {
+            (currentPage?.first as? ReaderPage)?.let {
+                viewer.moveToPage(it, false)
+            }
         }
     }
 

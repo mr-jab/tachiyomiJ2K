@@ -751,7 +751,7 @@ class ReaderActivity :
      * bottom menu and delegates the change to the presenter.
      */
     @SuppressLint("SetTextI18n")
-    fun onPageSelected(page: ReaderPage, hasExtraPage: Boolean) {
+    fun onPageSelected(page: ReaderPage, hasExtraPage: Boolean, adjusted: Boolean = false) {
         val newChapter = presenter.onPageSelected(page)
         val pages = page.chapter.pages ?: return
 
@@ -770,7 +770,7 @@ class ReaderActivity :
             binding.readerNav.leftPageText.text = currentPage
             binding.readerNav.rightPageText.text = totalPages
         }
-        if (!newChapter && binding.chaptersSheet.chaptersBottomSheet.shouldCollapse && binding.chaptersSheet.chaptersBottomSheet.sheetBehavior.isExpanded()) {
+        if (!newChapter && !adjusted && binding.chaptersSheet.chaptersBottomSheet.shouldCollapse && binding.chaptersSheet.chaptersBottomSheet.sheetBehavior.isExpanded()) {
             binding.chaptersSheet.chaptersBottomSheet.sheetBehavior?.collapse()
         }
         if (binding.chaptersSheet.chaptersBottomSheet.selectedChapterId != page.chapter.chapter.id) {
@@ -780,7 +780,9 @@ class ReaderActivity :
 
         // Set seekbar progress
         binding.readerNav.pageSeekbar.max = pages.lastIndex
-        binding.readerNav.pageSeekbar.progress = page.index
+        val progress = page.index + if (hasExtraPage) 1 else 0
+        // For a double page, show the last 2 pages as if it was the final part of the seekbar
+        binding.readerNav.pageSeekbar.progress = if (progress == pages.lastIndex) progress else page.index
     }
 
     /**
