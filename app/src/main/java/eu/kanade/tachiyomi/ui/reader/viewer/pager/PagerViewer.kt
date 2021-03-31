@@ -122,6 +122,10 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
             refreshAdapter()
         }
 
+        config.reloadChapterListener = {
+            activity.reloadChapters(it)
+        }
+
         config.navigationModeChangedListener = {
             val showOnStart = config.navigationOverlayForNewUser
             activity.binding.navigationOverlay.setNavigation(config.navigator, showOnStart)

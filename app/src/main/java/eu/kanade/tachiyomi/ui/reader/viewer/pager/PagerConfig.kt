@@ -40,7 +40,15 @@ class PagerConfig(private val viewer: PagerViewer, preferences: PreferencesHelpe
 
     var shiftDoublePage = false
 
-    var doublePages = preferences.doublePages().get()
+    var doublePages = preferences.pageLayout().get() == PageLayout.DOUBLE_PAGES
+        set(value) {
+            field = value
+            if (!value) {
+                shiftDoublePage = false
+            }
+        }
+
+    var autoDoublePages = preferences.pageLayout().get() == PageLayout.AUTOMATIC
 
     init {
         preferences.pageTransitions()
@@ -79,12 +87,13 @@ class PagerConfig(private val viewer: PagerViewer, preferences: PreferencesHelpe
         preferences.readerTheme()
             .register({ readerTheme = it }, { imagePropertyChangedListener?.invoke() })
 
-        preferences.doublePages()
+        preferences.pageLayout()
             .register({
-                doublePages = it
-                if (!it) {
-                    shiftDoublePage = false
+                autoDoublePages = it == PageLayout.AUTOMATIC
+                if (!autoDoublePages) {
+                    doublePages = it == PageLayout.DOUBLE_PAGES
                 }
+                reloadChapterListener?.invoke(doublePages)
             })
 
         navigationOverlayForNewUser = preferences.showNavigationOverlayNewUser().get()
@@ -152,4 +161,10 @@ class PagerConfig(private val viewer: PagerViewer, preferences: PreferencesHelpe
         const val CUTOUT_START_EXTENDED = 1
         const val CUTOUT_IGNORE = 2
     }
+}
+
+object PageLayout {
+    const val SINGLE_PAGE = 0
+    const val DOUBLE_PAGES = 1
+    const val AUTOMATIC = 2
 }
