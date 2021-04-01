@@ -30,7 +30,6 @@ import com.github.chrisbanes.photoview.PhotoView
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.model.Page
-import eu.kanade.tachiyomi.ui.reader.model.InsertPage
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderProgressBar
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig.Companion.CUTOUT_IGNORE
@@ -632,7 +631,7 @@ class PagerPageHolder(
 
     private fun mergePages(imageStream: InputStream, imageStream2: InputStream?): InputStream {
         imageStream2 ?: return imageStream
-        if (page is InsertPage || page.fullPage) return imageStream
+        if (page.fullPage) return imageStream
         val imageBytes = imageStream.readBytes()
 
         val imageBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
@@ -656,6 +655,7 @@ class PagerPageHolder(
             imageStream2.close()
             imageStream.close()
             extraPage?.fullPage = true
+            page.isolatedPage = true
             skipExtra = true
             return imageBytes.inputStream()
         }
@@ -691,6 +691,9 @@ class PagerPageHolder(
     private fun onPageSplit() {
         val ePage = extraPage ?: return
         viewer.onPageSplit(page, ePage)
+        if (extraPage?.fullPage == true) {
+            extraPage = null
+        }
     }
 
     enum class Side {

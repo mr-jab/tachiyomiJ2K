@@ -88,12 +88,22 @@ class PagerConfig(private val viewer: PagerViewer, preferences: PreferencesHelpe
             .register({ readerTheme = it }, { imagePropertyChangedListener?.invoke() })
 
         preferences.pageLayout()
-            .register({
+            .asFlow()
+            .drop(1)
+            .onEach {
+
                 autoDoublePages = it == PageLayout.AUTOMATIC
                 if (!autoDoublePages) {
                     doublePages = it == PageLayout.DOUBLE_PAGES
                 }
                 reloadChapterListener?.invoke(doublePages)
+            }
+        preferences.pageLayout()
+            .register({
+                autoDoublePages = it == PageLayout.AUTOMATIC
+                if (!autoDoublePages) {
+                    doublePages = it == PageLayout.DOUBLE_PAGES
+                }
             })
 
         navigationOverlayForNewUser = preferences.showNavigationOverlayNewUser().get()

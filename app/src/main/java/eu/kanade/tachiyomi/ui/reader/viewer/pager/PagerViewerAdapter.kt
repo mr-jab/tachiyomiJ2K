@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.ui.reader.viewer.pager
 import android.view.View
 import android.view.ViewGroup
 import eu.kanade.tachiyomi.ui.reader.model.ChapterTransition
-import eu.kanade.tachiyomi.ui.reader.model.InsertPage
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
@@ -21,7 +20,7 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
      */
     // private var items: MutableList<Any> = mutableListOf()
 
-    var subItems: MutableList<Any?> = mutableListOf()
+    var subItems: MutableList<Any> = mutableListOf()
         private set
 
     var nextTransition: ChapterTransition.Next? = null
@@ -39,6 +38,8 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
     var joinedItems: MutableList<Pair<Any, Any?>> = mutableListOf()
         private set
 
+    private var shifted = viewer.config.shiftDoublePage
+    private var doubledUp = viewer.config.doublePages
     var currentChapter: ReaderChapter? = null
 
     /**
@@ -54,8 +55,15 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
             // We only need to add the last few pages of the previous chapter, because it'll be
             // selected as the current chapter when one of those pages is selected.
             val prevPages = chapters.prevChapter.pages
+            // We will take an even number of pages if the page count if even
+            // however we should take account full pages when deciding
+            val numberOfFullPages =
+                (
+                    chapters.prevChapter.pages?.count { it.fullPage || it.isolatedPage }
+                        ?: 0
+                    )
             if (prevPages != null) {
-                newItems.addAll(prevPages.takeLast(if (prevPages.size % 2 == 0) 2 else 3))
+                newItems.addAll(prevPages.takeLast(if ((prevPages.size + numberOfFullPages) % 2 == 0) 2 else 3))
             }
         }
 
@@ -72,9 +80,11 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
         }
 
         val chapterChange = currentChapter != chapters.currChapter
-        if (currentChapter != chapters.currChapter) {
-            viewer.config.shiftDoublePage = false
+
+        if (chapterChange && currentChapter != null) {
+            viewer.doublePageShift = true
         }
+
         prevChapter = chapters.prevChapter
         currentChapter = chapters.currChapter
         nextChapter = chapters.nextChapter
@@ -101,15 +111,19 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
         subItems = newItems.toMutableList()
 
         val currentPage = joinedItems.getOrNull(viewer.pager.currentItem)
-        if (chapterChange) {
-            viewer.doublePageShift = true
-        }
-        setJoinedItems(chapters.currChapter, (currentPage?.second ?: currentPage?.first) as? ReaderPage)
-        if (!chapterChange) {
-            (currentPage?.first as? ReaderPage)?.let {
-                viewer.moveToPage(it, false)
+        var pageToUse = currentPage?.second ?: currentPage?.first
+
+        if (shifted != viewer.config.shiftDoublePage || (doubledUp != viewer.config.doublePages && doubledUp)) {
+            if (!shifted || doubledUp) {
+                pageToUse = currentPage?.first
             }
+            shifted = viewer.config.shiftDoublePage
         }
+        doubledUp = viewer.config.doublePages
+        setJoinedItems(
+            pageToUse as? ReaderPage,
+            chapterChange
+        )
     }
 
     /**
@@ -126,7 +140,6 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
         val item = joinedItems[position].first
         val item2 = joinedItems[position].second
         return when (item) {
-            is InsertPage -> PagerPageHolder(viewer, item)
             is ReaderPage -> PagerPageHolder(viewer, item, item2 as? ReaderPage)
             is ChapterTransition -> PagerTransitionHolder(viewer, item)
             else -> throw NotImplementedError("Holder for ${item.javaClass} not implemented")
@@ -150,112 +163,122 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
         return POSITION_NONE
     }
 
-    fun onPageSplit(current: Any?, newPage: ReaderPage, clazz: Class<out PagerViewer>) {
-        if (current !is ReaderPage) return
-        val currentIndex = subItems.indexOf(newPage)
-        subItems.add(currentIndex, null)
-        setJoinedItems(current.chapter, current)
+    fun onPageSplit(current: ReaderPage) {
+        setJoinedItems(current)
 
-        viewer.pager.post {
-            viewer.onPageChange(viewer.pager.currentItem)
-        }
+//        viewer.pager.post {
+//            viewer.onPageChange(viewer.pager.currentItem)
+//        }
     }
 
-    private fun setJoinedItems(currentChapter: ReaderChapter, currentPage: ReaderPage? = null) {
+    private fun setJoinedItems(currentPage: ReaderPage? = null, chapterChange: Boolean = false) {
+        // If not in double mode, set up items like before
+        val oldCurrent = joinedItems.getOrNull(viewer.pager.currentItem)
         if (!viewer.config.doublePages) {
-            subItems = subItems.filterNotNull().toMutableList()
             subItems.forEach {
                 (it as? ReaderPage)?.shiftedPage = false
             }
-            this.joinedItems = subItems.map { Pair<Any, Any?>(it as Any, null) }.toMutableList()
+            this.joinedItems = subItems.map { Pair<Any, Any?>(it, null) }.toMutableList()
             if (viewer is R2LPagerViewer) {
                 joinedItems.reverse()
             }
-            notifyDataSetChanged()
-            return
-        }
-        val cleanItems: MutableList<ReaderPage?> = subItems.filterIsInstance<ReaderPage>().filter { it.chapter == currentChapter }.toMutableList()
-        (cleanItems.indices).reversed().forEach {
-            if (cleanItems[it]?.fullPage == true) {
-                cleanItems.add(it + 1, null)
-            }
-        }
-        if (viewer.config.shiftDoublePage) {
-            run loop@{
-                val index = cleanItems.indexOf(currentPage)
-                val fullPageBeforeIndex = max(
-                    0,
-                    (if (index > -1) cleanItems.subList(0, index).indexOfFirst { it?.fullPage == true } else -1)
-                )
-                (fullPageBeforeIndex until cleanItems.size).forEach {
-                    if (cleanItems[it]?.shiftedPage == true) {
-                        cleanItems.add(it + 1, null)
-                        return@loop
-                    }
-                    if (cleanItems[it]?.fullPage == false) {
-                        cleanItems[it]?.shiftedPage = true
-                        cleanItems.add(it + 1, null)
-                        return@loop
-                    }
-                }
-            }
         } else {
-            cleanItems.forEach {
-                it?.shiftedPage = false
-            }
-        }
-        var indexToAdd = -1
-        cleanItems.forEachIndexed { index, any ->
-            if (any == null && index > 1 && cleanItems[index - 2] != null && index % 2 == 0) {
-                indexToAdd = index - 1
-                return@forEachIndexed
-            }
-        }
-        if (indexToAdd > -1) {
-            cleanItems.add(indexToAdd, null)
-        }
-        val joinedItems: MutableList<Pair<Any, Any?>> = cleanItems.chunked(2).map { Pair(it.first()!!, it.getOrNull(1)) }.toMutableList()
-
-        val prevInstance = subItems.find { it is ChapterTransition.Prev }
-        val nextInstance = subItems.find { it is ChapterTransition.Next }
-        if (prevInstance != null) {
-            joinedItems.add(0, Pair(prevInstance, null))
-        }
-        if (nextInstance != null) {
-            joinedItems.add(Pair(nextInstance, null))
-        }
-
-        val nextItems: MutableList<ReaderPage?> = subItems.filterIsInstance<ReaderPage>().filter { it.chapter == nextChapter }.toMutableList()
-        (nextItems.indices).reversed().forEach {
-            if (nextItems[it]?.fullPage == null) {
-                nextItems.add(it + 1, null)
-            }
-        }
-        joinedItems.addAll(
-            nextItems.chunked(2).mapNotNull {
-                it.first()?.let { page ->
-                    Pair<Any, Any?>(page, it.getOrNull(1))
+            val pagedItems = mutableListOf<MutableList<ReaderPage?>>()
+            val otherItems = mutableListOf<Any>()
+            var pagedIndex = 0
+            pagedItems.add(mutableListOf())
+            subItems.forEach {
+                if (it is ReaderPage) {
+                    pagedItems.last().add(it)
+                } else {
+                    otherItems.add(it)
+                    pagedItems.add(mutableListOf())
                 }
             }
-        )
-        val prevItems: MutableList<ReaderPage?> = subItems.filterIsInstance<ReaderPage>().filter { it.chapter == prevChapter }.toMutableList()
-        (prevItems.indices).reversed().forEach {
-            if (prevItems[it]?.fullPage == null) {
-                prevItems.add(it + 1, null)
-            }
-        }
-        joinedItems.addAll(
-            0,
-            prevItems.chunked(2).mapNotNull {
-                it.first()?.let { page ->
-                    Pair<Any, Any?>(page, it.getOrNull(1))
+            pagedIndex = 0
+            val subJoinedItems = mutableListOf<Pair<Any, Any?>>()
+            pagedItems.forEach { items ->
+                if (items.size > 1 && items[0]?.isolatedPage == false && items[1]?.fullPage == true) {
+                    items[0]?.isolatedPage = true
+                }
+
+                if (viewer.config.shiftDoublePage) {
+                    run loop@{
+                        // for shifting a page
+                        val index = items.indexOf(currentPage)
+                        if (currentPage?.fullPage != true) {
+                            val fullPageBeforeIndex = max(
+                                0,
+                                (
+                                    if (index > -1) (
+                                        items.subList(0, index)
+                                            .indexOfFirst { it?.fullPage == true }
+                                        ) else -1
+                                    )
+                            )
+                            (fullPageBeforeIndex until items.size).forEach {
+                                if (items[it]?.shiftedPage == true) {
+                                    return@loop
+                                }
+                                if (items[it]?.fullPage == false && (it + 1 == items.size || items[it + 1] != null)) {
+                                    items[it]?.shiftedPage = true
+                                    return@loop
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    items.forEach {
+                        it?.shiftedPage = false
+                    }
+                }
+
+                var itemIndex = 0
+                while (itemIndex < items.size) {
+                    items[itemIndex]?.isolatedPage = false
+                    if (items[itemIndex]?.fullPage == true || items[itemIndex]?.shiftedPage == true) {
+                        // Add a 'blank' page after each full page. It will be used when chunked to solo a page
+                        items.add(itemIndex + 1, null)
+                        if (items[itemIndex]?.fullPage == true && itemIndex > 0 &&
+                            items[itemIndex - 1] != null && (itemIndex - 1) % 2 == 0
+                        ) {
+                            items[itemIndex - 1]?.isolatedPage = true
+                            items.add(itemIndex, null)
+                            itemIndex++
+                        }
+                        itemIndex++
+                    }
+                    itemIndex++
+                }
+
+                if (items.isNotEmpty()) {
+                    subJoinedItems.addAll(
+                        items.chunked(2).map { Pair(it.first()!!, it.getOrNull(1)) }
+                    )
+                }
+                otherItems.getOrNull(pagedIndex)?.let {
+                    subJoinedItems.add(Pair(it, null))
+                    pagedIndex++
                 }
             }
-        )
-        if (viewer is R2LPagerViewer) {
-            joinedItems.reverse()
+            if (viewer is R2LPagerViewer) {
+                subJoinedItems.reverse()
+            }
+
+            this.joinedItems = subJoinedItems
         }
-        this.joinedItems = joinedItems
         notifyDataSetChanged()
+
+        if (currentPage != null /*&& !chapterChange && !viewer.lockPageMovement*/) {
+            if (oldCurrent?.first == currentPage || oldCurrent?.second == currentPage) {
+                val index = joinedItems.indexOfFirst { it.first == currentPage || it.second == currentPage }
+                viewer.pager.setCurrentItem(index, false)
+            } else {
+                val newPage = oldCurrent?.first ?: currentPage
+                val index = joinedItems.indexOfFirst { it.first == newPage || it.second == newPage }
+                viewer.pager.setCurrentItem(index, false)
+                // viewer.moveToPage(oldCurrent?.first ?: currentPage)
+            }
+        }
     }
 }

@@ -63,11 +63,21 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
             field = value
             if (value) {
                 awaitingIdleViewerChapters?.let {
-                    setChaptersInternal(it)
+                    setChaptersDoubleShift(it)
                     awaitingIdleViewerChapters = null
                 }
             }
         }
+
+    private var pagerListener = object : ViewPager.SimpleOnPageChangeListener() {
+        override fun onPageSelected(position: Int) {
+            onPageChange(position)
+        }
+
+        override fun onPageScrollStateChanged(state: Int) {
+            isIdle = state == ViewPager.SCROLL_STATE_IDLE
+        }
+    }
 
     init {
         pager.gone() // Don't layout the pager yet
@@ -75,20 +85,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
         pager.offscreenPageLimit = 1
         pager.id = R.id.reader_pager
         pager.adapter = adapter
-        pager.addOnPageChangeListener(
-            object : ViewPager.SimpleOnPageChangeListener() {
-                override fun onPageSelected(position: Int) {
-                    if (!doublePageShift) {
-                        onPageChange(position)
-                    }
-                    doublePageShift = false
-                }
-
-                override fun onPageScrollStateChanged(state: Int) {
-                    isIdle = state == ViewPager.SCROLL_STATE_IDLE
-                }
-            }
-        )
+        pager.addOnPageChangeListener(pagerListener)
         pager.tapListener = f@{ event ->
             if (!config.tappingEnabled) {
                 activity.toggleMenu()
@@ -221,8 +218,19 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
     }
 
     fun setChaptersDoubleShift(chapters: ViewerChapters) {
-        doublePageShift = true
-        setChapters(chapters)
+//        doublePageShift = true
+//        lockPageMovement = true
+        pager.removeOnPageChangeListener(pagerListener)
+        // pager.adapter = adapter
+        setChaptersInternal(chapters)
+        // val currentItem =
+        // adapter.joinedItems.indexOfFirst { it.first == currentPage || it.second == currentPage }
+        // doublePageShift = true
+        pager.addOnPageChangeListener(pagerListener)
+        onPageChange(pager.currentItem)
+//        lockPageMovement = false
+        // pager.setCurrentItem(currentItem, false)
+        // lockPageMovement = false
     }
 
     /**
@@ -265,7 +273,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
         Timber.d("moveToPage ${page.number}")
         val position = adapter.joinedItems.indexOfFirst { it.first == page || it.second == page }
         if (position != -1) {
-            doublePageShift = !smoothScroll
+            // doublePageShift = !smoothScroll
             val currentPosition = pager.currentItem
             pager.setCurrentItem(position, smoothScroll)
             // manually call onPageChange since ViewPager listener is not triggered in this case
@@ -277,6 +285,26 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
                 val joinedItem = adapter.joinedItems.firstOrNull { it.first == page || it.second == page }
                 activity.onPageSelected(joinedItem?.first as? ReaderPage ?: page, joinedItem?.second != null, true)
             }
+        } else {
+            Timber.d("Page $page not found in adapter")
+        }
+    }
+
+    fun moveToPage(page: Any) {
+        val position = adapter.joinedItems.indexOfFirst { it.first == page }
+        if (position != -1) {
+            // doublePageShift = true
+            val currentPosition = pager.currentItem
+            pager.setCurrentItem(position, false)
+            // manually call onPageChange since ViewPager listener is not triggered in this case
+            /*if (currentPosition == position) {
+                onPageChange(position)
+            } else {
+                // Call this since with double shift onPageChange wont get called (it shouldn't)
+                // Instead just update the page count in ui
+                //val joinedItem = adapter.joinedItems.firstOrNull { it.first == page || it.second == page }
+                //activity.onPageSelected(joinedItem?.first as? ReaderPage ?: page, joinedItem?.second != null, true)
+            }*/
         } else {
             Timber.d("Page $page not found in adapter")
         }
@@ -373,7 +401,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
     }
 
     fun onPageSplit(currentPage: ReaderPage, newPage: ReaderPage) {
-        adapter.onPageSplit(currentPage, newPage, this::class.java)
+        adapter.onPageSplit(currentPage)
     }
 
     /**

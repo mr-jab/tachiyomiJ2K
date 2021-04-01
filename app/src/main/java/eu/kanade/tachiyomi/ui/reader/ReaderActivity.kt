@@ -680,23 +680,36 @@ class ReaderActivity :
     }
 
     fun reloadChapters(doublePages: Boolean, force: Boolean = false) {
-        (viewer as? PagerViewer)?.let { viewer ->
-            if (!force && viewer.config.autoDoublePages) {
-                setDoublePageMode(viewer)
-            } else {
-                viewer.config.doublePages = doublePages
-            }
-            if (doublePages) {
-                viewer.config.shiftDoublePage = binding.readerNav.pageSeekbar.progress % 2 != 0
-            }
+        val pViewer = viewer as? PagerViewer ?: return
+        if (!force && pViewer.config.autoDoublePages) {
+            setDoublePageMode(pViewer)
+        } else {
+            pViewer.config.doublePages = doublePages
         }
         val currentChapter = presenter.getCurrentChapter()
         val page = currentChapter?.pages?.getOrNull(binding.readerNav.pageSeekbar.progress)
+        if (doublePages) {
+            pViewer.config.shiftDoublePage = (
+                binding.readerNav.pageSeekbar.progress +
+                    (
+                        currentChapter?.pages?.subList(0, binding.readerNav.pageSeekbar.progress)
+                            ?.count { it.fullPage || it.isolatedPage } ?: 0
+                        )
+                ) % 2 != 0
+        }
         presenter.viewerChapters?.let {
-            (viewer as? PagerViewer)?.setChaptersDoubleShift(it)
-            page?.let {
-                viewer?.moveToPage(page, false)
-            }
+            // pViewer.refreshAs
+            pViewer.setChaptersDoubleShift(it)
+//            page?.let {
+//                viewer?.moveToPage(page, false)
+//            }
+//            // pViewer.lockPageMovement = false
+//            page?.let {
+//                onPageSelected(
+//                    page,
+//                    !page.fullPage && pViewer.config.doublePages
+//                )
+//            }
         }
         invalidateOptionsMenu()
     }

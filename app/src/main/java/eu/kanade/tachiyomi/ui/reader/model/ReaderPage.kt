@@ -21,4 +21,6 @@ open class ReaderPage(
             field = value
             if (value) shiftedPage = false
         }
+
+    var isolatedPage: Boolean = false
 }
