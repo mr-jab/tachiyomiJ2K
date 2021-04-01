@@ -401,8 +401,8 @@ class ReaderPresenter(
             .doOnUnsubscribe { isLoadingAdjacentChapterRelay.call(false) }
             .subscribeFirst(
                 { view, _ ->
-                    val lastPage = if (chapter.pages_left <= 1) 0 else chapter.last_page_read
-                    view.moveToPageIndex(lastPage)
+                    // val lastPage = if (chapter.pages_left <= 1) 0 else chapter.last_page_read
+                    view.moveToPageIndex(0)
                     view.refreshChapters()
                 },
                 { _, _ ->

@@ -263,7 +263,7 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
         }
         notifyDataSetChanged()
 
-        if (currentPage != null) {
+        if (currentPage != null && (currentPage as? ReaderPage)?.chapter == currentChapter) {
             // Step 6: Move back to our previous page or transition page
             // The listener is likely off around now, but either way when shifting or doubling,
             // we need to set the page back correctly
@@ -275,6 +275,10 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
                 val index = joinedItems.indexOfFirst { it.first == newPage || it.second == newPage }
                 viewer.pager.setCurrentItem(index, false)
             }
+        } else if (currentPage is ReaderPage && currentPage.chapter != currentChapter) {
+            val subIndex = subItems.find { (it as? ReaderPage)?.chapter == currentChapter }
+            val index = joinedItems.indexOfFirst { it.first == subIndex }
+            viewer.pager.setCurrentItem(index, false)
         }
     }
 }
