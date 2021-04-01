@@ -687,8 +687,8 @@ class ReaderActivity :
             pViewer.config.doublePages = doublePages
         }
         val currentChapter = presenter.getCurrentChapter()
-        val page = currentChapter?.pages?.getOrNull(binding.readerNav.pageSeekbar.progress)
         if (doublePages) {
+            // If we're moving from singe to double, we want the current page to be the first page
             pViewer.config.shiftDoublePage = (
                 binding.readerNav.pageSeekbar.progress +
                     (
@@ -698,18 +698,7 @@ class ReaderActivity :
                 ) % 2 != 0
         }
         presenter.viewerChapters?.let {
-            // pViewer.refreshAs
             pViewer.setChaptersDoubleShift(it)
-//            page?.let {
-//                viewer?.moveToPage(page, false)
-//            }
-//            // pViewer.lockPageMovement = false
-//            page?.let {
-//                onPageSelected(
-//                    page,
-//                    !page.fullPage && pViewer.config.doublePages
-//                )
-//            }
         }
         invalidateOptionsMenu()
     }

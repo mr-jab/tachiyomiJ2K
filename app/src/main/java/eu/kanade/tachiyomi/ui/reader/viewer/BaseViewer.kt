@@ -29,7 +29,7 @@ interface BaseViewer {
     /**
      * Tells this viewer to move to the given [page].
      */
-    fun moveToPage(page: ReaderPage, smoothScroll: Boolean = true)
+    fun moveToPage(page: ReaderPage)
 
     /**
      * Called from the containing activity when a key [event] is received. It should return true

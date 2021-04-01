@@ -51,9 +51,6 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
      */
     private var awaitingIdleViewerChapters: ViewerChapters? = null
 
-    /** Variable to to block pageChange when shifting from double to singe page */
-    var doublePageShift = false
-
     /**
      * Whether the view pager is currently in idle mode. It sets the awaiting chapters if setting
      * this field to true.
@@ -155,7 +152,6 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
                 is ChapterTransition -> onTransitionSelected(aPage)
             }
         }
-        doublePageShift = false
     }
 
     private fun checkAllowPreload(page: ReaderPage?): Boolean {
@@ -218,19 +214,13 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
     }
 
     fun setChaptersDoubleShift(chapters: ViewerChapters) {
-//        doublePageShift = true
-//        lockPageMovement = true
+        // Remove Listener since we're about to change the size of the items
+        // If we don't the size change could put us on a new chapter
         pager.removeOnPageChangeListener(pagerListener)
-        // pager.adapter = adapter
         setChaptersInternal(chapters)
-        // val currentItem =
-        // adapter.joinedItems.indexOfFirst { it.first == currentPage || it.second == currentPage }
-        // doublePageShift = true
         pager.addOnPageChangeListener(pagerListener)
+        // Since we removed the listener while shifting, call page change to update the ui
         onPageChange(pager.currentItem)
-//        lockPageMovement = false
-        // pager.setCurrentItem(currentItem, false)
-        // lockPageMovement = false
     }
 
     /**
@@ -269,13 +259,12 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
     /**
      * Tells this viewer to move to the given [page].
      */
-    override fun moveToPage(page: ReaderPage, smoothScroll: Boolean) {
+    override fun moveToPage(page: ReaderPage) {
         Timber.d("moveToPage ${page.number}")
         val position = adapter.joinedItems.indexOfFirst { it.first == page || it.second == page }
         if (position != -1) {
-            // doublePageShift = !smoothScroll
             val currentPosition = pager.currentItem
-            pager.setCurrentItem(position, smoothScroll)
+            pager.setCurrentItem(position, true)
             // manually call onPageChange since ViewPager listener is not triggered in this case
             if (currentPosition == position) {
                 onPageChange(position)
@@ -285,26 +274,6 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
                 val joinedItem = adapter.joinedItems.firstOrNull { it.first == page || it.second == page }
                 activity.onPageSelected(joinedItem?.first as? ReaderPage ?: page, joinedItem?.second != null, true)
             }
-        } else {
-            Timber.d("Page $page not found in adapter")
-        }
-    }
-
-    fun moveToPage(page: Any) {
-        val position = adapter.joinedItems.indexOfFirst { it.first == page }
-        if (position != -1) {
-            // doublePageShift = true
-            val currentPosition = pager.currentItem
-            pager.setCurrentItem(position, false)
-            // manually call onPageChange since ViewPager listener is not triggered in this case
-            /*if (currentPosition == position) {
-                onPageChange(position)
-            } else {
-                // Call this since with double shift onPageChange wont get called (it shouldn't)
-                // Instead just update the page count in ui
-                //val joinedItem = adapter.joinedItems.firstOrNull { it.first == page || it.second == page }
-                //activity.onPageSelected(joinedItem?.first as? ReaderPage ?: page, joinedItem?.second != null, true)
-            }*/
         } else {
             Timber.d("Page $page not found in adapter")
         }
