@@ -360,6 +360,8 @@
     <string name="zoom_start_position">Zoom start position</string>
     <string name="double_pages">Double pages</string>
     <string name="single_page">Single page</string>
+    <string name="switch_to_double">Switch to double pages</string>
+    <string name="switch_to_single">Switch to single page</string>
     <string name="force_portrait">Force portrait</string>
     <string name="force_landscape">Force landscape</string>
     <string name="red_initial">R</string>

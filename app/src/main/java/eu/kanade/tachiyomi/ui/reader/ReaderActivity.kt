@@ -303,16 +303,16 @@ class ReaderActivity :
             (pageLayout == PageLayout.AUTOMATIC && (viewer as? PagerViewer)?.config?.doublePages ?: false)
         binding.chaptersSheet.doublePage.setImageDrawable(
             ContextCompat.getDrawable(
-                this@ReaderActivity,
-                if (isDoublePage) R.drawable.ic_single_page_24dp
+                this,
+                if (!isDoublePage) R.drawable.ic_single_page_24dp
                 else R.drawable.ic_book_open_variant_24dp
             )
         )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             binding.chaptersSheet.doublePage.tooltipText =
-                this@ReaderActivity.getString(
-                    if (isDoublePage) R.string.single_page
-                    else R.string.double_pages
+                getString(
+                    if (isDoublePage) R.string.switch_to_single
+                    else R.string.switch_to_double
                 )
         }
     }
