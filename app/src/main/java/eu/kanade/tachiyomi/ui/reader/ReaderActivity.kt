@@ -327,7 +327,7 @@ class ReaderActivity :
                 (viewer as? PagerViewer)?.config?.let { config ->
                     config.shiftDoublePage = !config.shiftDoublePage
                     presenter.viewerChapters?.let {
-                        viewer?.setChapters(it)
+                        (viewer as? PagerViewer)?.setChaptersDoubleShift(it)
                         invalidateOptionsMenu()
                     }
                 }

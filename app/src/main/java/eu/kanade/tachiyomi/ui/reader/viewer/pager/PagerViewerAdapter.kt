@@ -98,7 +98,7 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
         var pageToUse = currentPage?.second ?: currentPage?.first
 
         if (shifted != viewer.config.shiftDoublePage || (doubledUp != viewer.config.doublePages && doubledUp)) {
-            if (!shifted || doubledUp) {
+            if (!shifted || (doubledUp != viewer.config.doublePages && doubledUp)) {
                 pageToUse = currentPage?.first
             }
             shifted = viewer.config.shiftDoublePage
