@@ -184,6 +184,9 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
             // Step 2: run through each set of pages
             pagedItems.forEach { items ->
 
+                items.forEach {
+                    it?.shiftedPage = false
+                }
                 // Step 3: If pages have been shifted,
                 if (viewer.config.shiftDoublePage && currentPage is ReaderPage) {
                     run loop@{
@@ -212,11 +215,6 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
                                 }
                             }
                         }
-                    }
-                } else if (currentPage != null) {
-                    // If shifting has been turned off, reset this for next time
-                    items.forEach {
-                        it?.shiftedPage = false
                     }
                 }
 
@@ -263,7 +261,16 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
         }
         notifyDataSetChanged()
 
-        if (currentPage != null && (currentPage as? ReaderPage)?.chapter == currentChapter) {
+        if (currentPage != null && (
+            (currentPage as? ReaderPage)?.chapter == currentChapter ||
+                (
+                    shifted && (
+                        (currentPage as? ChapterTransition.Prev)?.from == currentChapter ||
+                            (currentPage as? ChapterTransition.Next)?.from == currentChapter
+                        )
+                    )
+            )
+        ) {
             // Step 6: Move back to our previous page or transition page
             // The listener is likely off around now, but either way when shifting or doubling,
             // we need to set the page back correctly
