@@ -198,7 +198,11 @@ class PagerPageHolder(
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { value ->
                 progress1 = value
-                progressBar.setProgress((progress1 + progress2) / 2)
+                if (extraPage == null) {
+                    progressBar.setProgress(progress1)
+                } else {
+                    progressBar.setProgress((progress1 + progress2) / 2)
+                }
             }
     }
 
