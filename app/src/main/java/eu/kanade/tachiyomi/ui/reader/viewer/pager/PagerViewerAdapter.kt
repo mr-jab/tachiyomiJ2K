@@ -190,29 +190,27 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
                 // Step 3: If pages have been shifted,
                 if (viewer.config.shiftDoublePage && currentPage is ReaderPage) {
                     run loop@{
-                        val index = items.indexOf(currentPage)
-                        if (!currentPage.fullPage) {
-                            // Go from the current page and work your way back to the first page,
-                            // or the first page that's a full page.
-                            // This is done in case user tries to shift a page after a full page
-                            val fullPageBeforeIndex = max(
-                                0,
-                                (
-                                    if (index > -1) (
-                                        items.subList(0, index)
-                                            .indexOfFirst { it?.fullPage == true }
-                                        ) else -1
-                                    )
-                            )
-                            // Find the shifted page or add a shifted page if there isnt already
-                            (fullPageBeforeIndex until items.size).forEach {
-                                if (items[it]?.shiftedPage == true) {
-                                    return@loop
-                                }
-                                if (items[it]?.fullPage == false && (it + 1 == items.size || items[it + 1] != null)) {
-                                    items[it]?.shiftedPage = true
-                                    return@loop
-                                }
+                        var index = items.indexOf(currentPage)
+                        if (currentPage.fullPage) {
+                            index = max(0, index - 1)
+                        }
+                        // Go from the current page and work your way back to the first page,
+                        // or the first page that's a full page.
+                        // This is done in case user tries to shift a page after a full page
+                        val fullPageBeforeIndex = max(
+                            0,
+                            (
+                                if (index > -1) (
+                                    items.subList(0, index)
+                                        .indexOfFirst { it?.fullPage == true }
+                                    ) else -1
+                                )
+                        )
+                        // Add a shifted page to the first place there isnt a full page
+                        (fullPageBeforeIndex until items.size).forEach {
+                            if (items[it]?.fullPage == false) {
+                                items[it]?.shiftedPage = true
+                                return@loop
                             }
                         }
                     }

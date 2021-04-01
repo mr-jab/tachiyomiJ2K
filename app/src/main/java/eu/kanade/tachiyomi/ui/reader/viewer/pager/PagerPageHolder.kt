@@ -693,8 +693,8 @@ class PagerPageHolder(
     }
 
     private fun onPageSplit() {
-        val ePage = extraPage ?: return
-        viewer.onPageSplit(page, ePage)
+        extraPage ?: return
+        viewer.onPageSplit(page)
         if (extraPage?.fullPage == true) {
             extraPage = null
         }

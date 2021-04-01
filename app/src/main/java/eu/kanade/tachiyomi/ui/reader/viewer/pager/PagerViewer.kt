@@ -369,7 +369,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
         return true
     }
 
-    fun onPageSplit(currentPage: ReaderPage, newPage: ReaderPage) {
+    fun onPageSplit(currentPage: ReaderPage) {
         adapter.onPageSplit(currentPage)
     }
 
