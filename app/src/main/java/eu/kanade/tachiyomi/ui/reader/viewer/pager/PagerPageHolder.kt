@@ -668,7 +668,7 @@ class PagerPageHolder(
 
         val result = Bitmap.createBitmap(width + width2, max(height, height2), Bitmap.Config.ARGB_8888)
         val canvas = Canvas(result)
-        canvas.drawColor(Color.TRANSPARENT)
+        canvas.drawColor(if (viewer.config.readerTheme >= 2 || viewer.config.readerTheme == 0) Color.WHITE else Color.BLACK)
         val isLTR = viewer !is R2LPagerViewer
         val upperPart = Rect(
             if (isLTR) 0 else width2,
@@ -698,10 +698,6 @@ class PagerPageHolder(
         if (extraPage?.fullPage == true) {
             extraPage = null
         }
-    }
-
-    enum class Side {
-        RIGHT, LEFT
     }
 
     /**
