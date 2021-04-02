@@ -455,6 +455,14 @@ class ReaderActivity :
             }
         }
 
+        binding.touchView.setOnTouchListener { v, event ->
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                if (binding.chaptersSheet.chaptersBottomSheet.sheetBehavior.isExpanded()) {
+                    binding.chaptersSheet.chaptersBottomSheet.sheetBehavior?.collapse()
+                }
+            }
+            false
+        }
         val readerNavGestureDetector = ReaderNavGestureDetector(this)
         val gestureDetector = GestureDetectorCompat(this, readerNavGestureDetector)
         with(binding.readerNav) {
@@ -777,7 +785,7 @@ class ReaderActivity :
      */
     @SuppressLint("SetTextI18n")
     fun onPageSelected(page: ReaderPage, hasExtraPage: Boolean) {
-        val newChapter = presenter.onPageSelected(page, hasExtraPage)
+        presenter.onPageSelected(page, hasExtraPage)
         val pages = page.chapter.pages ?: return
 
         val currentPage = if (hasExtraPage) {
@@ -795,14 +803,9 @@ class ReaderActivity :
             binding.readerNav.leftPageText.text = currentPage
             binding.readerNav.rightPageText.text = totalPages
         }
-        if (!newChapter && binding.chaptersSheet.chaptersBottomSheet.shouldCollapse && binding.chaptersSheet.chaptersBottomSheet.sheetBehavior.isExpanded()) {
-            binding.chaptersSheet.chaptersBottomSheet.sheetBehavior?.collapse()
-        }
         if (binding.chaptersSheet.chaptersBottomSheet.selectedChapterId != page.chapter.chapter.id) {
             binding.chaptersSheet.chaptersBottomSheet.refreshList()
         }
-        binding.chaptersSheet.chaptersBottomSheet.shouldCollapse = true
-
         // Set seekbar progress
         binding.readerNav.pageSeekbar.max = pages.lastIndex
         val progress = page.index + if (hasExtraPage) 1 else 0
