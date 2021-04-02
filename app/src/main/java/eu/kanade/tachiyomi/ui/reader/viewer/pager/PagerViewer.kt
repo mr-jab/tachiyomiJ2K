@@ -272,7 +272,10 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
                 // Call this since with double shift onPageChange wont get called (it shouldn't)
                 // Instead just update the page count in ui
                 val joinedItem = adapter.joinedItems.firstOrNull { it.first == page || it.second == page }
-                activity.onPageSelected(joinedItem?.first as? ReaderPage ?: page, joinedItem?.second != null, true)
+                activity.onPageSelected(
+                    joinedItem?.first as? ReaderPage ?: page,
+                    joinedItem?.second != null
+                )
             }
         } else {
             Timber.d("Page $page not found in adapter")

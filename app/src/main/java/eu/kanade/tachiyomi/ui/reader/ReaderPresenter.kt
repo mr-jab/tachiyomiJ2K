@@ -401,7 +401,6 @@ class ReaderPresenter(
             .doOnUnsubscribe { isLoadingAdjacentChapterRelay.call(false) }
             .subscribeFirst(
                 { view, _ ->
-                    // val lastPage = if (chapter.pages_left <= 1) 0 else chapter.last_page_read
                     view.moveToPageIndex(0)
                     view.refreshChapters()
                 },
@@ -461,7 +460,7 @@ class ReaderPresenter(
      * read, update tracking services, enqueue downloaded chapter deletion, and updating the active chapter if this
      * [page]'s chapter is different from the currently active.
      */
-    fun onPageSelected(page: ReaderPage): Boolean {
+    fun onPageSelected(page: ReaderPage, hasExtraPage: Boolean): Boolean {
         val currentChapters = viewerChaptersRelay.value ?: return false
 
         val selectedChapter = page.chapter
@@ -470,12 +469,9 @@ class ReaderPresenter(
         selectedChapter.chapter.last_page_read = page.index
         selectedChapter.chapter.pages_left =
             (selectedChapter.pages?.size ?: page.index) - page.index
+        // For double pages, check if the second to last page is doubled up
         if (selectedChapter.pages?.lastIndex == page.index ||
-            (
-                selectedChapter.pages?.lastIndex?.minus(1) == page.index &&
-                    !page.fullPage &&
-                    selectedChapter.pages?.last()?.fullPage == false
-                )
+            (hasExtraPage && selectedChapter.pages?.lastIndex?.minus(1) == page.index)
         ) {
             selectedChapter.chapter.read = true
             updateTrackChapterRead(selectedChapter)

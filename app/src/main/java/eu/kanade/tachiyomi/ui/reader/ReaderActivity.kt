@@ -776,8 +776,8 @@ class ReaderActivity :
      * bottom menu and delegates the change to the presenter.
      */
     @SuppressLint("SetTextI18n")
-    fun onPageSelected(page: ReaderPage, hasExtraPage: Boolean, adjusted: Boolean = false) {
-        val newChapter = presenter.onPageSelected(page)
+    fun onPageSelected(page: ReaderPage, hasExtraPage: Boolean) {
+        val newChapter = presenter.onPageSelected(page, hasExtraPage)
         val pages = page.chapter.pages ?: return
 
         val currentPage = if (hasExtraPage) {
@@ -795,7 +795,7 @@ class ReaderActivity :
             binding.readerNav.leftPageText.text = currentPage
             binding.readerNav.rightPageText.text = totalPages
         }
-        if (!newChapter && !adjusted && binding.chaptersSheet.chaptersBottomSheet.shouldCollapse && binding.chaptersSheet.chaptersBottomSheet.sheetBehavior.isExpanded()) {
+        if (!newChapter && binding.chaptersSheet.chaptersBottomSheet.shouldCollapse && binding.chaptersSheet.chaptersBottomSheet.sheetBehavior.isExpanded()) {
             binding.chaptersSheet.chaptersBottomSheet.sheetBehavior?.collapse()
         }
         if (binding.chaptersSheet.chaptersBottomSheet.selectedChapterId != page.chapter.chapter.id) {

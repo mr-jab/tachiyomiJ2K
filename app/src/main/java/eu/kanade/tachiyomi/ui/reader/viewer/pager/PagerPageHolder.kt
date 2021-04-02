@@ -75,8 +75,6 @@ class PagerPageHolder(
     override val item
         get() = page to extraPage
 
-    private var scope = CoroutineScope(Job() + Default)
-
     /**
      * Loading progress bar to indicate the current progress.
      */
@@ -115,12 +113,12 @@ class PagerPageHolder(
     /**
      * Subscription for status changes of the page.
      */
-    private var statusSubscription2: Subscription? = null
+    private var extraStatusSubscription: Subscription? = null
 
     /**
      * Subscription for progress changes of the page.
      */
-    private var progressSubscription2: Subscription? = null
+    private var extraProgressSubscription: Subscription? = null
 
     /**
      * Subscription used to read the header of the image. This is needed in order to instantiate
@@ -128,12 +126,11 @@ class PagerPageHolder(
      */
     private var readImageHeaderSubscription: Subscription? = null
 
-    var status1: Int = 0
-    var status2: Int = 0
-    var progress1: Int = 0
-    var progress2: Int = 0
+    var status: Int = 0
+    var extraStatus: Int = 0
+    var progress: Int = 0
+    var extraProgress: Int = 0
     private var skipExtra = false
-    var job: Job? = null
 
     init {
         addView(progressBar)
@@ -172,15 +169,15 @@ class PagerPageHolder(
         statusSubscription = loader.getPage(page)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
-                status1 = it
+                status = it
                 processStatus(it)
             }
         val extraPage = extraPage ?: return
         val loader2 = extraPage.chapter.pageLoader ?: return
-        statusSubscription2 = loader2.getPage(extraPage)
+        extraStatusSubscription = loader2.getPage(extraPage)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
-                status2 = it
+                extraStatus = it
                 processStatus2(it)
             }
     }
@@ -197,26 +194,26 @@ class PagerPageHolder(
             .onBackpressureLatest()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { value ->
-                progress1 = value
+                progress = value
                 if (extraPage == null) {
-                    progressBar.setProgress(progress1)
+                    progressBar.setProgress(progress)
                 } else {
-                    progressBar.setProgress((progress1 + progress2) / 2)
+                    progressBar.setProgress((progress + extraProgress) / 2)
                 }
             }
     }
 
     private fun observeProgress2() {
-        progressSubscription2?.unsubscribe()
+        extraProgressSubscription?.unsubscribe()
         val extraPage = extraPage ?: return
-        progressSubscription2 = Observable.interval(100, TimeUnit.MILLISECONDS)
+        extraProgressSubscription = Observable.interval(100, TimeUnit.MILLISECONDS)
             .map { extraPage.progress }
             .distinctUntilChanged()
             .onBackpressureLatest()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { value ->
-                progress2 = value
-                progressBar.setProgress((progress1 + progress2) / 2)
+                extraProgress = value
+                progressBar.setProgress((progress + extraProgress) / 2)
             }
     }
 
@@ -234,7 +231,7 @@ class PagerPageHolder(
                 setDownloading()
             }
             Page.READY -> {
-                if (status2 == Page.READY || extraPage == null) {
+                if (extraStatus == Page.READY || extraPage == null) {
                     setImage()
                 }
                 unsubscribeProgress(1)
@@ -260,7 +257,7 @@ class PagerPageHolder(
                 setDownloading()
             }
             Page.READY -> {
-                if (status1 == Page.READY) {
+                if (this.status == Page.READY) {
                     setImage()
                 }
                 unsubscribeProgress(2)
@@ -276,26 +273,24 @@ class PagerPageHolder(
      * Unsubscribes from the status subscription.
      */
     private fun unsubscribeStatus(page: Int) {
-        val subscription = if (page == 1) statusSubscription else statusSubscription2
+        val subscription = if (page == 1) statusSubscription else extraStatusSubscription
         subscription?.unsubscribe()
-        if (page == 1) statusSubscription = null else statusSubscription2 = null
+        if (page == 1) statusSubscription = null else extraStatusSubscription = null
     }
 
     /**
      * Unsubscribes from the progress subscription.
      */
     private fun unsubscribeProgress(page: Int) {
-        val subscription = if (page == 1) progressSubscription else progressSubscription2
+        val subscription = if (page == 1) progressSubscription else extraProgressSubscription
         subscription?.unsubscribe()
-        if (page == 1) progressSubscription = null else progressSubscription2 = null
+        if (page == 1) progressSubscription = null else extraProgressSubscription = null
     }
 
     /**
      * Unsubscribes from the read image header subscription.
      */
     private fun unsubscribeReadImageHeader() {
-        job?.cancel()
-        job = null
         readImageHeaderSubscription?.unsubscribe()
         readImageHeaderSubscription = null
     }

@@ -91,7 +91,6 @@ class PagerConfig(private val viewer: PagerViewer, preferences: PreferencesHelpe
             .asFlow()
             .drop(1)
             .onEach {
-
                 autoDoublePages = it == PageLayout.AUTOMATIC
                 if (!autoDoublePages) {
                     doublePages = it == PageLayout.DOUBLE_PAGES

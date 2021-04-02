@@ -18,7 +18,8 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
     /**
      * List of currently set items.
      */
-    // private var items: MutableList<Any> = mutableListOf()
+    var joinedItems: MutableList<Pair<Any, Any?>> = mutableListOf()
+        private set
 
     private var subItems: MutableList<Any> = mutableListOf()
 
@@ -28,8 +29,6 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
     /**
      * List of currently set items.
      */
-    var joinedItems: MutableList<Pair<Any, Any?>> = mutableListOf()
-        private set
 
     private var shifted = viewer.config.shiftDoublePage
     private var doubledUp = viewer.config.doublePages
