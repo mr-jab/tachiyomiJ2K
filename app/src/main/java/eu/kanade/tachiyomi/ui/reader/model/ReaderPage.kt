@@ -25,5 +25,4 @@ class ReaderPage(
             field = value
             if (value) shiftedPage = false
         }
-
 }

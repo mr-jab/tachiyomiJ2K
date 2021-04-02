@@ -44,9 +44,7 @@ import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.visible
 import eu.kanade.tachiyomi.widget.GifViewTarget
 import eu.kanade.tachiyomi.widget.ViewPagerAdapter
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.withContext
 import rx.Observable
 import rx.Subscription
