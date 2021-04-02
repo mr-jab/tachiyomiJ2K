@@ -8,6 +8,7 @@ import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.drawable.LayerDrawable
 import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
@@ -294,6 +295,12 @@ class ReaderActivity :
             )
         }
         setBottomNavButtons(preferences.pageLayout().get())
+        (binding.toolbar.background as? LayerDrawable)?.let { layerDrawable ->
+            val isDoublePage = splitItem?.isVisible ?: false
+            // Shout out to Google for not fixing setVisible https://issuetracker.google.com/issues/127538945
+            layerDrawable.findDrawableByLayerId(R.id.layer_full_width).alpha = if (!isDoublePage) 255 else 0
+            layerDrawable.findDrawableByLayerId(R.id.layer_one_item).alpha = if (isDoublePage) 255 else 0
+        }
         return super.onPrepareOptionsMenu(menu)
     }
 
