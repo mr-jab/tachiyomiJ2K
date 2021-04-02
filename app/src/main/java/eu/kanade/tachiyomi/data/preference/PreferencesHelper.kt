@@ -144,12 +144,7 @@ class PreferencesHelper(val context: Context) {
 
     fun webtoonNavInverted() = flowPrefs.getEnum(Keys.webtoonNavInverted, ViewerNavigation.TappingInvertMode.NONE)
 
-    // fun doublePages() = flowPrefs.getBoolean(Keys.doublePages, false)
-
-    // fun autoDoublePages() = flowPrefs.getBoolean(Keys.autoDoublePages, true)
-
     fun pageLayout() = flowPrefs.getInt(Keys.pageLayout, PageLayout.AUTOMATIC)
-    // fun pageLayout() = PreferencePageLayout(this, prefs)
 
     fun showNavigationOverlayNewUser() = flowPrefs.getBoolean(Keys.showNavigationOverlayNewUser, true)
 
