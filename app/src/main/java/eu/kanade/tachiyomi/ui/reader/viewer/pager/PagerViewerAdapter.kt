@@ -193,10 +193,10 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
                     it?.shiftedPage = false
                 }
                 // Step 3: If pages have been shifted,
-                if (viewer.config.shiftDoublePage && currentPage is ReaderPage) {
+                if (viewer.config.shiftDoublePage) {
                     run loop@{
                         var index = items.indexOf(pageToShift ?: currentPage)
-                        if (currentPage.fullPage) {
+                        if ((currentPage as? ReaderPage)?.fullPage == true) {
                             index = max(0, index - 1)
                         }
                         // Go from the current page and work your way back to the first page,
