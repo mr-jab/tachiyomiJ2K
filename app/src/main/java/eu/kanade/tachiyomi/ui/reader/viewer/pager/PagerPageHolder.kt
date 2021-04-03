@@ -564,6 +564,9 @@ class PagerPageHolder(
             setText(R.string.retry)
             setOnClickListener {
                 page.chapter.pageLoader?.retryPage(page)
+                extraPage?.let {
+                    it.chapter.pageLoader?.retryPage(it)
+                }
             }
         }
         addView(retryButton)
