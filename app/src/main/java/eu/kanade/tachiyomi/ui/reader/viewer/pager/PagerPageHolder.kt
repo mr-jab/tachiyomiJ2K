@@ -632,6 +632,16 @@ class PagerPageHolder(
     private fun mergePages(imageStream: InputStream, imageStream2: InputStream?): InputStream {
         imageStream2 ?: return imageStream
         if (page.fullPage) return imageStream
+        if (ImageUtil.findImageType(imageStream) == ImageUtil.ImageType.GIF) {
+            page.fullPage = true
+            skipExtra = true
+            return imageStream
+        } else if (ImageUtil.findImageType(imageStream2) == ImageUtil.ImageType.GIF) {
+            page.isolatedPage = true
+            extraPage?.fullPage = true
+            skipExtra = true
+            return imageStream
+        }
         val imageBytes = imageStream.readBytes()
 
         val imageBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
