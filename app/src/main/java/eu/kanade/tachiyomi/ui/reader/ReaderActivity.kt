@@ -333,6 +333,7 @@ class ReaderActivity :
                 (viewer as? PagerViewer)?.config?.let { config ->
                     config.shiftDoublePage = !config.shiftDoublePage
                     presenter.viewerChapters?.let {
+                        (viewer as? PagerViewer)?.updateShifting()
                         (viewer as? PagerViewer)?.setChaptersDoubleShift(it)
                         invalidateOptionsMenu()
                     }
@@ -695,6 +696,7 @@ class ReaderActivity :
 
     fun reloadChapters(doublePages: Boolean, force: Boolean = false) {
         val pViewer = viewer as? PagerViewer ?: return
+        pViewer.updateShifting()
         if (!force && pViewer.config.autoDoublePages) {
             setDoublePageMode(pViewer)
         } else {

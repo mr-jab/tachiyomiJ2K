@@ -26,6 +26,8 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
     var nextTransition: ChapterTransition.Next? = null
         private set
 
+    var pageToShift: ReaderPage? = null
+
     /**
      * List of currently set items.
      */
@@ -146,11 +148,15 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
     }
 
     fun onPageSplit(current: ReaderPage) {
+        val oldCurrent = joinedItems.getOrNull(viewer.pager.currentItem)
         setJoinedItems(current)
 
         // The listener may be removed when we split a page, so the ui may not have updated properly
-        viewer.pager.post {
-            viewer.onPageChange(viewer.pager.currentItem)
+
+        if (oldCurrent?.first == current || oldCurrent?.second == current) {
+            viewer.pager.post {
+                viewer.onPageChange(viewer.pager.currentItem)
+            }
         }
     }
 
@@ -189,7 +195,7 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
                 // Step 3: If pages have been shifted,
                 if (viewer.config.shiftDoublePage && currentPage is ReaderPage) {
                     run loop@{
-                        var index = items.indexOf(currentPage)
+                        var index = items.indexOf(pageToShift ?: currentPage)
                         if (currentPage.fullPage) {
                             index = max(0, index - 1)
                         }
@@ -279,9 +285,15 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
                 val index = joinedItems.indexOfFirst { it.first == newPage || it.second == newPage }
                 viewer.pager.setCurrentItem(index, false)
             }
-        } else if (currentPage is ReaderPage && currentPage.chapter != currentChapter) {
+        } else if (currentPage is ReaderPage && currentPage.chapter != currentChapter &&
+            (oldCurrent?.first !is ChapterTransition.Prev && oldCurrent?.first !is ChapterTransition.Next)
+        ) {
             val subIndex = subItems.find { (it as? ReaderPage)?.chapter == currentChapter }
             val index = joinedItems.indexOfFirst { it.first == subIndex }
+            viewer.pager.setCurrentItem(index, false)
+        } else if (oldCurrent?.first is ChapterTransition.Prev || oldCurrent?.first is ChapterTransition.Next) {
+            val newPage = oldCurrent.first
+            val index = joinedItems.indexOfFirst { it.first == newPage || it.second == newPage }
             viewer.pager.setCurrentItem(index, false)
         }
     }

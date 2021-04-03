@@ -223,6 +223,10 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
         onPageChange(pager.currentItem)
     }
 
+    fun updateShifting() {
+        adapter.pageToShift = adapter.joinedItems[pager.currentItem].first as? ReaderPage
+    }
+
     /**
      * Tells this viewer to set the given [chapters] as active. If the pager is currently idle,
      * it sets the chapters immediately, otherwise they are saved and set when it becomes idle.
