@@ -98,16 +98,18 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
         val currentPage = joinedItems.getOrNull(viewer.pager.currentItem)
         var pageToUse = currentPage?.second ?: currentPage?.first
 
+        var shiftingOver = false
         if (shifted != viewer.config.shiftDoublePage || (doubledUp != viewer.config.doublePages && doubledUp)) {
             if (!shifted || (doubledUp != viewer.config.doublePages && doubledUp)) {
                 pageToUse = currentPage?.first
             }
+            if (shifted && (doubledUp == viewer.config.doublePages)) {
+                shiftingOver = true
+            }
             shifted = viewer.config.shiftDoublePage
         }
         doubledUp = viewer.config.doublePages
-        setJoinedItems(
-            pageToUse
-        )
+        setJoinedItems(shiftingOver)
     }
 
     /**
@@ -149,18 +151,24 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
 
     fun onPageSplit(current: ReaderPage) {
         val oldCurrent = joinedItems.getOrNull(viewer.pager.currentItem)
-        setJoinedItems(current)
+        setJoinedItems(
+            oldCurrent?.second == current ||
+                (current.index + 1) < (
+                (
+                    oldCurrent?.second
+                        ?: oldCurrent?.first
+                    ) as? ReaderPage
+                )?.index ?: 0
+        )
 
         // The listener may be removed when we split a page, so the ui may not have updated properly
-
-        if (oldCurrent?.first == current || oldCurrent?.second == current) {
-            viewer.pager.post {
-                viewer.onPageChange(viewer.pager.currentItem)
-            }
+        // This case usually happens when we load a new chapter and the first 2 pages need to split og
+        viewer.pager.post {
+            viewer.onPageChange(viewer.pager.currentItem)
         }
     }
 
-    private fun setJoinedItems(currentPage: Any?) {
+    private fun setJoinedItems(shifted: Boolean = false) {
         val oldCurrent = joinedItems.getOrNull(viewer.pager.currentItem)
         if (!viewer.config.doublePages) {
             // If not in double mode, set up items like before
@@ -195,8 +203,8 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
                 // Step 3: If pages have been shifted,
                 if (viewer.config.shiftDoublePage) {
                     run loop@{
-                        var index = items.indexOf(pageToShift ?: currentPage)
-                        if ((currentPage as? ReaderPage)?.fullPage == true) {
+                        var index = items.indexOf(pageToShift)
+                        if (pageToShift?.fullPage == true) {
                             index = max(0, index - 1)
                         }
                         // Go from the current page and work your way back to the first page,
@@ -264,33 +272,17 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
         }
         notifyDataSetChanged()
 
-        if (currentPage != null && (
-            (currentPage as? ReaderPage)?.chapter == currentChapter ||
-                (shifted && (currentPage as? ChapterTransition)?.from == currentChapter)
-            )
-        ) {
-            // Step 6: Move back to our previous page or transition page
-            // The listener is likely off around now, but either way when shifting or doubling,
-            // we need to set the page back correctly
-            if (oldCurrent?.first == currentPage || oldCurrent?.second == currentPage) {
-                val index =
-                    joinedItems.indexOfFirst { it.first == currentPage || it.second == currentPage }
-                viewer.pager.setCurrentItem(index, false)
-            } else {
-                val newPage = oldCurrent?.first ?: currentPage
-                val index = joinedItems.indexOfFirst { it.first == newPage || it.second == newPage }
-                viewer.pager.setCurrentItem(index, false)
+        // Step 6: Move back to our previous page or transition page
+        // The listener is likely off around now, but either way when shifting or doubling,
+        // we need to set the page back correctly
+        val newPage =
+            when {
+                (oldCurrent?.first as? ReaderPage)?.chapter != currentChapter &&
+                    (oldCurrent?.first as? ChapterTransition)?.from != currentChapter -> subItems.find { (it as? ReaderPage)?.chapter == currentChapter }
+                shifted -> (oldCurrent?.second ?: oldCurrent?.first)
+                else -> oldCurrent?.first ?: return
             }
-        } else if (currentPage is ReaderPage && currentPage.chapter != currentChapter &&
-            (oldCurrent?.first !is ChapterTransition)
-        ) {
-            val subIndex = subItems.find { (it as? ReaderPage)?.chapter == currentChapter }
-            val index = joinedItems.indexOfFirst { it.first == subIndex }
-            viewer.pager.setCurrentItem(index, false)
-        } else if (oldCurrent?.first is ChapterTransition) {
-            val newPage = oldCurrent.first
-            val index = joinedItems.indexOfFirst { it.first == newPage || it.second == newPage }
-            viewer.pager.setCurrentItem(index, false)
-        }
+        val index = joinedItems.indexOfFirst { it.first == newPage || it.second == newPage }
+        viewer.pager.setCurrentItem(index, false)
     }
 }
