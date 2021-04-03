@@ -266,19 +266,15 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
 
         if (currentPage != null && (
             (currentPage as? ReaderPage)?.chapter == currentChapter ||
-                (
-                    shifted && (
-                        (currentPage as? ChapterTransition.Prev)?.from == currentChapter ||
-                            (currentPage as? ChapterTransition.Next)?.from == currentChapter
-                        )
-                    )
+                (shifted && (currentPage as? ChapterTransition)?.from == currentChapter)
             )
         ) {
             // Step 6: Move back to our previous page or transition page
             // The listener is likely off around now, but either way when shifting or doubling,
             // we need to set the page back correctly
             if (oldCurrent?.first == currentPage || oldCurrent?.second == currentPage) {
-                val index = joinedItems.indexOfFirst { it.first == currentPage || it.second == currentPage }
+                val index =
+                    joinedItems.indexOfFirst { it.first == currentPage || it.second == currentPage }
                 viewer.pager.setCurrentItem(index, false)
             } else {
                 val newPage = oldCurrent?.first ?: currentPage
@@ -286,12 +282,12 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
                 viewer.pager.setCurrentItem(index, false)
             }
         } else if (currentPage is ReaderPage && currentPage.chapter != currentChapter &&
-            (oldCurrent?.first !is ChapterTransition.Prev && oldCurrent?.first !is ChapterTransition.Next)
+            (oldCurrent?.first !is ChapterTransition)
         ) {
             val subIndex = subItems.find { (it as? ReaderPage)?.chapter == currentChapter }
             val index = joinedItems.indexOfFirst { it.first == subIndex }
             viewer.pager.setCurrentItem(index, false)
-        } else if (oldCurrent?.first is ChapterTransition.Prev || oldCurrent?.first is ChapterTransition.Next) {
+        } else if (oldCurrent?.first is ChapterTransition) {
             val newPage = oldCurrent.first
             val index = joinedItems.indexOfFirst { it.first == newPage || it.second == newPage }
             viewer.pager.setCurrentItem(index, false)
