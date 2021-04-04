@@ -97,6 +97,7 @@ class PagerConfig(private val viewer: PagerViewer, preferences: PreferencesHelpe
                 }
                 reloadChapterListener?.invoke(doublePages)
             }
+            .launchIn(scope)
         preferences.pageLayout()
             .register({
                 autoDoublePages = it == PageLayout.AUTOMATIC

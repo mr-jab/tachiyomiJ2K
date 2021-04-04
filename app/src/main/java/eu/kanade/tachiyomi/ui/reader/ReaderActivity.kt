@@ -1159,12 +1159,6 @@ class ReaderActivity :
                     setBottomNavButtons(it)
                 }
                 .launchIn(scope)
-            preferences.pageLayout().asFlow()
-                .drop(1)
-                .onEach {
-                    reloadChapters(it == PageLayout.DOUBLE_PAGES)
-                }
-                .launchIn(scope)
         }
 
         /**
