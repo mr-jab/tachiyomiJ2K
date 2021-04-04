@@ -16,24 +16,24 @@ import kotlin.math.max
 class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
 
     /**
-     * List of currently set items.
+     * Paired list of currently set items.
      */
     var joinedItems: MutableList<Pair<Any, Any?>> = mutableListOf()
         private set
 
+    /** Single list of items */
     private var subItems: MutableList<Any> = mutableListOf()
 
     var nextTransition: ChapterTransition.Next? = null
         private set
 
+    /** Page used to start the shifted pages */
     var pageToShift: ReaderPage? = null
 
-    /**
-     * List of currently set items.
-     */
-
+    /** Varibles used to check if config of the pages have changed */
     private var shifted = viewer.config.shiftDoublePage
     private var doubledUp = viewer.config.doublePages
+
     var currentChapter: ReaderChapter? = null
 
     /**
@@ -95,21 +95,15 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
 
         subItems = newItems.toMutableList()
 
-        val currentPage = joinedItems.getOrNull(viewer.pager.currentItem)
-        var pageToUse = currentPage?.second ?: currentPage?.first
-
-        var shiftingOver = false
+        var useSecondPage = false
         if (shifted != viewer.config.shiftDoublePage || (doubledUp != viewer.config.doublePages && doubledUp)) {
-            if (!shifted || (doubledUp != viewer.config.doublePages && doubledUp)) {
-                pageToUse = currentPage?.first
-            }
             if (shifted && (doubledUp == viewer.config.doublePages)) {
-                shiftingOver = true
+                useSecondPage = true
             }
             shifted = viewer.config.shiftDoublePage
         }
         doubledUp = viewer.config.doublePages
-        setJoinedItems(shiftingOver)
+        setJoinedItems(useSecondPage)
     }
 
     /**
@@ -168,7 +162,7 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
         }
     }
 
-    private fun setJoinedItems(shifted: Boolean = false) {
+    private fun setJoinedItems(useSecondPage: Boolean = false) {
         val oldCurrent = joinedItems.getOrNull(viewer.pager.currentItem)
         if (!viewer.config.doublePages) {
             // If not in double mode, set up items like before
@@ -275,11 +269,13 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
         // Step 6: Move back to our previous page or transition page
         // The listener is likely off around now, but either way when shifting or doubling,
         // we need to set the page back correctly
+        // We will however shift to the first page of the new chapter if the last page we were are
+        // on is not in the new chapter that has loaded
         val newPage =
             when {
                 (oldCurrent?.first as? ReaderPage)?.chapter != currentChapter &&
                     (oldCurrent?.first as? ChapterTransition)?.from != currentChapter -> subItems.find { (it as? ReaderPage)?.chapter == currentChapter }
-                shifted -> (oldCurrent?.second ?: oldCurrent?.first)
+                useSecondPage -> (oldCurrent?.second ?: oldCurrent?.first)
                 else -> oldCurrent?.first ?: return
             }
         val index = joinedItems.indexOfFirst { it.first == newPage || it.second == newPage }
