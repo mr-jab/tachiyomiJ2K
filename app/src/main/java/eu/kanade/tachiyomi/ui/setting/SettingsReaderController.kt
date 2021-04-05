@@ -6,6 +6,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PageLayout
+import eu.kanade.tachiyomi.util.lang.addBetaTag
 import kotlinx.coroutines.flow.launchIn
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 
@@ -189,7 +190,8 @@ class SettingsReaderController : SettingsController() {
             }
             intListPreference(activity) {
                 key = Keys.pageLayout
-                titleRes = R.string.page_layout
+                title = context.getString(R.string.page_layout).addBetaTag(context)
+                dialogTitleRes = R.string.page_layout
                 entriesRes = arrayOf(
                     R.string.single_page,
                     R.string.double_pages,
