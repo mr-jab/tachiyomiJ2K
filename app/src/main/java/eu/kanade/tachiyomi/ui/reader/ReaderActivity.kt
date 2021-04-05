@@ -166,6 +166,10 @@ class ReaderActivity :
 
     var isLoading = false
 
+    var lastShiftDoubleState: Boolean? = null
+    var indexPageToShift: Int? = null
+    var indexChapterToShift: Long? = null
+
     companion object {
         @Suppress("unused")
         const val LEFT_TO_RIGHT = 1
@@ -173,6 +177,10 @@ class ReaderActivity :
         const val VERTICAL = 3
         const val WEBTOON = 4
         const val VERTICAL_PLUS = 5
+
+        const val SHIFT_DOUBLE_PAGES = "shiftingDoublePages"
+        const val SHIFTED_PAGE_INDEX = "shiftedPageIndex"
+        const val SHIFTED_CHAP_INDEX = "shiftedChapterIndex"
 
         fun newIntent(context: Context, manga: Manga, chapter: Chapter): Intent {
             val intent = Intent(context, ReaderActivity::class.java)
@@ -223,6 +231,9 @@ class ReaderActivity :
 
         if (savedInstanceState != null) {
             menuVisible = savedInstanceState.getBoolean(::menuVisible.name)
+            lastShiftDoubleState = savedInstanceState.get(SHIFT_DOUBLE_PAGES) as? Boolean
+            indexPageToShift = savedInstanceState.get(SHIFTED_PAGE_INDEX) as? Int
+            indexChapterToShift = savedInstanceState.get(SHIFTED_CHAP_INDEX) as? Long
             binding.readerNav.root.isVisible = menuVisible
         } else {
             binding.readerNav.root.gone()
@@ -257,6 +268,16 @@ class ReaderActivity :
      */
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putBoolean(::menuVisible.name, menuVisible)
+        (viewer as? PagerViewer)?.let { pViewer ->
+            val config = pViewer.config
+            outState.putBoolean(SHIFT_DOUBLE_PAGES, config.shiftDoublePage)
+            if (config.shiftDoublePage) {
+                pViewer.getShiftedPage()?.let {
+                    outState.putInt(SHIFTED_PAGE_INDEX, it.index)
+                    outState.putLong(SHIFTED_CHAP_INDEX, it.chapter.chapter.id ?: 0L)
+                }
+            }
+        }
         if (!isChangingConfigurations) {
             presenter.onSaveInstanceStateNonConfigurationChange()
         }
@@ -667,8 +688,12 @@ class ReaderActivity :
             }
         }
 
-        if (newViewer is PagerViewer && preferences.pageLayout().get() == PageLayout.AUTOMATIC) {
-            setDoublePageMode(newViewer)
+        if (newViewer is PagerViewer) {
+            if (preferences.pageLayout().get() == PageLayout.AUTOMATIC) {
+                setDoublePageMode(newViewer)
+            }
+            lastShiftDoubleState?.let { newViewer.config.shiftDoublePage = it }
+            lastShiftDoubleState = null
         }
 
         binding.navigationOverlay.isLTR = !(viewer is L2RPagerViewer)
@@ -725,6 +750,13 @@ class ReaderActivity :
      */
     fun setChapters(viewerChapters: ViewerChapters) {
         binding.pleaseWait.gone()
+        if (indexChapterToShift != null && indexPageToShift != null) {
+            viewerChapters.currChapter.pages?.find { it.index == indexPageToShift && it.chapter.chapter.id == indexChapterToShift }?.let {
+                (viewer as? PagerViewer)?.updateShifting(it)
+            }
+            indexChapterToShift = null
+            indexPageToShift = null
+        }
         viewer?.setChapters(viewerChapters)
         intentPageNumber?.let { moveToPageIndex(it) }
         intentPageNumber = null
