@@ -53,7 +53,12 @@ class ExtensionInstallActivity : Activity() {
                 .putExtra(ExtensionInstaller.EXTRA_DOWNLOAD_ID, downloadId)
                 .putExtra(EXTRA_SESSION_ID, sessionId)
 
-            val pendingIntent = PendingIntent.getActivity(this, downloadId.hashCode(), newIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+            val pendingIntent = PendingIntent.getActivity(
+                this,
+                downloadId.hashCode(),
+                newIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
             val statusReceiver = pendingIntent.intentSender
             session.commit(statusReceiver)
             val extensionManager: ExtensionManager by injectLazy()
