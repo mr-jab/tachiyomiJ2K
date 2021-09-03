@@ -13,7 +13,7 @@ open class BaseToolbar @JvmOverloads constructor(context: Context, attrs: Attrib
     MaterialToolbar(context, attrs) {
 
     protected lateinit var toolbarTitle: TextView
-    private val defStyleRes = com.google.android.material.R.style.Widget_MaterialComponents_Toolbar
+    private val defStyleRes = com.google.android.material.R.style.Widget_Material3_Toolbar
 
     protected val titleTextAppearance: Int
 

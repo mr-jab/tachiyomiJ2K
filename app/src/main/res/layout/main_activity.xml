@@ -34,7 +34,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             app:titleTextColor="?actionBarTintColor"
-            android:layout_height="?attr/actionBarSize"
+            android:layout_height="56dp"
             app:collapseIcon="@drawable/ic_arrow_back_24dp"
             android:background="?attr/colorSurface">
 
@@ -57,17 +57,18 @@
         <FrameLayout
             android:id="@+id/card_frame"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize" >
+            android:layout_height="56dp" >
 
-            <androidx.cardview.widget.CardView
+            <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_view"
                 android:layout_width="match_parent"
                 android:layout_marginTop="4dp"
                 app:cardBackgroundColor="?colorPrimaryVariant"
                 android:layout_marginBottom="4dp"
                 android:layout_marginStart="14dp"
+                app:strokeWidth="0dp"
                 android:layout_marginEnd="14dp"
-                app:cardCornerRadius="8dp"
+                app:cardCornerRadius="30dp"
                 android:layout_height="match_parent" >
 
                 <eu.kanade.tachiyomi.ui.base.FloatingToolbar
@@ -137,7 +138,7 @@
                         </LinearLayout>
                     </LinearLayout>
                 </eu.kanade.tachiyomi.ui.base.FloatingToolbar>
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
         </FrameLayout>
 
         <FrameLayout

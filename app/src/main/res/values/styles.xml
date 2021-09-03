@@ -5,11 +5,11 @@
     <!--Toolbars-->
     <!--========-->
 
-    <style name="Theme.ActionBar.Dark.DayNight" parent="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
+    <style name="Theme.ActionBar.Dark.DayNight" parent="@style/ThemeOverlay.Material3.Dark.ActionBar">
         <item name="popupTheme">@style/ThemeOverlay.MaterialComponents.Light</item>
     </style>
 
-    <style name="Theme.ActionBar.DayNight" parent="ThemeOverlay.AppCompat.DayNight.ActionBar">
+    <style name="Theme.ActionBar.DayNight" parent="ThemeOverlay.Material3.ActionBar">
         <item name="colorControlHighlight">@color/secondary_highlight</item>
     </style>
 
