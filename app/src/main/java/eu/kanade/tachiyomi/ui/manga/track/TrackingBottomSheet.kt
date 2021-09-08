@@ -35,8 +35,7 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.updateLayoutParams
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.list.listItems
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.listeners.addClickListener
@@ -341,9 +340,9 @@ class TrackingBottomSheet(private val controller: MangaDetailsController) :
                         searchingItem.service.nameRes()
                     )
                 )
-                MaterialDialog(activity)
-                    .title(R.string.remove_previous_tracker)
-                    .listItems(items = listOf(wordToSpan, text2), waitForPositiveButton = false) { dialog, i, _ ->
+                MaterialAlertDialogBuilder(activity)
+                    .setTitle(R.string.remove_previous_tracker)
+                    .setItems(arrayOf(wordToSpan, text2)) { dialog, i ->
                         if (i == 0) {
                             removeTracker(searchingItem, true)
                         }
@@ -352,7 +351,7 @@ class TrackingBottomSheet(private val controller: MangaDetailsController) :
                         hideSearchView()
                         dialog.dismiss()
                     }
-                    .negativeButton(android.R.string.cancel)
+                    .setNegativeButton(android.R.string.cancel, null)
                     .show()
                 return
             }

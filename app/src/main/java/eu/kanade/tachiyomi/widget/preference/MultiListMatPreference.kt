@@ -4,11 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.list.checkItem
-import com.afollestad.materialdialogs.list.isItemChecked
-import com.afollestad.materialdialogs.list.listItemsMultiChoice
-import com.afollestad.materialdialogs.list.uncheckItem
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.ui.setting.defaultValue
 
@@ -64,42 +60,37 @@ class MultiListMatPreference @JvmOverloads constructor(
     }
 
     @SuppressLint("CheckResult")
-    override fun MaterialDialog.setItems() {
+    override fun MaterialAlertDialogBuilder.setListItems() {
         val set = prefs.getStringSet(key, defValue).getOrDefault()
-        var default = set.mapNotNull {
-            if (entryValues.indexOf(it) == -1) null
-            else entryValues.indexOf(it) + if (allSelectionRes != null && !showAllLast) 1 else 0
-        }
-            .toIntArray()
         val items = if (allSelectionRes != null) {
             if (showAllLast) entries + listOf(context.getString(allSelectionRes!!))
             else listOf(context.getString(allSelectionRes!!)) + entries
         } else entries
         val allPos = if (showAllLast) items.size - 1 else 0
-        if (allSelectionRes != null && default.isEmpty()) default = intArrayOf(allPos)
-        else if (allSelectionRes != null && allIsAlwaysSelected) default += allPos
-        positiveButton(android.R.string.ok) {
+//        if (allSelectionRes != null && default.isEmpty()) default = intArrayOf(allPos)
+//        else if (allSelectionRes != null && allIsAlwaysSelected) default += allPos
+        val selected = if (allSelectionRes != null && set.isEmpty()) items.mapIndexed { index, item ->
+            index == allPos
+        }.toBooleanArray()
+        else items.map { set.contains(it) }.toBooleanArray()
+        if (allSelectionRes != null && allIsAlwaysSelected) selected[allPos] = true
+        setPositiveButton(android.R.string.ok) { dialog, _ ->
             val pos = mutableListOf<Int>()
             for (i in items.indices)
-                if (!(allSelectionRes != null && i == allPos) && isItemChecked(i)) pos.add(i)
+                if (!(allSelectionRes != null && i == allPos) && selected[i]) pos.add(i)
             var value = pos.mapNotNull {
                 entryValues.getOrNull(it - if (allSelectionRes != null && !showAllLast) 1 else 0)
             }.toSet()
-            if (allSelectionRes != null && !allIsAlwaysSelected && isItemChecked(0)) value = emptySet()
+            if (allSelectionRes != null && !allIsAlwaysSelected && selected[0]) value = emptySet()
             prefs.getStringSet(key, emptySet()).set(value)
             callChangeListener(value)
             notifyChanged()
         }
-        listItemsMultiChoice(
-            items = items,
-            allowEmptySelection = true,
-            disabledIndices = if (allSelectionRes != null) intArrayOf(allPos) else null,
-            waitForPositiveButton = false,
-            initialSelection = default
-        ) { _, pos, _ ->
+        setMultiChoiceItems(items.toTypedArray(), selected) { _, pos, checked ->
             if (allSelectionRes != null && !allIsAlwaysSelected) {
-                if (pos.isEmpty()) checkItem(allPos)
-                else uncheckItem(allPos)
+                selected[pos] = checked
+                if (checked) selected[allPos] = false
+                else if (selected.none { it }) selected[allPos] = true
             }
         }
     }

@@ -5,9 +5,9 @@ import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
 import androidx.core.text.buildSpannedString
-import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.checkItem
 import com.afollestad.materialdialogs.list.uncheckItem
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.widget.materialdialogs.QuadStateCheckBox
@@ -74,7 +74,7 @@ class TriStateListPreference @JvmOverloads constructor(
     }
 
     @SuppressLint("CheckResult")
-    override fun MaterialDialog.setItems() {
+    override fun MaterialAlertDialogBuilder.setListItems() {
         val set = prefs.getStringSet(key, defValue).getOrDefault()
         val items = if (allSelectionRes != null) {
             if (showAllLast) entries + listOf(context.getString(allSelectionRes!!))
@@ -101,7 +101,7 @@ class TriStateListPreference @JvmOverloads constructor(
                 if (allSelectionRes != null && showAllLast) { allValue } else { intArrayOf() }
         var includedItems = set
         var excludedItems = excludedSet
-        positiveButton(android.R.string.ok) {
+        setPositiveButton(android.R.string.ok) { _, _ ->
             prefs.getStringSet(key, emptySet()).set(includedItems)
             excludeKey?.let { prefs.getStringSet(it, emptySet()).set(excludedItems) }
             callChangeListener(includedItems to excludedItems)
