@@ -476,7 +476,7 @@ class MangaDetailsController :
                 if (router.backstack.last().controller !is FloatingSearchInterface) {
                     activityBinding?.appBar?.setBackgroundColor(colorSurface)
                 }
-                activityBinding?.toolbar?.setBackgroundColor(colorSurface)
+                activityBinding?.toolbar?.setBackgroundColor(Color.TRANSPARENT)
                 activity?.window?.statusBarColor = activity?.getResourceColor(
                     android.R.attr.statusBarColor
                 ) ?: colorSurface
