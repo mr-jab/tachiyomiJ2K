@@ -8,6 +8,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.preference.Preference
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.util.system.withOriginalWidth
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -87,7 +88,7 @@ open class MatPreference @JvmOverloads constructor(
     }
 
     open fun dialog(): MaterialAlertDialogBuilder {
-        return MaterialAlertDialogBuilder(activity ?: context).apply {
+        return MaterialAlertDialogBuilder(activity?.withOriginalWidth() ?: context).apply {
             if (dialogTitleRes != null) {
                 setTitle(dialogTitleRes!!)
             } else if (title != null) {

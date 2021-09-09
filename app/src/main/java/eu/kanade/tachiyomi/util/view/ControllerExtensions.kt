@@ -27,11 +27,11 @@ import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.afollestad.materialdialogs.MaterialDialog
 import com.bluelinelabs.conductor.Controller
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
 import com.bluelinelabs.conductor.RouterTransaction
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.MainActivityBinding
@@ -44,6 +44,7 @@ import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.isTablet
 import eu.kanade.tachiyomi.util.system.toast
+import eu.kanade.tachiyomi.util.system.withOriginalWidth
 import uy.kohesive.injekt.injectLazy
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -540,11 +541,11 @@ fun Controller.requestFilePermissionsSafe(
         (!preferences.hasDeniedA11FilePermission().get() || showA11PermissionAnyway)
     ) {
         preferences.hasDeniedA11FilePermission().set(true)
-        MaterialDialog(activity)
-            .title(R.string.all_files_permission_required)
-            .message(R.string.external_storage_permission_notice)
-            .cancelOnTouchOutside(false)
-            .positiveButton(android.R.string.ok) {
+        MaterialAlertDialogBuilder(activity.withOriginalWidth())
+            .setTitle(R.string.all_files_permission_required)
+            .setMessage(R.string.external_storage_permission_notice)
+            .setCancelable(false)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
                 val intent = Intent(
                     Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
                     "package:${activity.packageName}".toUri()
@@ -556,7 +557,7 @@ fun Controller.requestFilePermissionsSafe(
                     activity.startActivity(intent2)
                 }
             }
-            .negativeButton(android.R.string.cancel)
+            .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 }

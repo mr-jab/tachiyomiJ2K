@@ -100,6 +100,7 @@ import java.util.Date
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.min
 
 open class MainActivity : BaseActivity<MainActivityBinding>(), DownloadServiceListener {
 
@@ -126,6 +127,7 @@ open class MainActivity : BaseActivity<MainActivityBinding>(), DownloadServiceLi
     var tabAnimation: ValueAnimator? = null
     var overflowDialog: Dialog? = null
     var currentToolbar: Toolbar? = null
+    var ogWidth: Int = Int.MAX_VALUE
 
     fun setUndoSnackBar(snackBar: Snackbar?, extraViewToCheck: View? = null) {
         this.snackBar = snackBar
@@ -140,6 +142,7 @@ open class MainActivity : BaseActivity<MainActivityBinding>(), DownloadServiceLi
     }
 
     override fun attachBaseContext(newBase: Context?) {
+        ogWidth = min(newBase?.resources?.configuration?.screenWidthDp ?: Int.MAX_VALUE, ogWidth)
         super.attachBaseContext(newBase?.prepareSideNavContext())
     }
 

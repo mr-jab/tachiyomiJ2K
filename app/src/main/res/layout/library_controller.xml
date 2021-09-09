@@ -101,16 +101,6 @@
         android:layout_gravity="center"
         android:visibility="gone" />
 
-    <View
-        android:id="@+id/shadow"
-        android:layout_width="match_parent"
-        android:layout_height="24dp"
-        android:alpha="0.15"
-        android:background="@drawable/shape_gradient_top_shadow"
-        android:paddingBottom="10dp"
-        app:layout_anchor="@id/filter_bottom_sheet"
-        app:layout_anchorGravity="top" />
-
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/jumper_category_text"
         style="@style/FloatingTextView"
@@ -137,12 +127,4 @@
     <!-- Adding bottom sheet after main content -->
     <include layout="@layout/filter_bottom_sheet"
         android:id="@+id/filter_bottom_sheet"/>
-
-    <View
-        android:id="@+id/shadow2"
-        android:layout_width="match_parent"
-        android:layout_height="8dp"
-        android:layout_gravity="bottom"
-        android:alpha="0.05"
-        android:background="@drawable/shape_gradient_top_shadow" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

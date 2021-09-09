@@ -42,6 +42,7 @@ import com.mikepenz.fastadapter.listeners.addClickListener
 import eu.kanade.tachiyomi.ui.manga.MangaDetailsDivider
 import eu.kanade.tachiyomi.util.lang.indexesOf
 import eu.kanade.tachiyomi.util.system.openInBrowser
+import eu.kanade.tachiyomi.util.system.withOriginalWidth
 import eu.kanade.tachiyomi.util.view.expand
 
 class TrackingBottomSheet(private val controller: MangaDetailsController) :
@@ -340,7 +341,7 @@ class TrackingBottomSheet(private val controller: MangaDetailsController) :
                         searchingItem.service.nameRes()
                     )
                 )
-                MaterialAlertDialogBuilder(activity)
+                MaterialAlertDialogBuilder(activity.withOriginalWidth())
                     .setTitle(R.string.remove_previous_tracker)
                     .setItems(arrayOf(wordToSpan, text2)) { dialog, i ->
                         if (i == 0) {

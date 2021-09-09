@@ -87,6 +87,7 @@ import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.isImeVisible
 import eu.kanade.tachiyomi.util.system.launchUI
 import eu.kanade.tachiyomi.util.system.openInBrowser
+import eu.kanade.tachiyomi.util.system.withOriginalWidth
 import eu.kanade.tachiyomi.util.view.activityBinding
 import eu.kanade.tachiyomi.util.view.collapse
 import eu.kanade.tachiyomi.util.view.expand
@@ -308,7 +309,6 @@ class LibraryController(
                 binding.filterBottomSheet.filterBottomSheet.translationY = 0f
             }
             val pad = bottomBar.translationY - bottomBar.height
-            binding.shadow2.translationY = pad
             binding.filterBottomSheet.filterBottomSheet.updatePaddingRelative(
                 bottom = max(
                     (-pad).toInt(),
@@ -602,7 +602,7 @@ class LibraryController(
                         updateLibrary()
                     }
                     preferences.updateOnRefresh().getOrDefault() == -1 -> {
-                        MaterialAlertDialogBuilder(activity!!)
+                        MaterialAlertDialogBuilder(activity!!.withOriginalWidth())
                             .setTitle(R.string.what_should_update)
                             .setNegativeButton(android.R.string.cancel, null)
                             .setSingleChoiceItems(

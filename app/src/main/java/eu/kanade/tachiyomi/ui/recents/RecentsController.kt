@@ -64,11 +64,9 @@ import eu.kanade.tachiyomi.util.view.setOnQueryTextChangeListener
 import eu.kanade.tachiyomi.util.view.setStyle
 import eu.kanade.tachiyomi.util.view.smoothScrollToTop
 import eu.kanade.tachiyomi.util.view.snack
-import eu.kanade.tachiyomi.util.view.toolbarHeight
 import eu.kanade.tachiyomi.util.view.updatePaddingRelative
 import eu.kanade.tachiyomi.util.view.withFadeTransaction
 import java.util.Locale
-import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -110,8 +108,6 @@ class RecentsController(bundle: Bundle? = null) :
     private var lastChapterId: Long? = null
     private var showingDownloads = false
     var headerHeight = 0
-    val shadowAlpha = 0.15f
-    val shadow2Alpha = 0.05f
     private var query = ""
         set(value) {
             field = value
@@ -167,9 +163,6 @@ class RecentsController(bundle: Bundle? = null) :
             includeTabView = true,
             afterInsets = {
                 headerHeight = it.systemWindowInsetTop + appBarHeight + 48.dpToPx
-                binding.fakeAppBar.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                    height = it.systemWindowInsetTop + (toolbarHeight ?: appBarHeight)
-                }
                 binding.recycler.updatePaddingRelative(
                     bottom = activityBinding?.bottomNav?.height ?: it.systemWindowInsetBottom
                 )
@@ -183,13 +176,6 @@ class RecentsController(bundle: Bundle? = null) :
             },
             onBottomNavUpdate = {
                 setBottomPadding()
-            }
-        )
-        binding.recycler.addOnScrollListener(
-            object : RecyclerView.OnScrollListener() {
-                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    binding.fakeAppBar.y = activityBinding?.appBar?.y ?: 0f
-                }
             }
         )
 
@@ -208,9 +194,6 @@ class RecentsController(bundle: Bundle? = null) :
                 setRecentsAppBarBG(1f)
             }
             val isCollapsed = binding.downloadBottomSheet.root.sheetBehavior.isCollapsed()
-            binding.shadow2.alpha = if (isCollapsed) shadow2Alpha else 0f
-            binding.shadow.alpha = if (isCollapsed) shadowAlpha else 0f
-            binding.fakeAppBar.alpha = if (isExpanded) 1f else 0f
             binding.downloadBottomSheet.dlRecycler.alpha = isExpanded.toInt().toFloat()
             binding.downloadBottomSheet.sheetLayout.backgroundTintList = ColorStateList.valueOf(
                 ColorUtils.blendARGB(
@@ -232,17 +215,10 @@ class RecentsController(bundle: Bundle? = null) :
 
         binding.downloadBottomSheet.dlBottomSheet.onCreate(this)
 
-        binding.shadow2.alpha =
-            if (binding.downloadBottomSheet.dlBottomSheet.sheetBehavior?.state == BottomSheetBehavior.STATE_COLLAPSED) shadow2Alpha else 0f
-        binding.shadow.alpha =
-            if (binding.downloadBottomSheet.dlBottomSheet.sheetBehavior?.state == BottomSheetBehavior.STATE_COLLAPSED) shadowAlpha else 0f
-
         binding.downloadBottomSheet.dlBottomSheet.sheetBehavior?.addBottomSheetCallback(
             object :
                 BottomSheetBehavior.BottomSheetCallback() {
                 override fun onSlide(bottomSheet: View, progress: Float) {
-                    binding.shadow2.alpha = (1 - abs(progress)) * shadow2Alpha
-                    binding.shadow.alpha = (1 - abs(progress)) * shadowAlpha
                     val height =
                         binding.root.height - binding.downloadBottomSheet.dlRecycler.paddingTop
                     // Doing some fun math to hide the tab bar just as the title text of the
@@ -253,7 +229,6 @@ class RecentsController(bundle: Bundle? = null) :
                         if (binding.recycler.canScrollVertically(-1)) 1f else 0f
                     ).coerceIn(0f, 1f)
                     setRecentsAppBarBG(elValue)
-                    binding.fakeAppBar.alpha = max(0f, (progress - cap) / (1f - cap))
                     binding.downloadBottomSheet.sheetLayout.alpha = 1 - max(0f, progress / cap)
                     binding.downloadBottomSheet.dlRecycler.alpha = progress * 10
                     binding.downloadBottomSheet.sheetLayout.backgroundTintList =
@@ -270,7 +245,6 @@ class RecentsController(bundle: Bundle? = null) :
                         activityBinding!!.appBar.y,
                         -headerHeight * (1 - progress)
                     )
-                    binding.fakeAppBar.y = activityBinding?.appBar?.y ?: 0f
                     activityBinding?.tabsFrameLayout?.let { tabs ->
                         tabs.alpha = 1 - max(0f, progress / cap)
                         if (tabs.alpha <= 0 && tabs.isVisible) {
@@ -329,12 +303,6 @@ class RecentsController(bundle: Bundle? = null) :
                         } else {
                             binding.downloadBottomSheet.downloadFab.hide()
                         }
-                    }
-                    if (state == BottomSheetBehavior.STATE_HIDDEN || state == BottomSheetBehavior.STATE_COLLAPSED) {
-                        binding.shadow2.alpha =
-                            if (state == BottomSheetBehavior.STATE_COLLAPSED) shadow2Alpha else 0f
-                        binding.shadow.alpha =
-                            if (state == BottomSheetBehavior.STATE_COLLAPSED) shadowAlpha else 0f
                     }
 
                     binding.downloadBottomSheet.sheetLayout.isClickable =
@@ -417,7 +385,6 @@ class RecentsController(bundle: Bundle? = null) :
             (-pad).toInt(),
             view?.rootWindowInsets?.getBottomGestureInsets() ?: 0
         )
-        binding.shadow2.translationY = pad
         binding.downloadBottomSheet.dlBottomSheet.sheetBehavior?.peekHeight = 48.spToPx + padding
         binding.downloadBottomSheet.fastScroller.updateLayoutParams<ViewGroup.MarginLayoutParams> {
             bottomMargin = -pad.toInt()

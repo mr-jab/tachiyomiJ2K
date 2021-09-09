@@ -18,6 +18,7 @@ import eu.kanade.tachiyomi.util.lang.withSubtitle
 import eu.kanade.tachiyomi.util.system.bottomCutoutInset
 import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.topCutoutInset
+import eu.kanade.tachiyomi.util.system.withOriginalWidth
 import eu.kanade.tachiyomi.util.view.checkHeightThen
 import eu.kanade.tachiyomi.util.view.numberOfRowsForValue
 import eu.kanade.tachiyomi.util.view.rowsForValue
@@ -55,7 +56,7 @@ class LibraryDisplayView @JvmOverloads constructor(context: Context, attrs: Attr
             recycler.adapter = adapter
             adapter.isHandleDragEnabled = true
             adapter.isLongPressDragEnabled = true
-            MaterialAlertDialogBuilder(context)
+            MaterialAlertDialogBuilder(context.withOriginalWidth())
                 .setTitle(R.string.reorder_filters)
                 .setView(recycler)
                 .setNegativeButton(android.R.string.cancel, null)

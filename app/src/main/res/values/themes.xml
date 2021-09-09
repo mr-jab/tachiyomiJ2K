@@ -43,6 +43,7 @@
         <item name="switchStyle">@style/Widget.Tachiyomi.CompoundButton.Switch</item>
         <item name="checkboxStyle">@style/Widget.Tachiyomi.CompoundButton.CheckBox</item>
         <item name="radioButtonStyle">@style/Widget.Tachiyomi.CompoundButton.RadioButton</item>
+        <item name="elevationOverlayEnabled">false</item>
 
         <!-- Themes -->
         <item name="windowActionModeOverlay">true</item>

@@ -60,7 +60,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.Date
 import java.util.Locale
-import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -96,8 +95,6 @@ class BrowseController :
     var showingExtensions = false
 
     var snackbar: Snackbar? = null
-    val shadowAlpha = 0.15f
-    val shadow2Alpha = 0.05f
 
     /**
      * Called when controller is initialized.
@@ -161,7 +158,6 @@ class BrowseController :
                 bottom = (activityBinding?.bottomNav?.height ?: 0) + 58.spToPx
             )
             val isCollapsed = binding.bottomSheet.root.sheetBehavior.isCollapsed()
-            binding.shadow.alpha = if (isCollapsed) shadowAlpha else 0f
             updateTitleAndMenu()
         }
 
@@ -170,15 +166,10 @@ class BrowseController :
 
         binding.bottomSheet.root.sheetBehavior?.isGestureInsetBottomIgnored = true
 
-        binding.shadow.alpha =
-            if (binding.bottomSheet.root.sheetBehavior?.state == BottomSheetBehavior.STATE_COLLAPSED) shadowAlpha else 0f
-
         binding.bottomSheet.root.sheetBehavior?.addBottomSheetCallback(
             object : BottomSheetBehavior
             .BottomSheetCallback() {
                 override fun onSlide(bottomSheet: View, progress: Float) {
-                    binding.shadow2.alpha = (1 - max(0f, progress)) * shadow2Alpha
-                    binding.shadow.alpha = (1 - abs(progress)) * shadowAlpha
                     activityBinding?.appBar?.y = max(activityBinding!!.appBar.y, -headerHeight * (1 - progress))
                     val oldShow = showingExtensions
                     showingExtensions = progress > 0.92f
@@ -208,11 +199,6 @@ class BrowseController :
                         if (state == BottomSheetBehavior.STATE_EXPANDED) {
                             extBottomSheet.fetchOnlineExtensionsIfNeeded()
                         } else extBottomSheet.shouldCallApi = true
-                    }
-
-                    if (state == BottomSheetBehavior.STATE_EXPANDED || state == BottomSheetBehavior.STATE_COLLAPSED) {
-                        binding.shadow.alpha =
-                            if (state == BottomSheetBehavior.STATE_COLLAPSED) shadowAlpha else 0f
                     }
 
                     retainViewMode = if (state == BottomSheetBehavior.STATE_EXPANDED) {
@@ -274,7 +260,7 @@ class BrowseController :
 //        binding.bottomSheet.sheetLayout.elevation = progress * 5
         binding.bottomSheet.pager.alpha = progress * 10
         binding.bottomSheet.tabs.setSelectedTabIndicatorColor(selectedColor)
-        /*binding.bottomSheet.tabs.setTabTextColors(
+        binding.bottomSheet.tabs.setTabTextColors(
             ColorUtils.blendARGB(
                 bottomSheet.context.getResourceColor(R.attr.actionBarTintColor),
                 unselectedColor,
@@ -287,7 +273,7 @@ class BrowseController :
             )
         )
 
-        binding.bottomSheet.sheetLayout.backgroundTintList = ColorStateList.valueOf(
+        /*binding.bottomSheet.sheetLayout.backgroundTintList = ColorStateList.valueOf(
             ColorUtils.blendARGB(
                 bottomSheet.context.getResourceColor(R.attr.colorPrimaryVariant),
                 bottomSheet.context.getResourceColor(R.attr.colorSurface),
@@ -303,7 +289,6 @@ class BrowseController :
             (-pad).toInt(),
             view?.rootWindowInsets?.getBottomGestureInsets() ?: 0
         )
-        binding.shadow2.translationY = pad
         binding.bottomSheet.root.sheetBehavior?.peekHeight = 56.spToPx + padding
         binding.bottomSheet.root.extensionFrameLayout?.binding?.fastScroller?.updateLayoutParams<ViewGroup.MarginLayoutParams> {
             bottomMargin = -pad.toInt()

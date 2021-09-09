@@ -12,7 +12,8 @@ import eu.kanade.tachiyomi.R
 open class BaseToolbar @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
     MaterialToolbar(context, attrs) {
 
-    protected lateinit var toolbarTitle: TextView
+    lateinit var toolbarTitle: TextView
+        protected set
     private val defStyleRes = com.google.android.material.R.style.Widget_Material3_Toolbar
 
     protected val titleTextAppearance: Int
