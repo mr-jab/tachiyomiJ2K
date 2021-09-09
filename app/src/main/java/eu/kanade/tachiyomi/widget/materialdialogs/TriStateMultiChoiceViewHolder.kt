@@ -1,20 +1,13 @@
 package eu.kanade.tachiyomi.widget.materialdialogs
 
 import android.view.View
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.widget.TriStateCheckBox
 
-class TriItemDiffCallback : DiffUtil.ItemCallback<String>() {
-    override fun areItemsTheSame(oldItem: String, newItem: String): Boolean = oldItem == newItem
-
-    override fun areContentsTheSame(oldItem: String, newItem: String): Boolean = oldItem == newItem
-}
-
-internal class QuadStateMultiChoiceViewHolder(
+internal class TriStateMultiChoiceViewHolder(
     itemView: View,
-    private val adapter: QuadStateMultiChoiceDialogAdapter
+    private val adapter: TriStateMultiChoiceDialogAdapter
 ) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
     init {
         itemView.setOnClickListener(this)

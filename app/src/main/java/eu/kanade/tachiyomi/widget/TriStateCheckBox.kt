@@ -137,7 +137,7 @@ class TriStateCheckBox constructor(context: Context, attrs: AttributeSet?) :
         }
     }
 
-    fun updateDrawable() {
+    private fun updateDrawable() {
         with(binding.triStateBox) {
             when (state) {
                 State.UNCHECKED -> {

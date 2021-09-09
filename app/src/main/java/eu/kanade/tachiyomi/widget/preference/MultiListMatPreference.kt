@@ -4,9 +4,13 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
+import android.view.View
+import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.data.preference.getOrDefault
-import eu.kanade.tachiyomi.ui.setting.defaultValue
+import androidx.appcompat.widget.AppCompatCheckedTextView
+import androidx.core.view.children
 
 class MultiListMatPreference @JvmOverloads constructor(
     activity: Activity?,
@@ -67,13 +71,12 @@ class MultiListMatPreference @JvmOverloads constructor(
             else listOf(context.getString(allSelectionRes!!)) + entries
         } else entries
         val allPos = if (showAllLast) items.size - 1 else 0
-//        if (allSelectionRes != null && default.isEmpty()) default = intArrayOf(allPos)
-//        else if (allSelectionRes != null && allIsAlwaysSelected) default += allPos
-        val selected = if (allSelectionRes != null && set.isEmpty()) items.mapIndexed { index, item ->
-            index == allPos
-        }.toBooleanArray()
-        else items.map { set.contains(it) }.toBooleanArray()
-        if (allSelectionRes != null && allIsAlwaysSelected) selected[allPos] = true
+
+        val allValue = booleanArrayOf(set.isEmpty() || allIsAlwaysSelected)
+        val selected =
+            if (allSelectionRes != null && !showAllLast) { allValue } else { booleanArrayOf() } +
+                entryValues.map { it in set }.toBooleanArray() +
+                if (allSelectionRes != null && showAllLast) { allValue } else { booleanArrayOf() }
         setPositiveButton(android.R.string.ok) { dialog, _ ->
             val pos = mutableListOf<Int>()
             for (i in items.indices)
@@ -81,17 +84,60 @@ class MultiListMatPreference @JvmOverloads constructor(
             var value = pos.mapNotNull {
                 entryValues.getOrNull(it - if (allSelectionRes != null && !showAllLast) 1 else 0)
             }.toSet()
-            if (allSelectionRes != null && !allIsAlwaysSelected && selected[0]) value = emptySet()
+            if (allSelectionRes != null && !allIsAlwaysSelected && selected[allPos]) value = emptySet()
             prefs.getStringSet(key, emptySet()).set(value)
             callChangeListener(value)
             notifyChanged()
         }
-        setMultiChoiceItems(items.toTypedArray(), selected) { _, pos, checked ->
+        setMultiChoiceItems(items.toTypedArray(), selected) { dialog, pos, checked ->
+            // The extra changes above sometimes don't work so theres this too
+            if (pos == allPos) {
+                val listView = (dialog as? AlertDialog)?.listView ?: return@setMultiChoiceItems
+                listView.setItemChecked(pos, !checked)
+                listView.children.forEach {
+                    val cText = (it as? AppCompatCheckedTextView)?.text ?: return@forEach
+                    val cItemIndex: Int = items.indexOf(cText)
+                    if (cItemIndex == allPos) {
+                        it.setOnClickListener(null)
+                        it.isEnabled = false
+                        return@setMultiChoiceItems
+                    }
+                }
+                return@setMultiChoiceItems
+            }
             if (allSelectionRes != null && !allIsAlwaysSelected) {
                 selected[pos] = checked
                 if (checked) selected[allPos] = false
                 else if (selected.none { it }) selected[allPos] = true
+                (dialog as? AlertDialog)?.listView?.setItemChecked(pos, selected[allPos])
             }
+        }
+    }
+
+    // Extra changes to make sure the all button is disabled
+    override fun onShow(dialog: AlertDialog) {
+        if (allSelectionRes != null) {
+            val listView = dialog.listView ?: return
+            val items = if (allSelectionRes != null) {
+                if (showAllLast) entries + listOf(context.getString(allSelectionRes!!))
+                else listOf(context.getString(allSelectionRes!!)) + entries
+            } else entries
+            val allPos = if (showAllLast) items.size - 1 else 0
+
+            listView.setOnHierarchyChangeListener(
+                object : ViewGroup.OnHierarchyChangeListener {
+                    override fun onChildViewAdded(parent: View?, child: View) {
+                        val text = (child as? AppCompatCheckedTextView)?.text ?: return
+                        val itemIndex: Int = items.indexOf(text)
+                        if (itemIndex == allPos) {
+                            child.setOnClickListener(null)
+                        }
+                        child.isEnabled = itemIndex != allPos
+                    }
+
+                    override fun onChildViewRemoved(view: View?, view1: View?) {}
+                }
+            )
         }
     }
 }

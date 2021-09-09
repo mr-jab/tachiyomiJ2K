@@ -12,15 +12,15 @@ private object CheckPayload
 private object InverseCheckPayload
 private object UncheckPayload
 
-typealias QuadStateMultiChoiceListener = ((indices: IntArray, items: List<CharSequence>) -> Unit)?
+internal typealias TriStateMultiChoiceListener = ((adapter: TriStateMultiChoiceDialogAdapter, indices: IntArray, items: List<CharSequence>) -> Unit)?
 
-internal class QuadStateMultiChoiceDialogAdapter(
+internal class TriStateMultiChoiceDialogAdapter(
     private var dialog: MaterialAlertDialogBuilder,
     internal var items: List<CharSequence>,
     disabledItems: IntArray?,
     initialSelection: IntArray,
-    internal var listener: QuadStateMultiChoiceListener
-) : RecyclerView.Adapter<QuadStateMultiChoiceViewHolder>() {
+    internal var listener: TriStateMultiChoiceListener
+) : RecyclerView.Adapter<TriStateMultiChoiceViewHolder>() {
 
     private val states = TriStateCheckBox.State.values()
 
@@ -31,15 +31,15 @@ internal class QuadStateMultiChoiceDialogAdapter(
             previousSelection.forEachIndexed { index, previous ->
                 val current = value[index]
                 when {
-                    current == QuadStateCheckBox.State.CHECKED.ordinal && previous != QuadStateCheckBox.State.CHECKED.ordinal -> {
+                    current == TriStateCheckBox.State.CHECKED.ordinal && previous != TriStateCheckBox.State.CHECKED.ordinal -> {
                         // This value was selected
                         notifyItemChanged(index, CheckPayload)
                     }
-                    current == QuadStateCheckBox.State.INVERSED.ordinal && previous != QuadStateCheckBox.State.INVERSED.ordinal -> {
+                    current == TriStateCheckBox.State.INVERSED.ordinal && previous != TriStateCheckBox.State.INVERSED.ordinal -> {
                         // This value was inverse selected
                         notifyItemChanged(index, InverseCheckPayload)
                     }
-                    current == QuadStateCheckBox.State.UNCHECKED.ordinal && previous != QuadStateCheckBox.State.UNCHECKED.ordinal -> {
+                    current == TriStateCheckBox.State.UNCHECKED.ordinal && previous != TriStateCheckBox.State.UNCHECKED.ordinal -> {
                         // This value was unselected
                         notifyItemChanged(index, UncheckPayload)
                     }
@@ -51,24 +51,24 @@ internal class QuadStateMultiChoiceDialogAdapter(
     internal fun itemClicked(index: Int) {
         val newSelection = this.currentSelection.toMutableList()
         newSelection[index] = when (currentSelection[index]) {
-            QuadStateCheckBox.State.CHECKED.ordinal -> QuadStateCheckBox.State.INVERSED.ordinal
-            QuadStateCheckBox.State.INVERSED.ordinal -> QuadStateCheckBox.State.UNCHECKED.ordinal
+            TriStateCheckBox.State.CHECKED.ordinal -> TriStateCheckBox.State.INVERSED.ordinal
+            TriStateCheckBox.State.INVERSED.ordinal -> TriStateCheckBox.State.UNCHECKED.ordinal
             // INDETERMINATE or UNCHECKED
-            else -> QuadStateCheckBox.State.CHECKED.ordinal
+            else -> TriStateCheckBox.State.CHECKED.ordinal
         }
         currentSelection = newSelection.toIntArray()
         val selectedItems = this.items.filterIndexed { index, _ ->
             currentSelection[index] != 0
         }
-        listener?.invoke(currentSelection, selectedItems)
+        listener?.invoke(this, currentSelection, selectedItems)
     }
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
-    ): QuadStateMultiChoiceViewHolder {
+    ): TriStateMultiChoiceViewHolder {
         val listItemView: View = parent.inflate(dialog.context, R.layout.md_listitem_quadstatemultichoice)
-        val viewHolder = QuadStateMultiChoiceViewHolder(
+        val viewHolder = TriStateMultiChoiceViewHolder(
             itemView = listItemView,
             adapter = this
         )
@@ -80,13 +80,12 @@ internal class QuadStateMultiChoiceDialogAdapter(
     override fun getItemCount() = items.size
 
     override fun onBindViewHolder(
-        holder: QuadStateMultiChoiceViewHolder,
+        holder: TriStateMultiChoiceViewHolder,
         position: Int
     ) {
         holder.isEnabled = !disabledIndices.contains(position)
 
         holder.controlView.state = states.getOrNull(currentSelection[position]) ?: TriStateCheckBox.State.UNCHECKED
-        holder.controlView.updateDrawable()
         holder.controlView.text = items[position]
 //        holder.itemView.background = dialog.getItemSelector()
 
@@ -96,7 +95,7 @@ internal class QuadStateMultiChoiceDialogAdapter(
     }
 
     override fun onBindViewHolder(
-        holder: QuadStateMultiChoiceViewHolder,
+        holder: TriStateMultiChoiceViewHolder,
         position: Int,
         payloads: MutableList<Any>
     ) {
@@ -116,6 +115,7 @@ internal class QuadStateMultiChoiceDialogAdapter(
         }
         super.onBindViewHolder(holder, position, payloads)
     }
+
 //
 //    override fun positiveButtonClicked() {
 // //        selection.invoke(currentSelection)
@@ -137,21 +137,21 @@ internal class QuadStateMultiChoiceDialogAdapter(
 //        notifyDataSetChanged()
 //    }
 //
-//    override fun checkItems(indices: IntArray) {
-//        val newSelection = this.currentSelection.toMutableList()
-//        for (index in indices) {
-//            newSelection[index] = QuadStateCheckBox.State.CHECKED.ordinal
-//        }
-//        this.currentSelection = newSelection.toIntArray()
-//    }
-//
-//    override fun uncheckItems(indices: IntArray) {
-//        val newSelection = this.currentSelection.toMutableList()
-//        for (index in indices) {
-//            newSelection[index] = QuadStateCheckBox.State.UNCHECKED.ordinal
-//        }
-//        this.currentSelection = newSelection.toIntArray()
-//    }
+    fun checkItems(indices: IntArray) {
+        val newSelection = this.currentSelection.toMutableList()
+        for (index in indices) {
+            newSelection[index] = TriStateCheckBox.State.CHECKED.ordinal
+        }
+        this.currentSelection = newSelection.toIntArray()
+    }
+
+    fun uncheckItems(indices: IntArray) {
+        val newSelection = this.currentSelection.toMutableList()
+        for (index in indices) {
+            newSelection[index] = TriStateCheckBox.State.UNCHECKED.ordinal
+        }
+        this.currentSelection = newSelection.toIntArray()
+    }
 //
 //    override fun toggleItems(indices: IntArray) {
 //        val newSelection = this.currentSelection.toMutableList()
@@ -160,30 +160,30 @@ internal class QuadStateMultiChoiceDialogAdapter(
 //                continue
 //            }
 //
-//            if (this.currentSelection[index] != QuadStateCheckBox.State.CHECKED.ordinal) {
-//                newSelection[index] = QuadStateCheckBox.State.CHECKED.ordinal
+//            if (this.currentSelection[index] != TriStateCheckBox.State.CHECKED.ordinal) {
+//                newSelection[index] = TriStateCheckBox.State.CHECKED.ordinal
 //            } else {
-//                newSelection[index] = QuadStateCheckBox.State.UNCHECKED.ordinal
+//                newSelection[index] = TriStateCheckBox.State.UNCHECKED.ordinal
 //            }
 //        }
 //        this.currentSelection = newSelection.toIntArray()
 //    }
 //
 //    override fun checkAllItems() {
-//        this.currentSelection = IntArray(itemCount) { QuadStateCheckBox.State.CHECKED.ordinal }
+//        this.currentSelection = IntArray(itemCount) { TriStateCheckBox.State.CHECKED.ordinal }
 //    }
 //
 //    override fun uncheckAllItems() {
-//        this.currentSelection = IntArray(itemCount) { QuadStateCheckBox.State.UNCHECKED.ordinal }
+//        this.currentSelection = IntArray(itemCount) { TriStateCheckBox.State.UNCHECKED.ordinal }
 //    }
 //
 //    override fun toggleAllChecked() {
-//        if (this.currentSelection.any { it != QuadStateCheckBox.State.CHECKED.ordinal }) {
+//        if (this.currentSelection.any { it != TriStateCheckBox.State.CHECKED.ordinal }) {
 //            checkAllItems()
 //        } else {
 //            uncheckAllItems()
 //        }
 //    }
 //
-//    override fun isItemChecked(index: Int) = this.currentSelection[index] == QuadStateCheckBox.State.CHECKED.ordinal
+//    override fun isItemChecked(index: Int) = this.currentSelection[index] == TriStateCheckBox.State.CHECKED.ordinal
 }

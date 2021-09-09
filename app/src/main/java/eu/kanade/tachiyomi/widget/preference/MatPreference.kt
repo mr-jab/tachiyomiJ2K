@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
 import androidx.annotation.StringRes
+import androidx.appcompat.app.AlertDialog
 import androidx.preference.Preference
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -32,12 +33,18 @@ open class MatPreference @JvmOverloads constructor(
 
     override fun onClick() {
         if (!isShowing) {
-            dialog().apply {
+            val dialog = dialog().apply {
                 setOnDismissListener { this@MatPreference.isShowing = false }
-            }.show()
+            }.create()
+//            dialog.setOnShowListener {
+            onShow(dialog)
+//            }
+            dialog.show()
         }
         isShowing = true
     }
+
+    protected open fun onShow(dialog: AlertDialog) { }
 
     protected open var customSummaryProvider: SummaryProvider<MatPreference>? = null
         set(value) {
