@@ -109,6 +109,7 @@
     <color name="secondaryChocolateStrawberries">#211b19</color>
 
     <!-- Tako Theme -->
+    <color name="primaryTako">#463561</color>
     <color name="secondaryTako">#66577E</color>
     <color name="onSecondaryTako">#F3B375</color>
     <color name="secondaryVariantTako">#2b1f31</color>
@@ -120,10 +121,12 @@
     <color name="inactiveTabTako">#C2221b28</color>
 
     <!-- Yotsuba Theme -->
+    <color name="primaryYotsuba">#ba5427</color>
     <color name="secondaryYotsuba">#dc6d3d</color>
     <color name="secondaryVariantYotsuba">#9f431c</color>
 
     <!-- Yin Yang Theme -->
+    <color name="primaryYinYang">#333333</color>
     <color name="secondaryYinYang">#000000</color>
     <color name="secondaryVariantYinYang">#777777</color>
     <color name="onSecondaryYinYang">@color/md_white_1000</color>
