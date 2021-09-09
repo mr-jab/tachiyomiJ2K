@@ -15,11 +15,9 @@ import androidx.core.view.children
 import androidx.core.view.isVisible
 import coil.loadAny
 import coil.request.Parameters
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.customview.customView
-import com.afollestad.materialdialogs.customview.getCustomView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -66,18 +64,23 @@ class EditMangaDialog : DialogController {
     }
 
     override fun onCreateDialog(savedViewState: Bundle?): Dialog {
-        val dialog = MaterialDialog(activity!!).apply {
-            customView(viewRes = R.layout.edit_manga_dialog, scrollable = true)
-            negativeButton(android.R.string.cancel)
-            positiveButton(R.string.save) { onPositiveButtonClick() }
+        binding = EditMangaDialogBinding.inflate(activity!!.layoutInflater)
+        val dialog = MaterialAlertDialogBuilder(activity!!).apply {
+            setView(binding.root)
+            setNegativeButton(android.R.string.cancel, null)
+            setPositiveButton(R.string.save) { _, _ -> onPositiveButtonClick() }
         }
-        binding = EditMangaDialogBinding.bind(dialog.getCustomView())
         onViewCreated()
-        dialog.setOnShowListener {
-            val dView = (it as? MaterialDialog)?.view
-            dView?.contentLayout?.scrollView?.scrollTo(0, 0)
+        val updateScrollIndicators = {
+            binding.scrollIndicatorDown.isVisible = binding.scrollView.canScrollVertically(1)
         }
-        return dialog
+        binding.scrollView.setOnScrollChangeListener { _, _, _, _, _ ->
+            updateScrollIndicators()
+        }
+        binding.scrollView.post {
+            updateScrollIndicators()
+        }
+        return dialog.create()
     }
 
     fun onViewCreated() {

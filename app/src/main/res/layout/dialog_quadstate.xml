@@ -26,7 +26,7 @@
         android:layout_height="wrap_content">
 
         <com.google.android.material.divider.MaterialDivider
-            android:id="@+id/scrollIndicatorUp"
+            android:id="@+id/scroll_indicator_up"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="top" />
@@ -39,7 +39,7 @@
             tools:listitem="@layout/md_listitem_quadstatemultichoice" />
 
         <com.google.android.material.divider.MaterialDivider
-            android:id="@+id/scrollIndicatorDown"
+            android:id="@+id/scroll_indicator_down"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom" />

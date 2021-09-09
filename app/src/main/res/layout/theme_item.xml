@@ -27,7 +27,6 @@
         app:layout_constraintStart_toStartOf="@id/theme_selected"
         app:layout_constraintBottom_toBottomOf="@id/theme_selected"
         app:layout_constraintEnd_toEndOf="@id/theme_selected"
-        app:cardElevation="4dp"
         app:cardCornerRadius="16dp">
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"

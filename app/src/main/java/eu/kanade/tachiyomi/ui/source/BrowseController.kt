@@ -2,7 +2,7 @@ package eu.kanade.tachiyomi.ui.source
 
 import android.animation.ValueAnimator
 import android.app.Activity
-import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.Menu
@@ -62,6 +62,7 @@ import java.util.Date
 import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 /**
  * This controller shows and manages the different catalogues enabled by the user.
@@ -237,8 +238,20 @@ class BrowseController :
 
     fun updateTitleAndMenu() {
         if (router.backstack.lastOrNull()?.controller == this) {
+            val activity = (activity as? MainActivity) ?: return
             (activity as? MainActivity)?.setFloatingToolbar(!showingExtensions)
-            activity?.invalidateOptionsMenu()
+            if (showingExtensions) {
+                val color = activity.getResourceColor(R.attr.colorPrimaryVariant)
+                activityBinding?.appBar?.setBackgroundColor(color)
+                activity.window?.statusBarColor =
+                    ColorUtils.setAlphaComponent(color, (0.87f * 255).roundToInt())
+            } else {
+                activityBinding?.appBar?.setBackgroundColor(Color.TRANSPARENT)
+                activity.window?.statusBarColor = activity.getResourceColor(
+                    android.R.attr.statusBarColor
+                )
+            }
+            activity.invalidateOptionsMenu()
             setTitle()
         }
     }
@@ -258,10 +271,10 @@ class BrowseController :
             bottomSheet.context.getResourceColor(R.attr.actionBarTintColor),
             153
         )
-        binding.bottomSheet.sheetLayout.elevation = progress * 5
+//        binding.bottomSheet.sheetLayout.elevation = progress * 5
         binding.bottomSheet.pager.alpha = progress * 10
         binding.bottomSheet.tabs.setSelectedTabIndicatorColor(selectedColor)
-        binding.bottomSheet.tabs.setTabTextColors(
+        /*binding.bottomSheet.tabs.setTabTextColors(
             ColorUtils.blendARGB(
                 bottomSheet.context.getResourceColor(R.attr.actionBarTintColor),
                 unselectedColor,
@@ -280,7 +293,7 @@ class BrowseController :
                 bottomSheet.context.getResourceColor(R.attr.colorSurface),
                 progress
             )
-        )
+        )*/
     }
 
     private fun setBottomPadding() {

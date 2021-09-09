@@ -70,7 +70,7 @@ import eu.kanade.tachiyomi.util.view.withFadeTransaction
 import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.max
-import kotlin.math.min
+import kotlin.math.roundToInt
 
 /**
  * Fragment that shows recently read manga.
@@ -132,7 +132,8 @@ class RecentsController(bundle: Bundle? = null) :
         )
     }
 
-    override fun createBinding(inflater: LayoutInflater) = RecentsControllerBinding.inflate(inflater)
+    override fun createBinding(inflater: LayoutInflater) =
+        RecentsControllerBinding.inflate(inflater)
 
     /**
      * Called when view is created
@@ -193,7 +194,9 @@ class RecentsController(bundle: Bundle? = null) :
         )
 
         activityBinding?.root?.post {
-            val height = activityBinding?.bottomNav?.height ?: view.rootWindowInsets?.systemWindowInsetBottom ?: 0
+            val height =
+                activityBinding?.bottomNav?.height ?: view.rootWindowInsets?.systemWindowInsetBottom
+                    ?: 0
             binding.recycler.updatePaddingRelative(bottom = height)
             binding.downloadBottomSheet.dlRecycler.updatePaddingRelative(
                 bottom = height
@@ -202,6 +205,7 @@ class RecentsController(bundle: Bundle? = null) :
             activityBinding?.tabsFrameLayout?.isVisible = !isExpanded
             if (isExpanded) {
                 (activity as? MainActivity)?.showTabBar(show = false, animate = false)
+                setRecentsAppBarBG(1f)
             }
             val isCollapsed = binding.downloadBottomSheet.root.sheetBehavior.isCollapsed()
             binding.shadow2.alpha = if (isCollapsed) shadow2Alpha else 0f
@@ -215,7 +219,8 @@ class RecentsController(bundle: Bundle? = null) :
                     isExpanded.toInt().toFloat()
                 )
             )
-            binding.downloadBottomSheet.root.backgroundTintList = binding.downloadBottomSheet.sheetLayout.backgroundTintList
+            binding.downloadBottomSheet.root.backgroundTintList =
+                binding.downloadBottomSheet.sheetLayout.backgroundTintList
             updateTitleAndMenu()
         }
 
@@ -243,21 +248,24 @@ class RecentsController(bundle: Bundle? = null) :
                     // Doing some fun math to hide the tab bar just as the title text of the
                     // dl sheet is under the toolbar
                     val cap = height * (1 / 12600f) + 479f / 700
-                    activityBinding?.appBar?.elevation = min(
-                        (1f - progress / cap) * 15f,
-                        if (binding.recycler.canScrollVertically(-1)) 15f else 0f
-                    ).coerceIn(0f, 15f)
+                    val elValue = max(
+                        max(0f, (progress - cap)) / (1 - cap),
+                        if (binding.recycler.canScrollVertically(-1)) 1f else 0f
+                    ).coerceIn(0f, 1f)
+                    setRecentsAppBarBG(elValue)
                     binding.fakeAppBar.alpha = max(0f, (progress - cap) / (1f - cap))
                     binding.downloadBottomSheet.sheetLayout.alpha = 1 - max(0f, progress / cap)
                     binding.downloadBottomSheet.dlRecycler.alpha = progress * 10
-                    binding.downloadBottomSheet.sheetLayout.backgroundTintList = ColorStateList.valueOf(
-                        ColorUtils.blendARGB(
-                            view.context.getResourceColor(R.attr.colorPrimaryVariant),
-                            view.context.getResourceColor(R.attr.background),
-                            (progress * 2f).coerceIn(0f, 1f)
+                    binding.downloadBottomSheet.sheetLayout.backgroundTintList =
+                        ColorStateList.valueOf(
+                            ColorUtils.blendARGB(
+                                view.context.getResourceColor(R.attr.colorPrimaryVariant),
+                                view.context.getResourceColor(R.attr.background),
+                                (progress * 2f).coerceIn(0f, 1f)
+                            )
                         )
-                    )
-                    binding.downloadBottomSheet.root.backgroundTintList = binding.downloadBottomSheet.sheetLayout.backgroundTintList
+                    binding.downloadBottomSheet.root.backgroundTintList =
+                        binding.downloadBottomSheet.sheetLayout.backgroundTintList
                     activityBinding?.appBar?.y = max(
                         activityBinding!!.appBar.y,
                         -headerHeight * (1 - progress)
@@ -381,9 +389,25 @@ class RecentsController(bundle: Bundle? = null) :
 
     fun updateTitleAndMenu() {
         if (router.backstack.lastOrNull()?.controller == this) {
-            (activity as? MainActivity)?.setFloatingToolbar(!showingDownloads, true)
+            val activity = (activity as? MainActivity) ?: return
+            activity.setFloatingToolbar(!showingDownloads, true)
+            if (showingDownloads) {
+                setRecentsAppBarBG(1f)
+            }
             setTitle()
         }
+    }
+
+    fun setRecentsAppBarBG(value: Float) {
+        val context = view?.context ?: return
+        val color = ColorUtils.blendARGB(
+            context.getResourceColor(R.attr.colorSurface),
+            context.getResourceColor(R.attr.colorPrimaryVariant),
+            value
+        )
+        activityBinding?.appBar?.setBackgroundColor(color)
+        activity?.window?.statusBarColor =
+            ColorUtils.setAlphaComponent(color, (0.87f * 255).roundToInt())
     }
 
     private fun setBottomPadding() {

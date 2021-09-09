@@ -101,6 +101,7 @@ fun Context.hasPermission(permission: String) =
  *
  * @param resource the attribute.
  */
+@ColorInt
 fun Context.getResourceColor(@AttrRes resource: Int): Int {
     val typedArray = obtainStyledAttributes(intArrayOf(resource))
     val attrValue = typedArray.getColor(0, 0)

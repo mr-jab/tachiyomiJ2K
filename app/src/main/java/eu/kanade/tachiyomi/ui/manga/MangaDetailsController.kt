@@ -37,6 +37,7 @@ import com.afollestad.materialdialogs.checkbox.isCheckPromptChecked
 import com.afollestad.materialdialogs.utils.MDUtil.isLandscape
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import eu.davidea.flexibleadapter.FlexibleAdapter
@@ -980,17 +981,20 @@ class MangaDetailsController :
 
     private fun massDeleteChapters(chapters: List<ChapterItem>, isEverything: Boolean) {
         val context = view?.context ?: return
-        MaterialDialog(context).message(
-            text =
-            if (isEverything) context.getString(R.string.remove_all_downloads)
-            else context.resources.getQuantityString(
-                R.plurals.remove_n_chapters,
-                chapters.size,
-                chapters.size
+        MaterialAlertDialogBuilder(context)
+            .setMessage(
+                if (isEverything) context.getString(R.string.remove_all_downloads)
+                else context.resources.getQuantityString(
+                    R.plurals.remove_n_chapters,
+                    chapters.size,
+                    chapters.size
+                )
             )
-        ).positiveButton(R.string.remove) {
-            presenter.deleteChapters(chapters, isEverything = isEverything)
-        }.negativeButton(android.R.string.cancel).show()
+            .setPositiveButton(R.string.remove) { _, _ ->
+                presenter.deleteChapters(chapters, isEverything = isEverything)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 
     private fun downloadChapters(choice: Int) {

@@ -5,9 +5,8 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.utils.MDUtil.isLandscape
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.slider.Slider
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.R
@@ -56,10 +55,11 @@ class LibraryDisplayView @JvmOverloads constructor(context: Context, attrs: Attr
             recycler.adapter = adapter
             adapter.isHandleDragEnabled = true
             adapter.isLongPressDragEnabled = true
-            MaterialDialog(context).title(R.string.reorder_filters)
-                .customView(view = recycler, scrollable = false)
-                .negativeButton(android.R.string.cancel)
-                .positiveButton(R.string.reorder) {
+            MaterialAlertDialogBuilder(context)
+                .setTitle(R.string.reorder_filters)
+                .setView(recycler)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(R.string.reorder) { _, _ ->
                     val order = adapter.currentItems.map { it.char }.joinToString("")
                     preferences.filterOrder().set(order)
                     recycler.adapter = null

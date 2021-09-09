@@ -3,6 +3,7 @@
     <!-- Application Colors -->
     <color name="primaryVariantTachiyomi">#212121</color>
     <color name="colorPrimaryInactive">@color/md_white_1000_76</color>
+    <color name="primaryTachiyomi">#78bcff</color>
 
     <color name="secondaryTachiyomi">#3399FF</color>
     <color name="secondaryVariantTachiyomi">#cce5ff</color>
@@ -22,6 +23,9 @@
     <color name="background">#1C1C1D</color>
     <color name="dialog">#212121</color>
     <color name="gray_button">#BFBFBF</color>
+
+    <!-- Chocolate Strawberries Theme -->
+    <color name="primaryStrawberry">#e14e4e</color>
 
     <!-- Tako Theme -->
     <color name="secondaryTako">#F3B375</color>

@@ -4,6 +4,7 @@
     <color name="primaryVariantTachiyomi">@color/md_white_1000</color>
     <color name="colorPrimaryInactive">#C2424242</color>
     <color name="primaryTachiyomi">#54759E</color>
+    <color name="legacyBlue">#54759E</color>
     <color name="splashBackground">@color/primaryTachiyomi</color>
     <color name="secondaryTachiyomi">@color/md_blue_A400</color>
     <color name="secondaryVariantTachiyomi">#184798</color>
@@ -69,11 +70,11 @@
     <color name="navigation_prev">#CC7D1128</color>
 
     <!-- Spring Blossom -->
+    <color name="primaryDuskDawn">#a149bf</color>
     <color name="secondaryDuskDawn">#c43c97</color>
     <color name="secondaryVariantDuskDawn">#803d6a</color>
     <color name="backgroundDuskDawn">#f7f4f8</color>
     <color name="dialogDuskDawn">#efe3f3</color>
-    <color name="primaryDuskDawn">#efe3f3</color>
     <color name="colorOnBackgroundDuskDawn">#DE240728</color>
     <color name="appBarTextDuskDawn">#DE4c0d4b</color>
 
@@ -100,6 +101,7 @@
     <color name="colorOnLime">#2C2D32</color>
 
     <!-- Strawberry Daiquiri Theme -->
+    <color name="primaryStrawberry">#d31d3b</color>
     <color name="secondaryStrawberry">#ED4A65</color>
     <color name="secondaryAlternativeStrawberry">#b62e45</color>
 

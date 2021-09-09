@@ -39,10 +39,10 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
 import com.github.florent37.viewtooltip.ViewTooltip
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import eu.davidea.flexibleadapter.FlexibleAdapter
@@ -602,10 +602,11 @@ class LibraryController(
                         updateLibrary()
                     }
                     preferences.updateOnRefresh().getOrDefault() == -1 -> {
-                        MaterialDialog(activity!!).title(R.string.what_should_update)
-                            .negativeButton(android.R.string.cancel)
-                            .listItemsSingleChoice(
-                                items = listOf(
+                        MaterialAlertDialogBuilder(activity!!)
+                            .setTitle(R.string.what_should_update)
+                            .setNegativeButton(android.R.string.cancel, null)
+                            .setSingleChoiceItems(
+                                arrayOf(
                                     context.getString(
                                         R.string.top_category,
                                         presenter.allCategories.first().name
@@ -614,14 +615,16 @@ class LibraryController(
                                         R.string.categories_in_global_update
                                     )
                                 ),
-                                selection = { _, index, _ ->
-                                    preferences.updateOnRefresh().set(index)
-                                    when (index) {
-                                        0 -> updateLibrary(presenter.allCategories.first())
-                                        else -> updateLibrary()
-                                    }
+                                -1
+                            ) { _, index ->
+                                preferences.updateOnRefresh().set(index)
+                                when (index) {
+                                    0 -> updateLibrary(presenter.allCategories.first())
+                                    else -> updateLibrary()
                                 }
-                            ).positiveButton(R.string.update).show()
+                            }
+                            .setPositiveButton(R.string.update, null)
+                            .show()
                     }
                     else -> {
                         when (preferences.updateOnRefresh().getOrDefault()) {
