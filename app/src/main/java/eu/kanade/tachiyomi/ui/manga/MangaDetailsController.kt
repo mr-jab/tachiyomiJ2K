@@ -1000,7 +1000,7 @@ class MangaDetailsController :
     }
 
     private fun updateToolbarTitleAlpha(@FloatRange(from = 0.0, to = 1.0) alpha: Float? = null) {
-        if (router?.backstack?.lastOrNull()?.controller != this@MangaDetailsController) return
+        if (router?.backstack?.lastOrNull()?.controller != this@MangaDetailsController && alpha == null) return
         val scrolledList = binding.recycler
         if (toolbarTextView == null) {
             toolbarTextView = activityBinding?.toolbar?.toolbarTitle
