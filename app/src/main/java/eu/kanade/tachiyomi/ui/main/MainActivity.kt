@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Rect
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
@@ -419,7 +420,8 @@ open class MainActivity : BaseActivity<MainActivityBinding>(), DownloadServiceLi
         }
         binding.toolbar.isVisible = !show
         binding.cardFrame.isVisible = show
-        if (changeBG) {
+        val bgColor = (binding.appBar.background as? ColorDrawable)?.color ?: Color.TRANSPARENT
+        if (changeBG && (if (solidBG) bgColor == Color.TRANSPARENT else false)) {
             binding.appBar.setBackgroundColor(
                 if (show && !solidBG) Color.TRANSPARENT else getResourceColor(R.attr.colorSurface)
             )

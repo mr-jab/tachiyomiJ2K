@@ -82,7 +82,7 @@
 
     <TextView
         android:id="@+id/title"
-        style="@style/TextAppearance.MaterialComponents.Headline6"
+        style="@style/TextAppearance.Material3.HeadlineSmall"
         android:layout_width="wrap_content"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constrainedWidth="true"
@@ -109,7 +109,7 @@
         android:ellipsize="end"
         android:maxLines="2"
         android:text="@string/author"
-        android:textAppearance="@style/TextAppearance.Regular.Body1.SemiBold"
+        android:textAppearance="@style/TextAppearance.Medium"
         android:textColor="?android:attr/textColorSecondary"
         android:textIsSelectable="false"
         app:layout_constraintEnd_toEndOf="parent"
@@ -220,7 +220,7 @@
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/manga_summary_label"
-        style="@style/TextAppearance.MaterialComponents.Headline6"
+        style="@style/TextAppearance.Material3.TitleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -379,7 +379,7 @@
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/chapters_title"
-            style="@style/TextAppearance.MaterialComponents.Headline6"
+            style="@style/TextAppearance.Material3.TitleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"

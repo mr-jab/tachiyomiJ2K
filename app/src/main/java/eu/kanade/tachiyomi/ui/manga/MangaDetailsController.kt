@@ -18,7 +18,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.inputmethod.InputMethodManager
-import android.widget.TextView
 import androidx.annotation.FloatRange
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
@@ -169,7 +168,6 @@ class MangaDetailsController :
     private var editMangaDialog: EditMangaDialog? = null
     var refreshTracker: Int? = null
     var chapterPopupMenu: Pair<Int, PopupMenu>? = null
-    private var toolbarTextView: TextView? = null
 
     // Tablet Layout
     var isTablet = false
@@ -278,7 +276,7 @@ class MangaDetailsController :
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                     super.onScrolled(recyclerView, dx, dy)
                     if (!isTablet) {
-                        updateToolbarTitleAlpha()
+                        updateToolbarTitleAlpha(isScrollingDown = dy > 0)
                         val atTop = !recyclerView.canScrollVertically(-1)
                         val tY = getHeader()?.binding?.backdrop?.translationY ?: 0f
                         getHeader()?.binding?.backdrop?.translationY = max(0f, tY + dy * 0.25f)
@@ -999,23 +997,23 @@ class MangaDetailsController :
             .show()
     }
 
-    private fun updateToolbarTitleAlpha(@FloatRange(from = 0.0, to = 1.0) alpha: Float? = null) {
-        if (router?.backstack?.lastOrNull()?.controller != this@MangaDetailsController && alpha == null) return
+    private fun updateToolbarTitleAlpha(@FloatRange(from = 0.0, to = 1.0) alpha: Float? = null, isScrollingDown: Boolean = false) {
+        if ((
+            router?.backstack?.lastOrNull()?.controller != this@MangaDetailsController &&
+                alpha == null
+            ) || isScrollingDown
+        ) return
         val scrolledList = binding.recycler
-        if (toolbarTextView == null) {
-            toolbarTextView = activityBinding?.toolbar?.toolbarTitle
-        }
-        toolbarTextView?.alpha = when {
+        activityBinding?.toolbar?.toolbarTitle?.alpha = when {
             // Specific alpha provided
             alpha != null -> alpha
 
             // First item isn't in view, full opacity
             ((scrolledList.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition() > 0) -> 1f
+            ((scrolledList.layoutManager as LinearLayoutManager).findFirstCompletelyVisibleItemPosition() == 0) -> 0f
 
             // Based on scroll amount when first item is in view
-            else -> (
-                scrolledList.computeVerticalScrollOffset() - (20.dpToPx)
-                )
+            else -> (scrolledList.computeVerticalScrollOffset() - (20.dpToPx))
                 .coerceIn(0, 255) / 255f
         }
     }

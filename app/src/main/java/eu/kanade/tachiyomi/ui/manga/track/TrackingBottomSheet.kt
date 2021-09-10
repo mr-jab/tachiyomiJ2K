@@ -30,29 +30,34 @@ import android.graphics.Typeface
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.StyleSpan
+import android.view.Gravity
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.PopupMenu
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.updateLayoutParams
+import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.listeners.addClickListener
+import eu.kanade.tachiyomi.databinding.TrackChaptersDialogBinding
+import eu.kanade.tachiyomi.databinding.TrackScoreDialogBinding
 import eu.kanade.tachiyomi.ui.manga.MangaDetailsDivider
 import eu.kanade.tachiyomi.util.lang.indexesOf
 import eu.kanade.tachiyomi.util.system.openInBrowser
+import eu.kanade.tachiyomi.util.system.toLocalCalendar
+import eu.kanade.tachiyomi.util.system.toUtcCalendar
 import eu.kanade.tachiyomi.util.system.withOriginalWidth
 import eu.kanade.tachiyomi.util.view.expand
+import java.text.DateFormat
+import java.util.Calendar
 
 class TrackingBottomSheet(private val controller: MangaDetailsController) :
     E2EBottomSheetDialog<TrackingBottomSheetBinding>(controller.activity!!),
-    TrackAdapter.OnClickListener,
-    SetTrackStatusDialog.Listener,
-    SetTrackChaptersDialog.Listener,
-    SetTrackScoreDialog.Listener,
-    TrackRemoveDialog.Listener,
-    SetTrackReadingDatesDialog.Listener {
+    TrackAdapter.OnClickListener {
 
     val activity = controller.activity!!
 
@@ -62,6 +67,11 @@ class TrackingBottomSheet(private val controller: MangaDetailsController) :
     private var adapter: TrackAdapter? = null
     private val searchItemAdapter = ItemAdapter<TrackSearchItem>()
     private val searchAdapter = FastAdapter.with(searchItemAdapter)
+    private var suggestedStartDate: Long? = null
+    private var suggestedFinishDate: Long? = null
+    private val dateFormat: DateFormat by lazy {
+        presenter.preferences.dateFormat()
+    }
 
     override fun createBinding(inflater: LayoutInflater) =
         TrackingBottomSheetBinding.inflate(inflater)
@@ -124,6 +134,11 @@ class TrackingBottomSheet(private val controller: MangaDetailsController) :
                 matchConstraintMaxHeight =
                     fullHeight - (insets?.systemWindowInsetTop ?: 0) - 30.dpToPx
             }
+        }
+
+        controller.viewScope.launchIO {
+            suggestedStartDate = presenter.getSuggestedDate(ReadingDate.Start)
+            suggestedFinishDate = presenter.getSuggestedDate(ReadingDate.Finish)
         }
     }
 
@@ -378,7 +393,21 @@ class TrackingBottomSheet(private val controller: MangaDetailsController) :
             return
         }
 
-        SetTrackStatusDialog(this, item).showDialog(controller.router)
+        val statusList = item.service.getStatusList()
+        val statusString = statusList.map { item.service.getStatus(it) }
+        val selectedIndex = statusList.indexOf(item.track.status)
+
+        MaterialAlertDialogBuilder(activity.withOriginalWidth())
+            .setTitle(R.string.status)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setSingleChoiceItems(
+                statusString.toTypedArray(),
+                selectedIndex
+            ) { dialog, itemPosition ->
+                setStatus(item, itemPosition)
+                dialog.dismiss()
+            }
+            .show()
     }
 
     override fun onRemoveClick(position: Int) {
@@ -390,7 +419,33 @@ class TrackingBottomSheet(private val controller: MangaDetailsController) :
             return
         }
 
-        TrackRemoveDialog(this, item).showDialog(controller.router)
+        val dialog = MaterialAlertDialogBuilder(activity.withOriginalWidth())
+            .setTitle(R.string.remove_tracking)
+            .setNegativeButton(android.R.string.cancel, null)
+
+        if (item.service.canRemoveFromService()) {
+            val serviceName = activity.getString(item.service.nameRes())
+            var isChecked = true
+            dialog.setMultiChoiceItems(
+                arrayOf(
+                    activity.getString(
+                        R.string.remove_tracking_from_,
+                        serviceName
+                    )
+                ),
+                booleanArrayOf(true)
+            ) { _, _, checked ->
+                isChecked = checked
+            }
+                .setPositiveButton(R.string.remove) { _, _ ->
+                    removeTracker(item, isChecked)
+                }
+        } else {
+            dialog.setPositiveButton(R.string.remove) { _, _ ->
+                removeTracker(item, false)
+            }
+        }
+        dialog.show()
     }
 
     override fun onChaptersClick(position: Int) {
@@ -400,7 +455,30 @@ class TrackingBottomSheet(private val controller: MangaDetailsController) :
             dismiss()
             return
         }
-        SetTrackChaptersDialog(this, item).showDialog(controller.router)
+
+        val binding = TrackChaptersDialogBinding.inflate(activity.layoutInflater)
+        val dialog = MaterialAlertDialogBuilder(activity.withOriginalWidth())
+            .setTitle(R.string.chapters)
+            .setView(binding.root)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                // Remove focus to update selected number
+                val np = binding.chaptersPicker
+                np.clearFocus()
+                setChaptersRead(item, np.value)
+            }
+
+        val np = binding.chaptersPicker
+        // Set initial value
+        np.value = item.track.last_chapter_read
+        if (item.track.total_chapters > 0) {
+            np.wrapSelectorWheel = true
+            np.maxValue = item.track.total_chapters
+        } else {
+            // Don't allow to go from 0 to 9999
+            np.wrapSelectorWheel = false
+        }
+        dialog.show()
     }
 
     override fun onScoreClick(position: Int) {
@@ -411,40 +489,153 @@ class TrackingBottomSheet(private val controller: MangaDetailsController) :
             return
         }
 
-        SetTrackScoreDialog(this, item).showDialog(controller.router)
+        val binding = TrackScoreDialogBinding.inflate(activity.layoutInflater)
+        val dialog = MaterialAlertDialogBuilder(activity.withOriginalWidth())
+            .setTitle(R.string.score)
+            .setView(binding.root)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                val np = binding.scorePicker
+                np.clearFocus()
+
+                setScore(item, np.value)
+            }
+
+        val np = binding.scorePicker
+        val scores = item.service.getScoreList().toTypedArray()
+        np.maxValue = scores.size - 1
+        np.displayedValues = scores
+
+        // Set initial value
+        val displayedScore = item.service.displayScore(item.track)
+        if (displayedScore != "-") {
+            val index = scores.indexOf(displayedScore)
+            np.value = if (index != -1) index else 0
+        }
+
+        dialog.show()
     }
 
-    override fun onStartDateClick(position: Int) {
+    override fun onStartDateClick(view: View, position: Int) {
         val item = adapter?.getItem(position) ?: return
         if (item.track == null) return
 
-        val suggestedDate = presenter.getSuggestedDate(SetTrackReadingDatesDialog.ReadingDate.Start)
-        SetTrackReadingDatesDialog(
-            controller,
-            this,
-            SetTrackReadingDatesDialog.ReadingDate.Start,
-            item,
-            suggestedDate
-        )
-            .showDialog(controller.router)
+        showMenuPicker(view, item, ReadingDate.Start, suggestedStartDate)
     }
 
-    override fun onFinishDateClick(position: Int) {
+    override fun onFinishDateClick(view: View, position: Int) {
         val item = adapter?.getItem(position) ?: return
         if (item.track == null) return
 
-        val suggestedDate = presenter.getSuggestedDate(SetTrackReadingDatesDialog.ReadingDate.Finish)
-        SetTrackReadingDatesDialog(
-            controller,
-            this,
-            SetTrackReadingDatesDialog.ReadingDate.Finish,
-            item,
-            suggestedDate
-        )
-            .showDialog(controller.router)
+        showMenuPicker(view, item, ReadingDate.Finish, suggestedFinishDate)
     }
 
-    override fun setStatus(item: TrackItem, selection: Int) {
+    private fun showMenuPicker(view: View, trackItem: TrackItem, readingDate: ReadingDate, suggestedDate: Long?) {
+        val date = if (readingDate == ReadingDate.Start) {
+            trackItem.track?.started_reading_date
+        } else {
+            trackItem.track?.finished_reading_date
+        } ?: 0L
+        if (date <= 0L) {
+            showDatePicker(trackItem, readingDate, suggestedDate)
+            return
+        }
+        val popup = PopupMenu(activity, view, Gravity.NO_GRAVITY)
+        popup.menu.add(0, 0, 0, R.string.edit)
+        getSuggestedDate(trackItem, readingDate, suggestedDate)?.let {
+            val subMenu = popup.menu.addSubMenu(0, 1, 0, R.string.use_suggested_date)
+            subMenu.add(0, 2, 0, it)
+        }
+        popup.menu.add(0, 3, 0, R.string.remove)
+
+        popup.setOnMenuItemClickListener {
+            when (it.itemId) {
+                0 -> showDatePicker(trackItem, readingDate, suggestedDate)
+                2 -> setReadingDate(trackItem, readingDate, suggestedDate!!)
+                3 -> setReadingDate(trackItem, readingDate, -1L)
+            }
+            true
+        }
+
+        popup.show()
+    }
+
+    enum class ReadingDate {
+        Start,
+        Finish
+    }
+
+    private fun showDatePicker(trackItem: TrackItem, readingDate: ReadingDate, suggestedDate: Long?) {
+        val dialog = MaterialDatePicker.Builder.datePicker() // .(activity!!.withOriginalWidth())
+            .setTitleText(
+                when (readingDate) {
+                    ReadingDate.Start -> R.string.started_reading_date
+                    ReadingDate.Finish -> R.string.finished_reading_date
+                }
+            )
+            .setSelection(getCurrentDate(trackItem, readingDate, suggestedDate)?.timeInMillis).apply {
+            }
+            .build()
+
+        dialog.addOnPositiveButtonClickListener { utcMillis ->
+            val result = utcMillis.toLocalCalendar()?.timeInMillis
+            if (result != null) {
+                setReadingDate(trackItem, readingDate, result)
+            }
+        }
+        dialog.show((activity as AppCompatActivity).supportFragmentManager, readingDate.toString())
+    }
+
+    private fun getSuggestedDate(trackItem: TrackItem, readingDate: ReadingDate, suggestedDate: Long?): String? {
+        trackItem.track ?: return null
+        val date = when (readingDate) {
+            ReadingDate.Start -> trackItem.track.started_reading_date
+            ReadingDate.Finish -> trackItem.track.finished_reading_date
+        }
+        if (date != 0L) {
+            if (suggestedDate != null) {
+                val calendar = Calendar.getInstance()
+                calendar.timeInMillis = date
+                val suggestedCalendar = Calendar.getInstance()
+                suggestedCalendar.timeInMillis = suggestedDate
+                return if (date > suggestedDate &&
+                    (
+                        suggestedCalendar.get(Calendar.YEAR) != calendar.get(Calendar.YEAR) ||
+                            suggestedCalendar.get(Calendar.MONTH) != calendar.get(Calendar.MONTH) ||
+                            suggestedCalendar.get(Calendar.DAY_OF_MONTH) != calendar.get(Calendar.DAY_OF_MONTH)
+                        )
+                ) {
+                    dateFormat.format(suggestedDate)
+                } else {
+                    null
+                }
+            }
+        }
+        suggestedDate?.let {
+            return dateFormat.format(suggestedDate)
+        }
+        return null
+    }
+
+    private fun getCurrentDate(trackItem: TrackItem, readingDate: ReadingDate, suggestedDate: Long?): Calendar? {
+        // Today if no date is set, otherwise the already set date
+        return Calendar.getInstance().apply {
+            suggestedDate?.let {
+                timeInMillis = it
+            }
+            trackItem.track?.let {
+                val date = when (readingDate) {
+                    ReadingDate.Start -> it.started_reading_date
+                    ReadingDate.Finish -> it.finished_reading_date
+                }
+                if (date != 0L) {
+                    timeInMillis = date
+                }
+            }
+        }.timeInMillis.toUtcCalendar()
+    }
+
+    fun setStatus(item: TrackItem, selection: Int) {
         presenter.setStatus(item, selection)
         refreshItem(item)
     }
@@ -465,25 +656,26 @@ class TrackingBottomSheet(private val controller: MangaDetailsController) :
         }
     }
 
-    override fun setScore(item: TrackItem, score: Int) {
+    fun setScore(item: TrackItem, score: Int) {
         presenter.setScore(item, score)
         refreshItem(item)
     }
 
-    override fun setChaptersRead(item: TrackItem, chaptersRead: Int) {
+    private fun setChaptersRead(item: TrackItem, chaptersRead: Int) {
         presenter.setLastChapterRead(item, chaptersRead)
         refreshItem(item)
     }
 
-    override fun removeTracker(item: TrackItem, fromServiceAlso: Boolean) {
+    private fun removeTracker(item: TrackItem, fromServiceAlso: Boolean) {
         refreshTrack(item.service)
         presenter.removeTracker(item, fromServiceAlso)
     }
 
-    override fun setReadingDate(item: TrackItem, type: SetTrackReadingDatesDialog.ReadingDate, date: Long) {
+    private fun setReadingDate(item: TrackItem, type: ReadingDate, date: Long) {
+        refreshTrack(item.service)
         when (type) {
-            SetTrackReadingDatesDialog.ReadingDate.Start -> controller.presenter.setTrackerStartDate(item, date)
-            SetTrackReadingDatesDialog.ReadingDate.Finish -> controller.presenter.setTrackerFinishDate(item, date)
+            ReadingDate.Start -> controller.presenter.setTrackerStartDate(item, date)
+            ReadingDate.Finish -> controller.presenter.setTrackerFinishDate(item, date)
         }
     }
 }

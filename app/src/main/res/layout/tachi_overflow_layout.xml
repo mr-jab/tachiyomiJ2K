@@ -28,7 +28,6 @@
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_min="250dp"
         app:layout_constrainedWidth="true">
 
         <androidx.constraintlayout.widget.ConstraintLayout

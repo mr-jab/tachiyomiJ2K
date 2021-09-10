@@ -75,7 +75,7 @@
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/compact_title"
-                style="@style/TextAppearance.Regular.Body1.SemiBold"
+                style="@style/TextAppearance.Material3.LabelMedium"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
@@ -129,25 +129,23 @@
             android:layout_height="30sp">
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/title"
-                style="@style/TextAppearance.Regular.Body1.Light"
+                style="@style/TextAppearance.Material3.BodySmall"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:maxLines="2"
                 android:textColor="?attr/colorOnBackground"
-                android:textSize="12sp"
                 app:layout_constraintBottom_toTopOf="@+id/subtitle"
                 tools:text="Sample name" />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/subtitle"
-                style="@style/TextAppearance.Regular.Body1.Secondary"
+                style="@style/TextAppearance.Material3.BodySmall"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="-1dp"
                 android:ellipsize="end"
                 android:singleLine="true"
-                android:textSize="12sp"
                 tools:text="Sample artist" />
         </LinearLayout>
 
