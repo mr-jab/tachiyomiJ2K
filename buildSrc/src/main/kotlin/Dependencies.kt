@@ -1,7 +1,6 @@
 object Versions {
     const val CHUCKER = "3.2.0"
     const val COIL = "0.11.0"
-    const val HYPERION = "0.9.27"
     const val NUCLEUS = "3.0.0"
     const val OSS_LICENSE = "17.0.0"
     const val RETROFIT = "2.7.2"

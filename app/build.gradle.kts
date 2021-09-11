@@ -142,20 +142,6 @@ dependencies {
     debugImplementation("com.github.ChuckerTeam.Chucker:library:$chuckerVersion")
     releaseImplementation("com.github.ChuckerTeam.Chucker:library-no-op:$chuckerVersion")
 
-    // hyperion
-    debugImplementation("com.willowtreeapps.hyperion:hyperion-core:${Versions.HYPERION}")
-    debugImplementation("com.willowtreeapps.hyperion:hyperion-timber:${Versions.HYPERION}")
-    debugImplementation("com.willowtreeapps.hyperion:hyperion-core:${Versions.HYPERION}")
-    debugImplementation("com.willowtreeapps.hyperion:hyperion-attr:${Versions.HYPERION}")
-    debugImplementation("com.willowtreeapps.hyperion:hyperion-build-config:${Versions.HYPERION}")
-    debugImplementation("com.willowtreeapps.hyperion:hyperion-crash:${Versions.HYPERION}")
-    debugImplementation("com.willowtreeapps.hyperion:hyperion-disk:${Versions.HYPERION}")
-    debugImplementation("com.willowtreeapps.hyperion:hyperion-geiger-counter:${Versions.HYPERION}")
-    debugImplementation("com.willowtreeapps.hyperion:hyperion-measurement:${Versions.HYPERION}")
-    debugImplementation("com.willowtreeapps.hyperion:hyperion-phoenix:${Versions.HYPERION}")
-    debugImplementation("com.willowtreeapps.hyperion:hyperion-recorder:${Versions.HYPERION}")
-    debugImplementation("com.willowtreeapps.hyperion:hyperion-shared-preferences:${Versions.HYPERION}")
-
     // REST
     implementation("com.squareup.retrofit2:retrofit:${Versions.RETROFIT}")
     implementation("com.squareup.retrofit2:converter-gson:${Versions.RETROFIT}")
