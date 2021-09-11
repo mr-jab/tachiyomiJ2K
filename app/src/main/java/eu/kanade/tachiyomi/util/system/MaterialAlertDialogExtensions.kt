@@ -11,7 +11,6 @@ import androidx.annotation.CheckResult
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatCheckedTextView
-import androidx.appcompat.widget.TintTypedArray.obtainStyledAttributes
 import androidx.core.text.buildSpannedString
 import androidx.core.text.color
 import androidx.core.text.inSpans
@@ -47,13 +46,13 @@ fun MaterialAlertDialogBuilder.addCheckBoxPrompt(
     }
 }
 
-fun AlertDialog.disableTexts(texts: Array<String>) {
+fun AlertDialog.disableItems(items: Array<String>) {
     val listView = listView ?: return
     listView.setOnHierarchyChangeListener(
         object : ViewGroup.OnHierarchyChangeListener {
             override fun onChildViewAdded(parent: View?, child: View) {
                 val text = (child as? AppCompatCheckedTextView)?.text ?: return
-                if (texts.contains(text)) {
+                if (items.contains(text)) {
                     child.setOnClickListener(null)
                     child.isEnabled = false
                 } else {

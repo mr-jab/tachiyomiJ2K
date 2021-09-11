@@ -27,7 +27,7 @@ import eu.kanade.tachiyomi.network.PREF_DOH_GOOGLE
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.CrashLogUtil
-import eu.kanade.tachiyomi.util.system.disableTexts
+import eu.kanade.tachiyomi.util.system.disableItems
 import eu.kanade.tachiyomi.util.system.launchUI
 import eu.kanade.tachiyomi.util.system.materialAlertDialog
 import eu.kanade.tachiyomi.util.system.toast
@@ -245,7 +245,7 @@ class SettingsAdvancedController : SettingsController() {
                 }
                 .setNegativeButton(android.R.string.cancel, null)
                 .create().apply {
-                    this.disableTexts(arrayOf(activity!!.getString(R.string.clean_orphaned_downloads)))
+                    this.disableItems(arrayOf(activity!!.getString(R.string.clean_orphaned_downloads)))
                 }
         }
     }

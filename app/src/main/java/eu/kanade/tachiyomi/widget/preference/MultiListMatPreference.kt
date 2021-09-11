@@ -4,13 +4,12 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
-import android.view.View
-import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import androidx.appcompat.widget.AppCompatCheckedTextView
 import androidx.core.view.children
+import eu.kanade.tachiyomi.util.system.disableItems
 
 class MultiListMatPreference @JvmOverloads constructor(
     activity: Activity?,
@@ -117,27 +116,7 @@ class MultiListMatPreference @JvmOverloads constructor(
     // Extra changes to make sure the all button is disabled
     override fun onShow(dialog: AlertDialog) {
         if (allSelectionRes != null) {
-            val listView = dialog.listView ?: return
-            val items = if (allSelectionRes != null) {
-                if (showAllLast) entries + listOf(context.getString(allSelectionRes!!))
-                else listOf(context.getString(allSelectionRes!!)) + entries
-            } else entries
-            val allPos = if (showAllLast) items.size - 1 else 0
-
-            listView.setOnHierarchyChangeListener(
-                object : ViewGroup.OnHierarchyChangeListener {
-                    override fun onChildViewAdded(parent: View?, child: View) {
-                        val text = (child as? AppCompatCheckedTextView)?.text ?: return
-                        val itemIndex: Int = items.indexOf(text)
-                        if (itemIndex == allPos) {
-                            child.setOnClickListener(null)
-                        }
-                        child.isEnabled = itemIndex != allPos
-                    }
-
-                    override fun onChildViewRemoved(view: View?, view1: View?) {}
-                }
-            )
+            dialog.disableItems(arrayOf(context.getString(allSelectionRes!!)))
         }
     }
 }
