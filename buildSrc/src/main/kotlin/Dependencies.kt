@@ -51,7 +51,6 @@ object Versions {
     const val ktlint = "9.4.0"
     const val loadingButton = "2.2.0"
     const val materialDesignDimens = "1.4"
-    const val materialDialogs = "3.1.1"
     const val mockito = "1.10.19"
     const val moshi = "1.9.3"
     const val nucleus = "3.0.0"

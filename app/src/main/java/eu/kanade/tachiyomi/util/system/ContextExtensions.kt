@@ -207,6 +207,10 @@ fun Context.withOriginalWidth(): Context {
     return this
 }
 
+fun Context.isLandscape(): Boolean {
+    return resources.configuration?.orientation == Configuration.ORIENTATION_LANDSCAPE
+}
+
 /**
  * Convenience method to acquire a partial wake lock.
  */

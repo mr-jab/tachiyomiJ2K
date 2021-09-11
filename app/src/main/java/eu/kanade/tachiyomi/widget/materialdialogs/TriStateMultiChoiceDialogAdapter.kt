@@ -1,11 +1,11 @@
 package eu.kanade.tachiyomi.widget.materialdialogs
 
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.afollestad.materialdialogs.utils.MDUtil.inflate
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.databinding.ListitemTristatechoiceBinding
 import eu.kanade.tachiyomi.widget.TriStateCheckBox
 
 private object CheckPayload
@@ -67,14 +67,12 @@ internal class TriStateMultiChoiceDialogAdapter(
         parent: ViewGroup,
         viewType: Int
     ): TriStateMultiChoiceViewHolder {
-        val listItemView: View = parent.inflate(dialog.context, R.layout.md_listitem_quadstatemultichoice)
-        val viewHolder = TriStateMultiChoiceViewHolder(
+        val listItemView: View = ListitemTristatechoiceBinding
+            .inflate(LayoutInflater.from(dialog.context), parent, true).root
+        return TriStateMultiChoiceViewHolder(
             itemView = listItemView,
             adapter = this
         )
-//        viewHolder.controlView.text(dialog.context, R.attr.md_color_content)
-
-        return viewHolder
     }
 
     override fun getItemCount() = items.size

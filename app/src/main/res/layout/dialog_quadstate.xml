@@ -36,7 +36,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scrollIndicators="none"
-            tools:listitem="@layout/md_listitem_quadstatemultichoice" />
+            tools:listitem="@layout/listitem_tristatechoice" />
 
         <com.google.android.material.divider.MaterialDivider
             android:id="@+id/scroll_indicator_down"
