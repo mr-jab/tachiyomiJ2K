@@ -17,17 +17,13 @@ class ReaderSlider @JvmOverloads constructor(
     /**
      * Whether the seekbar should draw from right to left.
      */
-    var isRTL: Boolean = layoutDirection == LAYOUT_DIRECTION_RTL
+    var isRTL: Boolean
         set(value) {
-            field = value
             layoutDirection = if (value) LAYOUT_DIRECTION_RTL else LAYOUT_DIRECTION_LTR
         }
+        get() = layoutDirection == LAYOUT_DIRECTION_RTL
     private val boundingBox: Rect = Rect()
     private val exclusions = listOf(boundingBox)
-
-    override fun getLayoutDirection(): Int {
-        return if (isRTL) LAYOUT_DIRECTION_RTL else LAYOUT_DIRECTION_LTR
-    }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
