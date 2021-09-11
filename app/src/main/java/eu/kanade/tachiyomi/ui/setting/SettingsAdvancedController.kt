@@ -29,6 +29,7 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.CrashLogUtil
 import eu.kanade.tachiyomi.util.system.launchUI
+import eu.kanade.tachiyomi.util.system.materialAlertDialog
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.openInBrowser
 import kotlinx.coroutines.CoroutineStart
@@ -313,12 +314,13 @@ class SettingsAdvancedController : SettingsController() {
 
     class ClearDatabaseDialogController : DialogController() {
         override fun onCreateDialog(savedViewState: Bundle?): Dialog {
-            return MaterialDialog(activity!!)
-                .message(R.string.clear_database_confirmation)
-                .positiveButton(android.R.string.ok) {
+            return activity!!.materialAlertDialog()
+                .setMessage(R.string.clear_database_confirmation)
+                .setPositiveButton(android.R.string.ok) { _, _ ->
                     (targetController as? SettingsAdvancedController)?.clearDatabase()
                 }
-                .negativeButton(android.R.string.cancel)
+                .setNegativeButton(android.R.string.cancel, null)
+                .create()
         }
     }
 

@@ -1,57 +1,58 @@
 package eu.kanade.tachiyomi.ui.manga.track
 
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.widget.TextView
-import androidx.core.net.toUri
-import androidx.core.view.isVisible
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import androidx.transition.TransitionManager
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.track.TrackService
-import eu.kanade.tachiyomi.data.track.UnattendedTrackService
-import eu.kanade.tachiyomi.data.track.model.TrackSearch
-import eu.kanade.tachiyomi.databinding.TrackingBottomSheetBinding
-import eu.kanade.tachiyomi.ui.manga.MangaDetailsController
-import eu.kanade.tachiyomi.util.system.dpToPx
-import eu.kanade.tachiyomi.util.system.launchIO
-import eu.kanade.tachiyomi.util.system.toast
-import eu.kanade.tachiyomi.util.system.withUIContext
-import eu.kanade.tachiyomi.util.view.RecyclerWindowInsetsListener
-import eu.kanade.tachiyomi.util.view.checkHeightThen
-import eu.kanade.tachiyomi.widget.E2EBottomSheetDialog
-import timber.log.Timber
 import android.animation.LayoutTransition
 import android.content.Context
 import android.graphics.Typeface
+import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.StyleSpan
 import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.net.toUri
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.transition.TransitionManager
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.datepicker.MaterialDatePicker
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.listeners.addClickListener
+import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.track.TrackService
+import eu.kanade.tachiyomi.data.track.UnattendedTrackService
+import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.databinding.TrackChaptersDialogBinding
 import eu.kanade.tachiyomi.databinding.TrackScoreDialogBinding
+import eu.kanade.tachiyomi.databinding.TrackingBottomSheetBinding
+import eu.kanade.tachiyomi.ui.manga.MangaDetailsController
 import eu.kanade.tachiyomi.ui.manga.MangaDetailsDivider
 import eu.kanade.tachiyomi.util.lang.indexesOf
+import eu.kanade.tachiyomi.util.system.addCheckBoxPrompt
+import eu.kanade.tachiyomi.util.system.dpToPx
+import eu.kanade.tachiyomi.util.system.isPromptChecked
+import eu.kanade.tachiyomi.util.system.launchIO
+import eu.kanade.tachiyomi.util.system.materialAlertDialog
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.toLocalCalendar
 import eu.kanade.tachiyomi.util.system.toUtcCalendar
-import eu.kanade.tachiyomi.util.system.withOriginalWidth
+import eu.kanade.tachiyomi.util.system.toast
+import eu.kanade.tachiyomi.util.system.withUIContext
+import eu.kanade.tachiyomi.util.view.RecyclerWindowInsetsListener
+import eu.kanade.tachiyomi.util.view.checkHeightThen
 import eu.kanade.tachiyomi.util.view.expand
+import eu.kanade.tachiyomi.widget.E2EBottomSheetDialog
+import timber.log.Timber
 import java.text.DateFormat
 import java.util.Calendar
 
@@ -356,7 +357,7 @@ class TrackingBottomSheet(private val controller: MangaDetailsController) :
                         searchingItem.service.nameRes()
                     )
                 )
-                MaterialAlertDialogBuilder(activity.withOriginalWidth())
+                activity.materialAlertDialog()
                     .setTitle(R.string.remove_previous_tracker)
                     .setItems(arrayOf(wordToSpan, text2)) { dialog, i ->
                         if (i == 0) {
@@ -397,7 +398,7 @@ class TrackingBottomSheet(private val controller: MangaDetailsController) :
         val statusString = statusList.map { item.service.getStatus(it) }
         val selectedIndex = statusList.indexOf(item.track.status)
 
-        MaterialAlertDialogBuilder(activity.withOriginalWidth())
+        activity.materialAlertDialog()
             .setTitle(R.string.status)
             .setNegativeButton(android.R.string.cancel, null)
             .setSingleChoiceItems(
@@ -414,32 +415,25 @@ class TrackingBottomSheet(private val controller: MangaDetailsController) :
         val item = adapter?.getItem(position) ?: return
         if (item.track == null) return
 
-        if (controller.isNotOnline()) {
-            dismiss()
-            return
-        }
-
-        val dialog = MaterialAlertDialogBuilder(activity.withOriginalWidth())
+        val dialog = activity.materialAlertDialog()
             .setTitle(R.string.remove_tracking)
             .setNegativeButton(android.R.string.cancel, null)
 
         if (item.service.canRemoveFromService()) {
             val serviceName = activity.getString(item.service.nameRes())
-            var isChecked = true
-            dialog.setMultiChoiceItems(
-                arrayOf(
-                    activity.getString(
-                        R.string.remove_tracking_from_,
-                        serviceName
-                    )
-                ),
-                booleanArrayOf(true)
-            ) { _, _, checked ->
-                isChecked = checked
+            if (controller.isNotOnline()) {
+                dialog.setMessage(activity.getString(
+                    R.string.cannot_remove_tracking_while_offline, serviceName)
+                )
+            } else {
+                dialog.addCheckBoxPrompt(
+                    activity.getString(R.string.remove_tracking_from_, serviceName),
+                    true
+                )
+                    .setPositiveButton(R.string.remove) { dialogI, _ ->
+                        removeTracker(item, dialogI.isPromptChecked)
+                    }
             }
-                .setPositiveButton(R.string.remove) { _, _ ->
-                    removeTracker(item, isChecked)
-                }
         } else {
             dialog.setPositiveButton(R.string.remove) { _, _ ->
                 removeTracker(item, false)
@@ -457,7 +451,7 @@ class TrackingBottomSheet(private val controller: MangaDetailsController) :
         }
 
         val binding = TrackChaptersDialogBinding.inflate(activity.layoutInflater)
-        val dialog = MaterialAlertDialogBuilder(activity.withOriginalWidth())
+        val dialog = activity.materialAlertDialog()
             .setTitle(R.string.chapters)
             .setView(binding.root)
             .setNegativeButton(android.R.string.cancel, null)
@@ -490,7 +484,7 @@ class TrackingBottomSheet(private val controller: MangaDetailsController) :
         }
 
         val binding = TrackScoreDialogBinding.inflate(activity.layoutInflater)
-        val dialog = MaterialAlertDialogBuilder(activity.withOriginalWidth())
+        val dialog = activity.materialAlertDialog()
             .setTitle(R.string.score)
             .setView(binding.root)
             .setNegativeButton(android.R.string.cancel, null)
@@ -566,7 +560,7 @@ class TrackingBottomSheet(private val controller: MangaDetailsController) :
     }
 
     private fun showDatePicker(trackItem: TrackItem, readingDate: ReadingDate, suggestedDate: Long?) {
-        val dialog = MaterialDatePicker.Builder.datePicker() // .(activity!!.withOriginalWidth())
+        val dialog = MaterialDatePicker.Builder.datePicker()
             .setTitleText(
                 when (readingDate) {
                     ReadingDate.Start -> R.string.started_reading_date

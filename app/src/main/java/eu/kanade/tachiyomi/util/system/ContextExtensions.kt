@@ -198,10 +198,7 @@ fun Context.prepareSideNavContext(): Context {
 }
 
 fun Context.withOriginalWidth(): Context {
-    return this.withOriginalWidth((this as? MainActivity)?.ogWidth ?: resources.configuration.screenWidthDp)
-}
-
-private fun Context.withOriginalWidth(width: Int): Context {
+    val width = (this as? MainActivity)?.ogWidth ?: resources.configuration.screenWidthDp
     val configuration = resources.configuration
     val overrideConf = Configuration()
     overrideConf.setTo(configuration)

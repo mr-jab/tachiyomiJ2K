@@ -32,13 +32,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.imageLoader
 import coil.request.ImageRequest
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.checkbox.checkBoxPrompt
-import com.afollestad.materialdialogs.checkbox.isCheckPromptChecked
 import com.afollestad.materialdialogs.utils.MDUtil.isLandscape
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import eu.davidea.flexibleadapter.FlexibleAdapter
@@ -84,14 +80,17 @@ import eu.kanade.tachiyomi.util.isLocal
 import eu.kanade.tachiyomi.util.moveCategories
 import eu.kanade.tachiyomi.util.storage.getUriCompat
 import eu.kanade.tachiyomi.util.system.ThemeUtil
+import eu.kanade.tachiyomi.util.system.addCheckBoxPrompt
 import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.getPrefTheme
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.isOnline
+import eu.kanade.tachiyomi.util.system.isPromptChecked
 import eu.kanade.tachiyomi.util.system.isTablet
 import eu.kanade.tachiyomi.util.system.launchUI
+import eu.kanade.tachiyomi.util.system.materialAlertDialog
+import eu.kanade.tachiyomi.util.system.setCustomTitleAndMessage
 import eu.kanade.tachiyomi.util.system.toast
-import eu.kanade.tachiyomi.util.system.withOriginalWidth
 import eu.kanade.tachiyomi.util.view.activityBinding
 import eu.kanade.tachiyomi.util.view.doOnApplyWindowInsets
 import eu.kanade.tachiyomi.util.view.getText
@@ -521,19 +520,26 @@ class MangaDetailsController :
             }
             1 -> return
             else -> {
-                MaterialDialog(context).title(R.string.chapters_removed).message(
-                    text = context.resources.getQuantityString(
-                        R.plurals.deleted_chapters,
-                        deletedChapters.size,
-                        deletedChapters.size,
-                        deletedChapters.joinToString("\n") { it.name }
+                context.materialAlertDialog()
+                    .setCustomTitleAndMessage(
+                        R.string.chapters_removed,
+                        context.resources.getQuantityString(
+                            R.plurals.deleted_chapters,
+                            deletedChapters.size,
+                            deletedChapters.size,
+                            deletedChapters.joinToString("\n") { it.name }
+                        )
                     )
-                ).positiveButton(R.string.delete) {
-                    presenter.deleteChapters(deletedChapters, false)
-                    if (it.isCheckPromptChecked()) deleteRemovedPref.set(2)
-                }.negativeButton(R.string.keep) {
-                    if (it.isCheckPromptChecked()) deleteRemovedPref.set(1)
-                }.cancelOnTouchOutside(false).checkBoxPrompt(R.string.remember_this_choice) {}.show()
+                    .setPositiveButton(R.string.delete) { dialog, _ ->
+                        presenter.deleteChapters(deletedChapters, false)
+                        if (dialog.isPromptChecked) deleteRemovedPref.set(2)
+                    }
+                    .setNegativeButton(R.string.keep) { dialog, _ ->
+                        if (dialog.isPromptChecked) deleteRemovedPref.set(1)
+                    }
+                    .setCancelable(false)
+                    .addCheckBoxPrompt(R.string.remember_this_choice)
+                    .show()
             }
         }
     }
@@ -869,17 +875,23 @@ class MangaDetailsController :
                     )
                 }
             R.id.action_mark_all_as_read -> {
-                MaterialDialog(view!!.context).message(R.string.mark_all_chapters_as_read)
-                    .positiveButton(R.string.mark_as_read) {
+                activity!!.materialAlertDialog()
+                    .setMessage(R.string.mark_all_chapters_as_read)
+                    .setPositiveButton(R.string.mark_as_read) { _, _ ->
                         markAsRead(presenter.chapters)
-                    }.negativeButton(android.R.string.cancel).show()
+                    }
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show()
             }
             R.id.remove_all, R.id.remove_read, R.id.remove_non_bookmarked -> massDeleteChapters(item.itemId)
             R.id.action_mark_all_as_unread -> {
-                MaterialDialog(view!!.context).message(R.string.mark_all_chapters_as_unread)
-                    .positiveButton(R.string.mark_as_unread) {
+                activity!!.materialAlertDialog()
+                    .setMessage(R.string.mark_all_chapters_as_unread)
+                    .setPositiveButton(R.string.mark_as_unread) { _, _ ->
                         markAsUnread(presenter.chapters)
-                    }.negativeButton(android.R.string.cancel).show()
+                    }
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show()
             }
             R.id.download_next, R.id.download_next_5, R.id.download_custom, R.id.download_unread, R.id.download_all -> downloadChapters(
                 item.itemId
@@ -981,7 +993,7 @@ class MangaDetailsController :
 
     private fun massDeleteChapters(chapters: List<ChapterItem>, isEverything: Boolean) {
         val context = view?.context ?: return
-        MaterialAlertDialogBuilder(context.withOriginalWidth())
+        context.materialAlertDialog()
             .setMessage(
                 if (isEverything) context.getString(R.string.remove_all_downloads)
                 else context.resources.getQuantityString(

@@ -38,11 +38,9 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.afollestad.materialdialogs.MaterialDialog
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
 import com.github.florent37.viewtooltip.ViewTooltip
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import eu.davidea.flexibleadapter.FlexibleAdapter
@@ -86,8 +84,8 @@ import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.isImeVisible
 import eu.kanade.tachiyomi.util.system.launchUI
+import eu.kanade.tachiyomi.util.system.materialAlertDialog
 import eu.kanade.tachiyomi.util.system.openInBrowser
-import eu.kanade.tachiyomi.util.system.withOriginalWidth
 import eu.kanade.tachiyomi.util.view.activityBinding
 import eu.kanade.tachiyomi.util.view.collapse
 import eu.kanade.tachiyomi.util.view.expand
@@ -602,7 +600,7 @@ class LibraryController(
                         updateLibrary()
                     }
                     preferences.updateOnRefresh().getOrDefault() == -1 -> {
-                        MaterialAlertDialogBuilder(activity!!.withOriginalWidth())
+                        activity!!.materialAlertDialog()
                             .setTitle(R.string.what_should_update)
                             .setNegativeButton(android.R.string.cancel, null)
                             .setSingleChoiceItems(
@@ -1713,10 +1711,13 @@ class LibraryController(
             R.id.action_move_to_category -> showChangeMangaCategoriesSheet()
             R.id.action_share -> shareManga()
             R.id.action_delete -> {
-                MaterialDialog(activity!!).message(R.string.remove_from_library_question)
-                    .positiveButton(R.string.remove) {
+                activity!!.materialAlertDialog()
+                    .setMessage(R.string.remove_from_library_question)
+                    .setPositiveButton(R.string.remove) { _, _ ->
                         deleteMangasFromLibrary()
-                    }.negativeButton(android.R.string.no).show()
+                    }
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show()
             }
             R.id.action_download_unread -> {
                 presenter.downloadUnread(selectedMangas.toList())

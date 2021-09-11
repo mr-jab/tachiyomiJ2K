@@ -17,7 +17,6 @@ import coil.loadAny
 import coil.request.Parameters
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -31,7 +30,7 @@ import eu.kanade.tachiyomi.util.isLocal
 import eu.kanade.tachiyomi.util.lang.chop
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.isInNightMode
-import eu.kanade.tachiyomi.util.system.withOriginalWidth
+import eu.kanade.tachiyomi.util.system.materialAlertDialog
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -66,7 +65,7 @@ class EditMangaDialog : DialogController {
 
     override fun onCreateDialog(savedViewState: Bundle?): Dialog {
         binding = EditMangaDialogBinding.inflate(activity!!.layoutInflater)
-        val dialog = MaterialAlertDialogBuilder(activity!!.withOriginalWidth()).apply {
+        val dialog = activity!!.materialAlertDialog().apply {
             setView(binding.root)
             setNegativeButton(android.R.string.cancel, null)
             setPositiveButton(R.string.save) { _, _ -> onPositiveButtonClick() }

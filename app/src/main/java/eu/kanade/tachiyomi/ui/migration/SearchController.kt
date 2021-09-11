@@ -1,21 +1,15 @@
 package eu.kanade.tachiyomi.ui.migration
 
-import android.app.Dialog
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.appcompat.widget.SearchView
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.list.listItemsMultiChoice
 import com.jakewharton.rxbinding.support.v7.widget.queryTextChangeEvents
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.main.BottomNavBarInterface
 import eu.kanade.tachiyomi.ui.migration.manga.process.MigrationListController
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchCardAdapter
@@ -121,44 +115,12 @@ class SearchController(
             router.popCurrentController()
             return
         }
-        newManga = manga
-        val dialog = MigrationDialog()
-        dialog.targetController = this
-        dialog.showDialog(router)
     }
 
     override fun onMangaLongClick(position: Int, adapter: GlobalSearchCardAdapter) {
         // Call parent's default click listener
         val manga = adapter.getItem(position)?.manga ?: return
         super.onMangaClick(manga)
-    }
-
-    class MigrationDialog : DialogController() {
-
-        private val preferences: PreferencesHelper by injectLazy()
-
-        override fun onCreateDialog(savedViewState: Bundle?): Dialog {
-            val prefValue = preferences.migrateFlags().getOrDefault()
-
-            val preselected = MigrationFlags.getEnabledFlagsPositions(prefValue)
-
-            return MaterialDialog(activity!!)
-                .message(R.string.data_to_include_in_migration)
-                .listItemsMultiChoice(
-                    items = MigrationFlags.titles.map
-                    { resources?.getString(it) as CharSequence },
-                    initialSelection = preselected.toIntArray()
-                ) { _, positions, _ ->
-                    val newValue = MigrationFlags.getFlagsFromPositions(positions.toTypedArray())
-                    preferences.migrateFlags().set(newValue)
-                }
-                .positiveButton(R.string.migrate) {
-                    (targetController as? SearchController)?.migrateManga()
-                }
-                .negativeButton(R.string.copy_value) {
-                    (targetController as? SearchController)?.copyManga()
-                }
-        }
     }
 
     /**

@@ -27,6 +27,7 @@ import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.system.getFilePicker
 import eu.kanade.tachiyomi.util.system.MiuiUtil
+import eu.kanade.tachiyomi.util.system.materialAlertDialog
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.requestFilePermissionsSafe
 import kotlinx.coroutines.flow.launchIn
@@ -303,21 +304,22 @@ class SettingsBackupController : SettingsController() {
                     message += "\n\n${activity.getString(R.string.restore_missing_trackers)}\n${results.missingTrackers.joinToString("\n") { "- $it" }}"
                 }
 
-                return MaterialDialog(activity)
-                    .title(R.string.restore_backup)
-                    .message(text = message)
-                    .positiveButton(R.string.restore) {
+                return activity.materialAlertDialog()
+                    .setTitle(R.string.restore_backup)
+                    .setMessage(message)
+                    .setPositiveButton(R.string.restore) { _, _ ->
                         val context = applicationContext
                         if (context != null) {
                             activity.toast(R.string.restoring_backup)
                             BackupRestoreService.start(context, uri, type)
                         }
-                    }
+                    }.create()
             } catch (e: Exception) {
-                MaterialDialog(activity)
-                    .title(R.string.invalid_backup_file)
-                    .message(text = e.message)
-                    .positiveButton(android.R.string.cancel)
+                activity.materialAlertDialog()
+                    .setTitle(R.string.invalid_backup_file)
+                    .setMessage(e.message)
+                    .setPositiveButton(android.R.string.cancel, null)
+                    .create()
             }
         }
 

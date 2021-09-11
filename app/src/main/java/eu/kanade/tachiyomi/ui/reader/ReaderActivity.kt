@@ -31,7 +31,6 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Lifecycle
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
-import com.afollestad.materialdialogs.MaterialDialog
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -81,6 +80,7 @@ import eu.kanade.tachiyomi.util.system.isLTR
 import eu.kanade.tachiyomi.util.system.isTablet
 import eu.kanade.tachiyomi.util.system.launchIO
 import eu.kanade.tachiyomi.util.system.launchUI
+import eu.kanade.tachiyomi.util.system.materialAlertDialog
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.spToPx
 import eu.kanade.tachiyomi.util.system.toast
@@ -1268,10 +1268,13 @@ class ReaderActivity :
     private fun showSetCoverPrompt(page: ReaderPage) {
         if (page.status != Page.READY) return
 
-        MaterialDialog(this).title(R.string.use_image_as_cover)
-            .positiveButton(android.R.string.yes) {
+        materialAlertDialog()
+            .setMessage(R.string.use_image_as_cover)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
                 setAsCover(page)
-            }.negativeButton(android.R.string.no).show()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 
     /**

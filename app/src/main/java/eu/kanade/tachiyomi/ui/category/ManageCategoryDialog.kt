@@ -16,7 +16,7 @@ import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.databinding.MangaCategoryDialogBinding
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.library.LibrarySort
-import eu.kanade.tachiyomi.util.system.withOriginalWidth
+import eu.kanade.tachiyomi.util.system.materialAlertDialog
 import eu.kanade.tachiyomi.util.view.withFadeTransaction
 import eu.kanade.tachiyomi.widget.TriStateCheckBox
 import uy.kohesive.injekt.injectLazy
@@ -43,7 +43,7 @@ class ManageCategoryDialog(bundle: Bundle? = null) :
     }
 
     fun dialog(activity: Activity): MaterialAlertDialogBuilder {
-        return MaterialAlertDialogBuilder(activity.withOriginalWidth()).apply {
+        return activity.materialAlertDialog().apply {
             setTitle(if (category == null) R.string.new_category else R.string.manage_category)
             binding = MangaCategoryDialogBinding.inflate(activity.layoutInflater)
             setView(binding.root)
