@@ -61,7 +61,6 @@ class ManageCategoryDialog(bundle: Bundle? = null) :
                     dialog.dismiss()
                 }
             }
-            setCancelable()
         }
     }
 
