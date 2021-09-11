@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.category
 
 import android.app.Activity
 import android.app.Dialog
+import android.content.DialogInterface
 import android.os.Bundle
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
@@ -39,6 +40,13 @@ class ManageCategoryDialog(bundle: Bundle? = null) :
     override fun onCreateDialog(savedViewState: Bundle?): Dialog {
         val dialog = dialog(activity!!).create()
         onViewCreated()
+        dialog.setOnShowListener {
+            dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setOnClickListener {
+                if (onPositiveButtonClick()) {
+                    dialog.dismiss()
+                }
+            }
+        }
         return dialog
     }
 
@@ -53,7 +61,7 @@ class ManageCategoryDialog(bundle: Bundle? = null) :
                     dialog.dismiss()
                 }
             }
-//            noAutoDismiss()
+            setCancelable()
         }
     }
 
