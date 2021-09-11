@@ -8,8 +8,8 @@ import androidx.core.text.buildSpannedString
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.getOrDefault
+import eu.kanade.tachiyomi.util.system.setTriStateItems
 import eu.kanade.tachiyomi.widget.TriStateCheckBox
-import eu.kanade.tachiyomi.widget.materialdialogs.setTriStateItems
 
 class TriStateListPreference @JvmOverloads constructor(
     activity: Activity?,

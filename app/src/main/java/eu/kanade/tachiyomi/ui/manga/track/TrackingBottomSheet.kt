@@ -422,8 +422,11 @@ class TrackingBottomSheet(private val controller: MangaDetailsController) :
         if (item.service.canRemoveFromService()) {
             val serviceName = activity.getString(item.service.nameRes())
             if (controller.isNotOnline()) {
-                dialog.setMessage(activity.getString(
-                    R.string.cannot_remove_tracking_while_offline, serviceName)
+                dialog.setMessage(
+                    activity.getString(
+                        R.string.cannot_remove_tracking_while_offline,
+                        serviceName
+                    )
                 )
             } else {
                 dialog.addCheckBoxPrompt(
