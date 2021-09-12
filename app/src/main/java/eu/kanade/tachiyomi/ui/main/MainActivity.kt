@@ -1035,5 +1035,5 @@ interface BottomSheetController {
     fun hideSheet()
     fun toggleSheet()
     fun handleSheetBack(): Boolean
-    fun sheetIsExpanded(): Boolean
+    fun sheetIsFullscreen(): Boolean
 }

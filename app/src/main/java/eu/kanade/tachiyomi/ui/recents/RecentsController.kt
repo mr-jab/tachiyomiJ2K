@@ -780,7 +780,7 @@ class RecentsController(bundle: Bundle? = null) :
         else binding.downloadBottomSheet.dlBottomSheet.sheetBehavior?.expand()
     }
 
-    override fun sheetIsExpanded(): Boolean = binding.downloadBottomSheet.dlBottomSheet.sheetBehavior.isExpanded()
+    override fun sheetIsFullscreen(): Boolean = binding.downloadBottomSheet.dlBottomSheet.sheetBehavior.isExpanded()
 
     override fun expandSearch() {
         if (showingDownloads) {

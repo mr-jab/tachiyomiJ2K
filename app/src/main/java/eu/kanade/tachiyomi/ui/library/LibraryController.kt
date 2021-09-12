@@ -1583,7 +1583,7 @@ class LibraryController(
         }
     }
 
-    override fun sheetIsExpanded(): Boolean = false
+    override fun sheetIsFullscreen(): Boolean = false
 
     override fun handleSheetBack(): Boolean {
         if (binding.recyclerCover.isClickable) {

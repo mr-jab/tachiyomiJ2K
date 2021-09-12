@@ -322,7 +322,7 @@ class BrowseController :
         }
     }
 
-    override fun sheetIsExpanded(): Boolean = binding.bottomSheet.root.sheetBehavior.isExpanded()
+    override fun sheetIsFullscreen(): Boolean = binding.bottomSheet.root.sheetBehavior.isExpanded()
 
     override fun handleSheetBack(): Boolean {
         if (showingExtensions) {
@@ -365,6 +365,7 @@ class BrowseController :
         if (type.isEnter) {
             binding.bottomSheet.root.canExpand = true
             setBottomPadding()
+            updateTitleAndMenu()
         }
     }
 
