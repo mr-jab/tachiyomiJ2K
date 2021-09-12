@@ -15,6 +15,7 @@
         <item name="android:windowSplashScreenAnimationDuration" tools:targetApi="31">775</item>
         <!--Standard Material colors -->
         <item name="colorPrimary">@color/primaryTachiyomi</item>
+        <item name="colorPrimaryInverse">?colorSecondary</item>
         <item name="colorPrimaryVariant">@color/primaryVariantTachiyomi</item>
         <item name="colorSurface">@color/background</item> //old colorSecondary
         <item name="colorOnSurface">@color/md_black_1000</item> //old colorOnSecondary
@@ -33,7 +34,7 @@
         <item name="android:listSelector">?attr/colorSecondary</item>
         <item name="android:divider">@color/divider</item>
         <item name="android:listDivider">@drawable/line_divider</item>
-        <item name="actionModeStyle">@style/CustomActionModeStyle</item>
+        <item name="actionModeBackground">?colorPrimaryVariant</item>
         <item name="colorControlHighlight">@color/secondary_highlight</item>
         <item name="android:colorBackground">?background</item>
         <item name="android:colorControlHighlight">@color/secondary_highlight</item>

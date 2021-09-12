@@ -17,15 +17,6 @@
         <item name="elevationOverlayColor">?colorSecondary</item>
     </style>
 
-    <!--====-->
-    <!--Tabs-->
-    <!--====-->
-
-    <style name="CustomActionModeStyle" parent="Base.Widget.AppCompat.ActionMode">
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="background">@drawable/action_mode_bg</item>
-    </style>
-
     <!--===========-->
     <!--AlertDialog-->
     <!--===========-->

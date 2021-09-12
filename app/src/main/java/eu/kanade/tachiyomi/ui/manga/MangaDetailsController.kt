@@ -319,7 +319,6 @@ class MangaDetailsController :
             router?.backstack?.lastOrNull()?.controller == this@MangaDetailsController
         if (isCurrentController) setTitle()
         if (actionMode != null) {
-            activityBinding?.appBar?.setBackgroundColor(Color.TRANSPARENT)
             return
         }
         val scrollingColor = activity!!.getResourceColor(R.attr.colorPrimaryVariant)
@@ -1334,7 +1333,6 @@ class MangaDetailsController :
     private fun createActionModeIfNeeded() {
         if (actionMode == null) {
             actionMode = (activity as AppCompatActivity).startSupportActionMode(this)
-            activityBinding?.appBar?.setBackgroundColor(Color.TRANSPARENT)
             val view = activity?.window?.currentFocus ?: return
             val imm = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
                 ?: return
