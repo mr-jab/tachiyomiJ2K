@@ -1,10 +1,12 @@
 package eu.kanade.tachiyomi.ui.main
 
 import android.app.Dialog
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Build
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.graphics.ColorUtils
 import androidx.core.view.updateLayoutParams
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import eu.kanade.tachiyomi.BuildConfig
@@ -14,6 +16,7 @@ import eu.kanade.tachiyomi.data.preference.toggle
 import eu.kanade.tachiyomi.databinding.TachiOverflowLayoutBinding
 import eu.kanade.tachiyomi.util.lang.withSubtitle
 import eu.kanade.tachiyomi.util.system.dpToPx
+import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import uy.kohesive.injekt.injectLazy
 
@@ -25,6 +28,13 @@ class OverflowDialog(activity: MainActivity) : Dialog(activity, R.style.Overflow
     init {
         setContentView(binding.root)
 
+        binding.overflowCardView.backgroundTintList = ColorStateList.valueOf(
+            ColorUtils.blendARGB(
+                activity.getResourceColor(R.attr.background),
+                activity.getResourceColor(R.attr.colorSecondary),
+                0.075f
+            )
+        )
         binding.touchOutside.setOnClickListener {
             cancel()
         }
