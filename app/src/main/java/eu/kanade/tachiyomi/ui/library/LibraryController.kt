@@ -672,7 +672,7 @@ class LibraryController(
                 MaterialMenuSheet.MenuSheetItem(
                     category.order,
                     text = category.name +
-                        if (adapter.showNumber && !category.isHidden) {
+                        if (adapter.showNumber && adapter.itemsPerCategory[category.id] != null) {
                             " (${adapter.itemsPerCategory[category.id]})"
                         } else {
                             ""
@@ -1697,7 +1697,7 @@ class LibraryController(
         val migrationItem = menu.findItem(R.id.action_migrate)
         val shareItem = menu.findItem(R.id.action_share)
         val categoryItem = menu.findItem(R.id.action_move_to_category)
-        categoryItem.isVisible = presenter.categories.size > 1
+        categoryItem.isVisible = presenter.allCategories.size > 1
         migrationItem.isVisible = selectedMangas.any { it.source != LocalSource.ID }
         shareItem.isVisible = migrationItem.isVisible
         if (count == 0) destroyActionModeIfNeeded()
