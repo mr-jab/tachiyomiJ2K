@@ -12,7 +12,6 @@ import android.content.pm.PackageInstaller.SessionParams.USER_ACTION_NOT_REQUIRE
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
-import androidx.core.os.BuildCompat
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.extension.ExtensionManager
@@ -55,7 +54,11 @@ class ExtensionInstallBroadcast : BroadcastReceiver() {
                 .putExtra(ExtensionInstaller.EXTRA_DOWNLOAD_ID, downloadId)
                 .putExtra(EXTRA_SESSION_ID, sessionId)
 
-            val mutableFlag = if (BuildCompat.isAtLeastS()) PendingIntent.FLAG_MUTABLE else 0
+            val mutableFlag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                PendingIntent.FLAG_MUTABLE
+            } else {
+                0
+            }
             val pendingIntent = PendingIntent.getBroadcast(context, downloadId.hashCode(), newIntent, PendingIntent.FLAG_UPDATE_CURRENT or mutableFlag)
             val statusReceiver = pendingIntent.intentSender
             session.commit(statusReceiver)
@@ -149,7 +152,11 @@ class ExtensionInstallActivity : Activity() {
                 .setAction(PACKAGE_INSTALLED_ACTION)
                 .putExtra(ExtensionInstaller.EXTRA_DOWNLOAD_ID, downloadId)
                 .putExtra(EXTRA_SESSION_ID, sessionId)
-            val mutableFlag = if (BuildCompat.isAtLeastS()) PendingIntent.FLAG_MUTABLE else 0
+            val mutableFlag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                PendingIntent.FLAG_MUTABLE
+            } else {
+                0
+            }
             val pendingIntent = PendingIntent.getActivity(this, downloadId.hashCode(), newIntent, PendingIntent.FLAG_UPDATE_CURRENT or mutableFlag)
             val statusReceiver = pendingIntent.intentSender
             session.commit(statusReceiver)
