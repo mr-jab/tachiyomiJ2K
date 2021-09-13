@@ -10,6 +10,7 @@
 
     <style name="Theme.Tachiyomi.Strawberries">
         <item name="colorPrimary">@color/primaryStrawberry</item>
+        <item name="colorPrimaryInverse">@color/primaryInverseStrawberry</item>
         <item name="colorSecondary">@color/holo_red</item>
         <item name="colorSecondaryVariant">@color/md_red_500</item>
         <item name="colorPrimaryVariant">@color/secondaryChocolateStrawberries</item>
@@ -19,6 +20,7 @@
 
     <style name="Theme.Tachiyomi.FlatLime">
         <item name="colorPrimary">@color/primaryLime</item>
+        <item name="colorPrimaryInverse">@color/primaryInverseLime</item>
         <item name="colorSecondary">@color/secondaryLime</item>
         <item name="colorSecondaryVariant">@color/secondaryLime</item>
         <item name="colorPrimaryVariant">@color/dialogLime</item>
