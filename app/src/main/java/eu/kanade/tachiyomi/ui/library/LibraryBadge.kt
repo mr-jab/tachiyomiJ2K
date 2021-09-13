@@ -55,8 +55,8 @@ class LibraryBadge @JvmOverloads constructor(context: Context, attrs: AttributeS
                 downloads.toString()
             }
 
-            setTextColor(context.getResourceColor(R.attr.colorOnDownloadBadge))
-            setBackgroundColor(context.getResourceColor(R.attr.colorDownloadBadge))
+            setTextColor(context.getResourceColor(R.attr.colorOnTertiary))
+            setBackgroundColor(context.getResourceColor(R.attr.colorTertiary))
         }
 
         // Show the badge card if unread or downloads exists
