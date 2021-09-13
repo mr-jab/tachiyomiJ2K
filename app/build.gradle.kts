@@ -138,7 +138,7 @@ dependencies {
     implementation("com.squareup.okio:okio:2.10.0")
 
     // Chucker
-    val chuckerVersion = "3.2.0"
+    val chuckerVersion = "3.5.2"
     debugImplementation("com.github.ChuckerTeam.Chucker:library:$chuckerVersion")
     releaseImplementation("com.github.ChuckerTeam.Chucker:library-no-op:$chuckerVersion")
 

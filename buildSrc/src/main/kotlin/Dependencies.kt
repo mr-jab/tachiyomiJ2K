@@ -1,5 +1,4 @@
 object Versions {
-    const val CHUCKER = "3.2.0"
     const val COIL = "0.11.0"
     const val NUCLEUS = "3.0.0"
     const val OSS_LICENSE = "17.0.0"
@@ -25,7 +24,6 @@ object Versions {
     const val androidWorkManager = "2.4.0"
     const val assertJ = "3.12.2"
     const val changelog = "2.1.0"
-    const val chucker = "3.2.0"
     const val coil = "1.1.1"
     const val conductor = "2.1.5"
     const val directionalViewPager = "a844dbca0a"
