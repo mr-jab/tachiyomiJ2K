@@ -350,7 +350,6 @@
         <item name="tabRippleColor">?colorControlHighlight</item>
     </style>
 
-
     <style name="Theme.Widget.Button.OutlinedButton" parent="Widget.MaterialComponents.Button.OutlinedButton">
         <item name="backgroundTint">@color/ext_bg_selector</item>
         <item name="android:textColor">@color/ext_button_text_selector</item>
