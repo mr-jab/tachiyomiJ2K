@@ -49,4 +49,5 @@
     </declare-styleable>
 
     <bool name="isTablet">false</bool>
+    <bool name="isLightMode">true</bool>
 </resources>
