@@ -239,7 +239,7 @@
     <!--=================-->
     <!--Widgets.TabLayout-->
     <!--=================-->
-    <style name="Theme.Widget.Tabs" parent="Widget.MaterialComponents.TabLayout.Colored">
+    <style name="Theme.Widget.Tabs" parent="Widget.Material3.TabLayout.Secondary">
         <item name="tabGravity">center</item>
         <item name="tabIndicator">@drawable/tab_indicator</item>
         <item name="tabIndicatorColor">?attr/colorSecondary</item>
