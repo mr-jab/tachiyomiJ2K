@@ -4,13 +4,21 @@
     android:clickable="true"
     android:focusable="true"
     android:background="?selectableItemBackground"
-    android:layout_height="match_parent"
-    android:layout_width="wrap_content">
+    android:minHeight="?attr/listPreferredItemHeightSmall"
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent">
 
     <eu.kanade.tachiyomi.widget.TriStateCheckBox
         android:id="@+id/md_tri_state_checkbox"
-        android:layout_height="match_parent"
-        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="false"
+        android:focusable="false"
+        android:textColor="?android:textColorSecondary"
+        android:textAppearance="?textAppearanceListItem"
+        android:paddingStart="@dimen/abc_select_dialog_padding_start_material"
+        android:paddingEnd="?attr/dialogPreferredPadding"
+        android:drawablePadding="20dp"
+        android:layout_width="match_parent"
         tools:text="Item" />
 
 </LinearLayout>

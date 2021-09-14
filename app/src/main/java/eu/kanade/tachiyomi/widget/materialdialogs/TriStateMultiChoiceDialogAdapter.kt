@@ -68,7 +68,7 @@ internal class TriStateMultiChoiceDialogAdapter(
         viewType: Int
     ): TriStateMultiChoiceViewHolder {
         val listItemView: View = ListitemTristatechoiceBinding
-            .inflate(LayoutInflater.from(dialog.context), parent, true).root
+            .inflate(LayoutInflater.from(dialog.context), parent, false).root
         return TriStateMultiChoiceViewHolder(
             itemView = listItemView,
             adapter = this

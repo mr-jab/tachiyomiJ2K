@@ -9,18 +9,19 @@ internal class TriStateMultiChoiceViewHolder(
     itemView: View,
     private val adapter: TriStateMultiChoiceDialogAdapter
 ) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
+    val controlView: TriStateCheckBox = itemView.findViewById(R.id.md_tri_state_checkbox)
+
     init {
         itemView.setOnClickListener(this)
+        controlView.isClickable = false
+        controlView.isFocusable = false
     }
-
-    val controlView: TriStateCheckBox = itemView.findViewById(R.id.md_tri_state_checkbox)
 
     var isEnabled: Boolean
         get() = itemView.isEnabled
         set(value) {
             itemView.isEnabled = value
             controlView.isEnabled = value
-            controlView.alpha = if (value) 1f else 0.75f
         }
 
     override fun onClick(view: View) = adapter.itemClicked(bindingAdapterPosition)

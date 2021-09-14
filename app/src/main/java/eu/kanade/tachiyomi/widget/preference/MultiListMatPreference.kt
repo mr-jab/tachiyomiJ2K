@@ -90,7 +90,7 @@ class MultiListMatPreference @JvmOverloads constructor(
         }
         setMultiChoiceItems(items.toTypedArray(), selected) { dialog, pos, checked ->
             // The extra changes above sometimes don't work so theres this too
-            if (pos == allPos) {
+            if (allSelectionRes != null && pos == allPos) {
                 val listView = (dialog as? AlertDialog)?.listView ?: return@setMultiChoiceItems
                 listView.setItemChecked(pos, !checked)
                 listView.children.forEach {
@@ -104,8 +104,8 @@ class MultiListMatPreference @JvmOverloads constructor(
                 }
                 return@setMultiChoiceItems
             }
+            selected[pos] = checked
             if (allSelectionRes != null && !allIsAlwaysSelected) {
-                selected[pos] = checked
                 if (checked) selected[allPos] = false
                 else if (selected.none { it }) selected[allPos] = true
                 (dialog as? AlertDialog)?.listView?.setItemChecked(pos, selected[allPos])
