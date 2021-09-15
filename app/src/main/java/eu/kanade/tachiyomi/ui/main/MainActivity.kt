@@ -59,6 +59,7 @@ import eu.kanade.tachiyomi.data.updater.UpdateChecker
 import eu.kanade.tachiyomi.data.updater.UpdateResult
 import eu.kanade.tachiyomi.data.updater.UpdaterNotifier
 import eu.kanade.tachiyomi.databinding.MainActivityBinding
+import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.extension.api.ExtensionGithubApi
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.MaterialMenuSheet
@@ -80,6 +81,7 @@ import eu.kanade.tachiyomi.util.system.contextCompatDrawable
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.hasSideNavBar
 import eu.kanade.tachiyomi.util.system.isBottomTappable
+import eu.kanade.tachiyomi.util.system.isInNightMode
 import eu.kanade.tachiyomi.util.system.launchUI
 import eu.kanade.tachiyomi.util.system.prepareSideNavContext
 import eu.kanade.tachiyomi.util.system.toast
@@ -91,7 +93,6 @@ import eu.kanade.tachiyomi.util.view.updatePadding
 import eu.kanade.tachiyomi.util.view.withFadeTransaction
 import eu.kanade.tachiyomi.widget.EndAnimatorListener
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -120,6 +121,7 @@ open class MainActivity : BaseActivity<MainActivityBinding>(), DownloadServiceLi
     private var animationSet: AnimatorSet? = null
     private val downloadManager: DownloadManager by injectLazy()
     private val mangaShortcutManager: MangaShortcutManager by injectLazy()
+    private val extensionManager: ExtensionManager by injectLazy()
     private val hideBottomNav
         get() = router.backstackSize > 1 && router.backstack[1].controller !is DialogController
 
@@ -387,10 +389,12 @@ open class MainActivity : BaseActivity<MainActivityBinding>(), DownloadServiceLi
                 }
             }
         }
-        preferences.extensionUpdatesCount().asObservable().subscribe {
-            setExtensionsBadge()
-        }
+        getExtensionUpdates(true)
 
+        preferences.extensionUpdatesCount()
+            .asImmediateFlowIn(lifecycleScope) {
+                setExtensionsBadge()
+            }
         preferences.incognitoMode()
             .asImmediateFlowIn(lifecycleScope) {
                 binding.toolbar.setIncognitoMode(it)
@@ -404,7 +408,6 @@ open class MainActivity : BaseActivity<MainActivityBinding>(), DownloadServiceLi
                     else -> Gravity.TOP
                 }
             }
-        setExtensionsBadge()
         setFloatingToolbar(canShowFloatingToolbar(router.backstack.lastOrNull()?.controller), changeBG = false)
     }
 
@@ -444,28 +447,35 @@ open class MainActivity : BaseActivity<MainActivityBinding>(), DownloadServiceLi
 
     private fun setNavBarColor(insets: WindowInsets?) {
         if (insets == null) return
-        window.navigationBarColor = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O_MR1) {
-            // basically if in landscape on a phone
-            // For lollipop, draw opaque nav bar
-            if (insets.hasSideNavBar()) {
-                Color.BLACK
-            } else Color.argb(179, 0, 0, 0)
-        }
-        // if the android q+ device has gesture nav, transparent nav bar
-        // this is here in case some crazy with a notch uses landscape
-        else if (insets.isBottomTappable()) {
-            getColor(android.R.color.transparent)
-        }
-        // if in landscape with 2/3 button mode, fully opaque nav bar
-        else if (insets.hasSideNavBar()) {
-            getResourceColor(R.attr.colorPrimaryVariant)
-        }
-        // if in portrait with 2/3 button mode, translucent nav bar
-        else {
-            ColorUtils.setAlphaComponent(
-                getResourceColor(R.attr.colorPrimaryVariant),
-                179
-            )
+        window.navigationBarColor = when {
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.O_MR1 -> {
+                // basically if in landscape on a phone
+                // For lollipop, draw opaque nav bar
+                when {
+                    insets.hasSideNavBar() -> Color.BLACK
+                    isInNightMode() -> ColorUtils.setAlphaComponent(
+                        getResourceColor(R.attr.colorPrimaryVariant),
+                        179
+                    )
+                    else -> Color.argb(179, 0, 0, 0)
+                }
+            }
+            // if the android q+ device has gesture nav, transparent nav bar
+            // this is here in case some crazy with a notch uses landscape
+            insets.isBottomTappable() -> {
+                getColor(android.R.color.transparent)
+            }
+            // if in landscape with 2/3 button mode, fully opaque nav bar
+            insets.hasSideNavBar() -> {
+                getResourceColor(R.attr.colorPrimaryVariant)
+            }
+            // if in portrait with 2/3 button mode, translucent nav bar
+            else -> {
+                ColorUtils.setAlphaComponent(
+                    getResourceColor(R.attr.colorPrimaryVariant),
+                    179
+                )
+            }
         }
     }
 
@@ -493,7 +503,7 @@ open class MainActivity : BaseActivity<MainActivityBinding>(), DownloadServiceLi
     }
 
     private fun setExtensionsBadge() {
-        val updates = preferences.extensionUpdatesCount().getOrDefault()
+        val updates = preferences.extensionUpdatesCount().get()
         if (updates > 0) {
             val badge = nav.getOrCreateBadge(R.id.nav_browse)
             badge.number = updates
@@ -505,7 +515,7 @@ open class MainActivity : BaseActivity<MainActivityBinding>(), DownloadServiceLi
     override fun onResume() {
         super.onResume()
         getAppUpdates()
-        getExtensionUpdates()
+        getExtensionUpdates(false)
         DownloadService.callListeners()
         showDLQueueTutorial()
     }
@@ -573,11 +583,17 @@ open class MainActivity : BaseActivity<MainActivityBinding>(), DownloadServiceLi
         }
     }
 
-    private fun getExtensionUpdates() {
-        if (Date().time >= preferences.lastExtCheck().getOrDefault() + TimeUnit.HOURS.toMillis(6)) {
-            GlobalScope.launch(Dispatchers.IO) {
+    fun getExtensionUpdates(force: Boolean) {
+        if ((force && extensionManager.availableExtensions.isEmpty()) ||
+            Date().time >= preferences.lastExtCheck().getOrDefault() + TimeUnit.HOURS.toMillis(6)
+        ) {
+            lifecycleScope.launch(Dispatchers.IO) {
                 try {
-                    val pendingUpdates = ExtensionGithubApi().checkForUpdates(this@MainActivity)
+                    extensionManager.findAvailableExtensionsAsync()
+                    val pendingUpdates = ExtensionGithubApi().checkForUpdates(
+                        this@MainActivity,
+                        extensionManager.availableExtensions.takeIf { it.isNotEmpty() }
+                    )
                     preferences.extensionUpdatesCount().set(pendingUpdates.size)
                     preferences.lastExtCheck().set(Date().time)
                 } catch (e: java.lang.Exception) {

@@ -6,10 +6,8 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.extension.ExtensionInstallService
 import eu.kanade.tachiyomi.extension.ExtensionManager
-import eu.kanade.tachiyomi.extension.ExtensionsChangedListener
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.extension.model.InstalledExtensionsOrder
@@ -44,7 +42,7 @@ class ExtensionBottomPresenter(
     private val bottomSheet: ExtensionBottomSheet,
     private val extensionManager: ExtensionManager = Injekt.get(),
     val preferences: PreferencesHelper = Injekt.get()
-) : BaseCoroutinePresenter(), ExtensionsChangedListener {
+) : BaseCoroutinePresenter() {
 
     private var extensions = emptyList<ExtensionItem>()
 
@@ -75,7 +73,6 @@ class ExtensionBottomPresenter(
                     )
                 )
                 withContext(Dispatchers.Main) { bottomSheet.setExtensions(extensions) }
-                extensionManager.setListener(this@ExtensionBottomPresenter)
             }
             val migrationJob = async {
                 val favs = db.getFavoriteMangas().executeOnIO()
@@ -101,7 +98,7 @@ class ExtensionBottomPresenter(
         presenterScope.launch {
             extensionManager.downloadRelay
                 .collect {
-                    if (it.first == "Finished") {
+                    if (it.first.startsWith("Finished")) {
                         firstLoad = true
                         currentDownloads.clear()
                         extensions = toItems(
@@ -145,11 +142,6 @@ class ExtensionBottomPresenter(
         return library.filter { it.source == sourceId }.map(::MangaItem)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        extensionManager.removeListener(this)
-    }
-
     fun refreshExtensions() {
         presenterScope.launch {
             extensions = toItems(
@@ -180,10 +172,6 @@ class ExtensionBottomPresenter(
                 }
             }
         }
-    }
-
-    override fun extensionsUpdated() {
-        refreshExtensions()
     }
 
     @Synchronized
@@ -293,7 +281,7 @@ class ExtensionBottomPresenter(
         }
     }
 
-    fun getExtensionUpdateCount(): Int = preferences.extensionUpdatesCount().getOrDefault()
+    fun getExtensionUpdateCount(): Int = preferences.extensionUpdatesCount().get()
 
     @Synchronized
     private fun updateInstallStep(
