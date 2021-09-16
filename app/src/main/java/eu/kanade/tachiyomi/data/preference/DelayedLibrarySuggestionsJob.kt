@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import eu.kanade.tachiyomi.ui.library.LibraryPresenter
@@ -30,6 +31,7 @@ class DelayedLibrarySuggestionsJob(context: Context, workerParams: WorkerParamet
             if (enabled) {
                 val request = OneTimeWorkRequestBuilder<DelayedLibrarySuggestionsJob>()
                     .setInitialDelay(1, TimeUnit.DAYS)
+                    .setExpedited(OutOfQuotaPolicy.DROP_WORK_REQUEST)
                     .addTag(TAG)
                     .build()
 

@@ -7,6 +7,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -59,6 +60,7 @@ class AutoUpdaterJob(private val context: Context, workerParams: WorkerParameter
 
             val request = OneTimeWorkRequestBuilder<AutoUpdaterJob>()
                 .addTag(TAG)
+                .setExpedited(OutOfQuotaPolicy.DROP_WORK_REQUEST)
                 .setConstraints(constraints)
                 .build()
 
