@@ -103,7 +103,7 @@
     <color name="textColorHintLime">@color/md_white_1000_50</color>
     <color name="rippleColorLime">@color/md_white_1000_20</color>
     <color name="backgroundLime">#202125</color>
-    <color name="secondaryVariantLime">#2C2D32</color>
+    <color name="secondaryVariantLime">#cbffe0</color>
     <color name="dialogLime">#282A2E</color>
     <color name="colorOnLime">#2C2D32</color>
 
@@ -111,7 +111,7 @@
     <color name="primaryStrawberry">#d31d3b</color>
     <color name="primaryInverseStrawberry">#ef8e9e</color>
     <color name="secondaryStrawberry">#ED4A65</color>
-    <color name="secondaryAlternativeStrawberry">#b62e45</color>
+    <color name="secondaryVariantStrawberry">#b62e45</color>
 
     <color name="backgroundChocolateStrawberries">#1a1716</color>
     <color name="secondaryChocolateStrawberries">#211b19</color>

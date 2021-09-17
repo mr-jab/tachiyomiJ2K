@@ -31,6 +31,7 @@
     <!-- Chocolate Strawberries Theme -->
     <color name="primaryStrawberry">#e14e4e</color>
     <color name="primaryInverseStrawberry">#9f1414</color>
+    <color name="secondaryVariantStrawberry">#f9bab2</color>
 
     <!-- Tako Theme -->
     <color name="primaryTako">#fccd9f</color>
@@ -57,7 +58,7 @@
 
     <!-- Teal/Sapphire Theme -->
     <color name="secondaryTealSapphire">#589ab8</color>
-    <color name="secondaryVariantTealSapphire">#79aec6</color>
+    <color name="secondaryVariantTealSapphire">#b5ebff</color>
     <color name="primaryTealSapphire">#80b8d1</color>
     <color name="primaryInverseTealSapphire">#1d698b</color>
     <color name="primaryVariantTealSapphire">#1d2528</color>
