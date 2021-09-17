@@ -32,6 +32,7 @@
     <color name="primaryStrawberry">#e14e4e</color>
     <color name="primaryInverseStrawberry">#9f1414</color>
     <color name="secondaryVariantStrawberry">#f9bab2</color>
+    <color name="primaryVariantStrawberry">#211b19</color>
 
     <!-- Tako Theme -->
     <color name="primaryTako">#fccd9f</color>
@@ -49,7 +50,7 @@
     <!-- Midnight Dusk Theme -->
     <color name="secondaryDuskDawn">#F02475</color>
     <color name="primaryInverseDuskDawn">#8d0c3f</color>
-    <color name="secondaryVariantDuskDawn">#f091b7</color>
+    <color name="secondaryVariantDuskDawn">#ffc1da</color>
     <color name="backgroundDuskDawn">#16151D</color>
     <color name="dialogDuskDawn">#201F27</color>
     <color name="primaryDuskDawn">#E570A0</color>
@@ -73,4 +74,5 @@
     <color name="secondaryYinYang">#FFFFFF</color>
     <color name="secondaryVariantYinYang">#FFFFFF</color>
     <color name="onSecondaryYinYang">@color/md_black_1000</color>
+    <color name="primaryVariantYinYang">#212121</color>
 </resources>

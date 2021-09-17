@@ -5,7 +5,7 @@
         <item name="colorPrimaryInverse">@color/primaryInverseStrawberry</item>
         <item name="colorSecondary">@color/holo_red</item>
         <item name="colorSecondaryVariant">@color/secondaryVariantStrawberry</item>
-        <item name="colorPrimaryVariant">@color/secondaryChocolateStrawberries</item>
+        <item name="colorPrimaryVariant">@color/primaryVariantStrawberry</item>
         <item name="background">@color/backgroundChocolateStrawberries</item>
         <item name="colorSurface">@color/backgroundChocolateStrawberries</item>
     </style>

@@ -138,6 +138,7 @@
 
     <style name="Theme.Tachiyomi.Strawberries">
         <item name="colorPrimary">@color/primaryStrawberry</item>
+        <item name="colorPrimaryVariant">@color/primaryVariantStrawberry</item>
         <item name="colorPrimaryInverse">@color/primaryInverseStrawberry</item>
         <item name="colorSecondary">@color/secondaryStrawberry</item>
         <item name="colorSecondaryVariant">@color/secondaryVariantStrawberry</item>
@@ -163,6 +164,7 @@
 
     <style name="Theme.Tachiyomi.Yotsuba">
         <item name="colorPrimary">@color/primaryYotsuba</item>
+        <item name="colorPrimaryVariant">@color/primaryVariantYotsuba</item>
         <item name="colorPrimaryInverse">@color/primaryInverseYotsuba</item>
         <item name="colorSecondary">@color/secondaryYotsuba</item>
         <item name="colorSecondaryVariant">@color/secondaryVariantYotsuba</item>
@@ -172,6 +174,7 @@
     <style name="Theme.Tachiyomi.YinYang">
         <!-- Theme colors -->
         <item name="colorPrimary">@color/primaryYinYang</item>
+        <item name="colorPrimaryVariant">@color/primaryVariantYinYang</item>
         <item name="colorPrimaryInverse">@color/primaryInverseYinYang</item>
         <item name="colorSecondary">@color/secondaryYinYang</item>
         <item name="colorOnSecondary">@color/onSecondaryYinYang</item>

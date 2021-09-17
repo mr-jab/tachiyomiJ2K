@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Application Colors -->
-    <color name="primaryVariantTachiyomi">@color/md_white_1000</color>
+    <color name="primaryVariantTachiyomi">#f2f8ff</color>
     <color name="colorPrimaryInactive">#C2424242</color>
     <color name="primaryTachiyomi">#54759E</color>
     <color name="primaryInverseTachiyomi">#78bcff</color>
@@ -109,12 +109,12 @@
 
     <!-- Strawberry Daiquiri Theme -->
     <color name="primaryStrawberry">#d31d3b</color>
+    <color name="primaryVariantStrawberry">#fef3f3</color>
     <color name="primaryInverseStrawberry">#ef8e9e</color>
     <color name="secondaryStrawberry">#ED4A65</color>
     <color name="secondaryVariantStrawberry">#68101f</color>
 
     <color name="backgroundChocolateStrawberries">#1a1716</color>
-    <color name="secondaryChocolateStrawberries">#211b19</color>
 
     <!-- Tako Theme -->
     <color name="primaryTako">#463561</color>
@@ -131,11 +131,13 @@
 
     <!-- Yotsuba Theme -->
     <color name="primaryYotsuba">#ba5427</color>
+    <color name="primaryVariantYotsuba">#fff4ef</color>
     <color name="primaryInverseYotsuba">#efaa8d</color>
     <color name="secondaryYotsuba">#dc6d3d</color>
     <color name="secondaryVariantYotsuba">#4e1e0a</color>
 
     <!-- Yin Yang Theme -->
+    <color name="primaryVariantYinYang">#FFFFFF</color>
     <color name="primaryYinYang">#333333</color>
     <color name="primaryInverseYinYang">#FFFFFF</color>
     <color name="secondaryYinYang">#000000</color>
