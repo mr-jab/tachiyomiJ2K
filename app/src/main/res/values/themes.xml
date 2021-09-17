@@ -21,7 +21,7 @@
         <item name="colorOnSurface">@color/colorOnSurface</item> //old colorOnSecondary
         <item name="colorSecondary">@color/secondaryTachiyomi</item> //colorAccent
         <item name="colorOnSecondary">@color/md_white_1000</item>
-        <item name="colorSecondaryVariant">@color/secondaryVariantTachiyomi</item> // lighter version of colorSecondary
+        <item name="colorSecondaryVariant">@color/secondaryVariantTachiyomi</item> // much darker / lighter version of colorSecondary
         <item name="colorSecondaryContainer">@color/secondary_container</item>
         <item name="background">@color/background</item>
         <item name="colorOnBackground">@color/colorOnBackground</item>
