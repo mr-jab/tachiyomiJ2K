@@ -7,7 +7,6 @@ import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
@@ -70,7 +69,6 @@ class DelayedTrackingUpdateJob(context: Context, workerParams: WorkerParameters)
                 Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
             val request = OneTimeWorkRequestBuilder<DelayedTrackingUpdateJob>()
                 .setConstraints(constraints)
-                .setExpedited(OutOfQuotaPolicy.DROP_WORK_REQUEST)
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 20, TimeUnit.SECONDS)
                 .addTag(TAG)
                 .build()
