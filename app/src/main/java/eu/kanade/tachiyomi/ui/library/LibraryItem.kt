@@ -95,7 +95,7 @@ class LibraryItem(
                         binding.coverThumbnail.adjustViewBounds = false
                         binding.coverThumbnail.layoutParams = FrameLayout.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
-                            (parent.itemWidth / 3f * 3.7f).toInt()
+                            (parent.itemWidth / 3f * 3.875f).toInt()
                         )
                     } else {
                         binding.constraintLayout.minHeight = coverHeight

@@ -1,14 +1,20 @@
 package eu.kanade.tachiyomi.ui.library
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.util.AttributeSet
+import androidx.annotation.Dimension
 import androidx.core.view.isVisible
 import com.google.android.material.card.MaterialCardView
+import com.google.android.material.shape.CornerFamily
+import com.google.android.material.shape.MaterialShapeDrawable
+import com.google.android.material.shape.ShapeAppearanceModel
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.UnreadDownloadBadgeBinding
 import eu.kanade.tachiyomi.util.system.contextCompatColor
 import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.getResourceColor
+import eu.kanade.tachiyomi.util.system.isLTR
 import eu.kanade.tachiyomi.util.view.updatePaddingRelative
 
 class LibraryBadge @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
@@ -19,6 +25,8 @@ class LibraryBadge @JvmOverloads constructor(context: Context, attrs: AttributeS
     override fun onFinishInflate() {
         super.onFinishInflate()
         binding = UnreadDownloadBadgeBinding.bind(this)
+
+        shapeAppearanceModel = shapeAppearanceModel.setCorners(radius, radius)
     }
 
     fun setUnreadDownload(unread: Int, downloads: Int, showTotalChapters: Boolean) {
@@ -48,7 +56,9 @@ class LibraryBadge @JvmOverloads constructor(context: Context, attrs: AttributeS
         // Update the download count or local status and its visibility.
         with(binding.downloadText) {
             isVisible = downloads == -2 || downloads > 0
-            if (!isVisible) { return@with }
+            if (!isVisible) {
+                return@with
+            }
             text = if (downloads == -2) {
                 resources.getString(R.string.local)
             } else {
@@ -59,11 +69,29 @@ class LibraryBadge @JvmOverloads constructor(context: Context, attrs: AttributeS
             setBackgroundColor(context.getResourceColor(R.attr.colorTertiary))
         }
 
+        if (binding.downloadText.isVisible) {
+            binding.downloadText.background =
+                MaterialShapeDrawable(shapeAppearanceModel.setCorners(topStart = radius)).apply {
+                    this.fillColor =
+                        ColorStateList.valueOf(context.getResourceColor(R.attr.colorTertiary))
+                }
+            binding.unreadText.background =
+                MaterialShapeDrawable(shapeAppearanceModel.setCorners(bottomEnd = radius)).apply {
+                    this.fillColor = ColorStateList.valueOf(unreadBadgeBackground)
+                }
+        } else {
+            binding.unreadText.background =
+                MaterialShapeDrawable(shapeAppearanceModel.setCorners(radius, radius)).apply {
+                    this.fillColor = ColorStateList.valueOf(unreadBadgeBackground)
+                }
+        }
+
         // Show the badge card if unread or downloads exists
         isVisible = binding.downloadText.isVisible || binding.unreadText.isVisible
 
         // Show the angles divider if both unread and downloads exists
-        binding.unreadAngle.isVisible = binding.downloadText.isVisible && binding.unreadText.isVisible
+        binding.unreadAngle.isVisible =
+            binding.downloadText.isVisible && binding.unreadText.isVisible
 
         binding.unreadAngle.setColorFilter(unreadBadgeBackground)
         if (binding.unreadAngle.isVisible) {
@@ -85,5 +113,28 @@ class LibraryBadge @JvmOverloads constructor(context: Context, attrs: AttributeS
         binding.unreadText.updatePaddingRelative(start = 5.dpToPx)
         binding.unreadText.isVisible = inLibrary
         binding.unreadText.text = resources.getText(R.string.in_library)
+        binding.unreadText.background =
+            MaterialShapeDrawable(shapeAppearanceModel.setCorners(radius, radius)).apply {
+                this.fillColor =
+                    ColorStateList.valueOf(context.getResourceColor(R.attr.colorSecondary))
+            }
+    }
+
+    private fun ShapeAppearanceModel.setCorners(
+        @Dimension topStart: Float = 0f,
+        @Dimension bottomEnd: Float = 0f
+    ): ShapeAppearanceModel {
+        return toBuilder()
+            .setAllCornerSizes(0f)
+            .apply {
+                if (context.resources.isLTR) {
+                    setTopLeftCorner(CornerFamily.ROUNDED, topStart)
+                    setBottomRightCorner(CornerFamily.ROUNDED, bottomEnd)
+                } else {
+                    setTopRightCorner(CornerFamily.ROUNDED, topStart)
+                    setBottomLeftCorner(CornerFamily.ROUNDED, bottomEnd)
+                }
+            }
+            .build()
     }
 }
