@@ -265,10 +265,10 @@
         <item name="tabIndicatorFullWidth">true</item>
     </style>
 
-    <style name="Theme.Widget.Slider" parent="Widget.MaterialComponents.Slider">
-        <item name="trackColorInactive">@color/secondary_alpha</item>
-        <item name="trackColorActive">?colorSecondary</item>
-        <item name="thumbColor">?colorSecondary</item>
+    <style name="Widget.Tachiyomi.Slider" parent="Widget.Material3.Slider">
+        <item name="trackColorInactive">@color/slider_inactive_track_color</item>
+        <item name="trackColorActive">@color/slider_active_track_color</item>
+        <item name="thumbColor">@color/slider_active_track_color</item>
         <item name="labelStyle">@style/Theme.Widget.Tooltip</item>
         <item name="tickColorActive">?colorOnSecondary</item>
         <item name="tickColorInactive">?android:textColorSecondary</item>
@@ -326,7 +326,7 @@
     </style>
 
     <style name="Widget.Tachiyomi.CompoundButton.Switch" parent="Widget.Material3.CompoundButton.Switch">
-        <item name="thumbTint">@null</item>
+        <item name="thumbTint">@color/switch_thumb_tint</item>
         <item name="trackTint">@null</item>
     </style>
     <style name="Widget.Tachiyomi.CompoundButton.CheckBox" parent="Base.Widget.Material3.CompoundButton.CheckBox">

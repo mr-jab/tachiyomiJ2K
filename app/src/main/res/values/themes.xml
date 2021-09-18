@@ -42,6 +42,7 @@
         <item name="android:textColorHint">@color/text_color_hint</item>
         <item name="textAppearanceButton">@style/TextAppearance.Widget.Button</item>
         <item name="switchStyle">@style/Widget.Tachiyomi.CompoundButton.Switch</item>
+        <item name="sliderStyle">@style/Widget.Tachiyomi.Slider</item>
         <item name="checkboxStyle">@style/Widget.Tachiyomi.CompoundButton.CheckBox</item>
         <item name="radioButtonStyle">@style/Widget.Tachiyomi.CompoundButton.RadioButton</item>
         <item name="bottomNavigationStyle">@style/Widget.Tachiyomi.BottomNavigationView</item>
