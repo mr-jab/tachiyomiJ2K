@@ -11,9 +11,9 @@ import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.system.executeOnIO
 import eu.kanade.tachiyomi.util.system.toast
+import eu.kanade.tachiyomi.util.system.withIOContext
+import eu.kanade.tachiyomi.util.system.withUIContext
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
@@ -66,57 +66,53 @@ class CoverCache(val context: Context) {
         return Formatter.formatFileSize(context, DiskUtil.getDirectorySize(onlineCoverDirectory))
     }
 
-    fun deleteOldCovers() {
-        GlobalScope.launch(Dispatchers.Default) {
-            val db = Injekt.get<DatabaseHelper>()
-            var deletedSize = 0L
-            val urls = db.getLibraryMangas().executeOnIO().mapNotNull {
-                it.thumbnail_url?.let { url -> return@mapNotNull DiskUtil.hashKeyForDisk(url) }
-                null
+    suspend fun deleteOldCovers() {
+        val db = Injekt.get<DatabaseHelper>()
+        var deletedSize = 0L
+        val urls = db.getLibraryMangas().executeOnIO().mapNotNull {
+            it.thumbnail_url?.let { url -> return@mapNotNull DiskUtil.hashKeyForDisk(url) }
+            null
+        }
+        val files = cacheDir.listFiles()?.iterator() ?: return
+        while (files.hasNext()) {
+            val file = files.next()
+            if (file.isFile && file.name !in urls) {
+                deletedSize += file.length()
+                file.delete()
             }
-            val files = cacheDir.listFiles()?.iterator() ?: return@launch
-            while (files.hasNext()) {
-                val file = files.next()
-                if (file.isFile && file.name !in urls) {
-                    deletedSize += file.length()
-                    file.delete()
-                }
-            }
-            withContext(Dispatchers.Main) {
-                context.toast(
-                    context.getString(
-                        R.string.deleted_,
-                        Formatter.formatFileSize(context, deletedSize)
-                    )
+        }
+        withUIContext {
+            context.toast(
+                context.getString(
+                    R.string.deleted_,
+                    Formatter.formatFileSize(context, deletedSize)
                 )
-            }
+            )
         }
     }
 
     /**
      * Clear out all online covers
      */
-    fun deleteAllCachedCovers() {
-        GlobalScope.launch(Dispatchers.IO) {
-            val directory = onlineCoverDirectory
-            var deletedSize = 0L
-            val files =
-                directory.listFiles()?.sortedBy { it.lastModified() }?.iterator() ?: return@launch
-            while (files.hasNext()) {
-                val file = files.next()
-                deletedSize += file.length()
-                file.delete()
-            }
-            withContext(Dispatchers.Main) {
-                context.toast(
-                    context.getString(
-                        R.string.deleted_,
-                        Formatter.formatFileSize(context, deletedSize)
-                    )
-                )
-            }
-            context.imageLoader.memoryCache.clear()
+    suspend fun deleteAllCachedCovers() {
+        val directory = onlineCoverDirectory
+        var deletedSize = 0L
+        val files =
+            directory.listFiles()?.sortedBy { it.lastModified() }?.iterator() ?: return
+        while (files.hasNext()) {
+            val file = files.next()
+            deletedSize += file.length()
+            file.delete()
         }
+        withContext(Dispatchers.Main) {
+            context.toast(
+                context.getString(
+                    R.string.deleted_,
+                    Formatter.formatFileSize(context, deletedSize)
+                )
+            )
+        }
+        context.imageLoader.memoryCache.clear()
 
         lastClean = System.currentTimeMillis()
     }
@@ -124,18 +120,18 @@ class CoverCache(val context: Context) {
     /**
      * Clear out online covers until its under a certain size
      */
-    fun deleteCachedCovers() {
-        if (lastClean + renewInterval < System.currentTimeMillis()) {
-            GlobalScope.launch(Dispatchers.IO) {
+    suspend fun deleteCachedCovers() {
+        withIOContext {
+            if (lastClean + renewInterval < System.currentTimeMillis()) {
                 try {
                     val directory = onlineCoverDirectory
                     val size = DiskUtil.getDirectorySize(directory)
                     if (size <= maxOnlineCacheSize) {
-                        return@launch
+                        return@withIOContext
                     }
                     var deletedSize = 0L
                     val files = directory.listFiles()?.sortedBy { it.lastModified() }?.iterator()
-                        ?: return@launch
+                        ?: return@withIOContext
                     while (files.hasNext()) {
                         val file = files.next()
                         deletedSize += file.length()
@@ -147,8 +143,8 @@ class CoverCache(val context: Context) {
                 } catch (e: Exception) {
                     Timber.e(e)
                 }
+                lastClean = System.currentTimeMillis()
             }
-            lastClean = System.currentTimeMillis()
         }
     }
 
