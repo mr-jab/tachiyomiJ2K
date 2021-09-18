@@ -203,6 +203,7 @@ class MangaDetailsController :
         presenter.onCreate()
         binding.swipeRefresh.isRefreshing = presenter.isLoading
         binding.swipeRefresh.setOnRefreshListener { presenter.refreshAll() }
+        updateToolbarTitleAlpha()
         requestFilePermissionsSafe(301, presenter.preferences, presenter.manga.isLocal())
     }
 
@@ -1013,18 +1014,26 @@ class MangaDetailsController :
             ) || isScrollingDown
         ) return
         val scrolledList = binding.recycler
-        activityBinding?.toolbar?.toolbarTitle?.alpha = when {
-            // Specific alpha provided
-            alpha != null -> alpha
+        val toolbarTextView = activityBinding?.toolbar?.toolbarTitle ?: return
+        toolbarTextView.setTextColor(
+            ColorUtils.setAlphaComponent(
+                toolbarTextView.currentTextColor,
+                (
+                    when {
+                        // Specific alpha provided
+                        alpha != null -> alpha
 
-            // First item isn't in view, full opacity
-            ((scrolledList.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition() > 0) -> 1f
-            ((scrolledList.layoutManager as LinearLayoutManager).findFirstCompletelyVisibleItemPosition() == 0) -> 0f
+                        // First item isn't in view, full opacity
+                        ((scrolledList.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition() > 0) -> 1f
+                        ((scrolledList.layoutManager as LinearLayoutManager).findFirstCompletelyVisibleItemPosition() == 0) -> 0f
 
-            // Based on scroll amount when first item is in view
-            else -> (scrolledList.computeVerticalScrollOffset() - (20.dpToPx))
-                .coerceIn(0, 255) / 255f
-        }
+                        // Based on scroll amount when first item is in view
+                        else -> (scrolledList.computeVerticalScrollOffset() - (20.dpToPx))
+                            .coerceIn(0, 255) / 255f
+                    } * 255
+                    ).roundToInt()
+            )
+        )
     }
 
     private fun downloadChapters(choice: Int) {
