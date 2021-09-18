@@ -233,6 +233,7 @@ class LibraryController(
             animation: WindowInsetsAnimationCompat,
             bounds: WindowInsetsAnimationCompat.BoundsCompat
         ): WindowInsetsAnimationCompat.BoundsCompat {
+            hopperOffset = 0f
             updateHopperY()
             return bounds
         }
