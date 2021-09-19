@@ -49,6 +49,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import rx.Observable
 import rx.Subscription
@@ -131,7 +132,6 @@ class PagerPageHolder(
     var extraStatus: Int = 0
     var progress: Int = 0
     var extraProgress: Int = 0
-    private var skipExtra = false
 
     var scope: CoroutineScope? = null
 
@@ -365,9 +365,6 @@ class PagerPageHolder(
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnNext { isAnimated ->
-                if (skipExtra) {
-                    splitDoublePages()
-                }
                 if (!isAnimated) {
                     if (viewer.config.readerTheme >= 2) {
                         val imageView = initSubsamplingImageView()
@@ -700,7 +697,7 @@ class PagerPageHolder(
                 } catch (e: Exception) {
                     imageStream.close()
                     page.longPage = true
-                    skipExtra = true
+                    splitDoublePages()
                     Timber.e("Cannot split page ${e.message}")
                     return imageBytes.inputStream()
                 }
@@ -709,7 +706,7 @@ class PagerPageHolder(
                 return if (height < width) {
                     imageStream.close()
                     page.longPage = true
-                    skipExtra = true
+                    splitDoublePages()
                     val isLTR = (viewer !is R2LPagerViewer).xor(viewer.config.invertDoublePages)
                     return ImageUtil.splitBitmap(imageBitmap, !isLTR) {
                         scope?.launchUI {
@@ -730,12 +727,12 @@ class PagerPageHolder(
         if (page.fullPage == true) return imageStream
         if (ImageUtil.isAnimatedAndSupported(imageStream)) {
             page.fullPage = true
-            skipExtra = true
+            splitDoublePages()
             return imageStream
         } else if (ImageUtil.isAnimatedAndSupported(imageStream)) {
             page.isolatedPage = true
             extraPage?.fullPage = true
-            skipExtra = true
+            splitDoublePages()
             return imageStream
         }
         val imageBytes = imageStream.readBytes()
@@ -745,7 +742,7 @@ class PagerPageHolder(
             imageStream2.close()
             imageStream.close()
             page.fullPage = true
-            skipExtra = true
+            splitDoublePages()
             Timber.e("Cannot combine pages ${e.message}")
             return imageBytes.inputStream()
         }
@@ -757,7 +754,7 @@ class PagerPageHolder(
             imageStream2.close()
             imageStream.close()
             page.fullPage = true
-            skipExtra = true
+            splitDoublePages()
             return imageBytes.inputStream()
         }
 
@@ -768,8 +765,8 @@ class PagerPageHolder(
             imageStream2.close()
             imageStream.close()
             extraPage?.fullPage = true
-            skipExtra = true
             page.isolatedPage = true
+            splitDoublePages()
             Timber.e("Cannot combine pages ${e.message}")
             return imageBytes.inputStream()
         }
@@ -782,7 +779,7 @@ class PagerPageHolder(
             imageStream.close()
             extraPage?.fullPage = true
             page.isolatedPage = true
-            skipExtra = true
+            splitDoublePages()
             return imageBytes.inputStream()
         }
         val isLTR = (viewer !is R2LPagerViewer).xor(viewer.config.invertDoublePages)
@@ -807,9 +804,12 @@ class PagerPageHolder(
 
     private fun splitDoublePages() {
         // extraPage ?: return
-        viewer.splitDoublePages(page)
-        if (extraPage?.fullPage == true) {
-            extraPage = null
+        scope?.launchUI {
+            delay(100)
+            viewer.splitDoublePages(page)
+            if (extraPage?.fullPage == true || page.fullPage == true) {
+                extraPage = null
+            }
         }
     }
 
