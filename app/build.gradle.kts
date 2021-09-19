@@ -54,6 +54,9 @@ android {
         }
         getByName("release") {
             applicationIdSuffix = ".j2k"
+            isShrinkResources = true
+            isMinifyEnabled = true
+            proguardFiles("proguard-android-optimize.txt", "proguard-rules.pro")
         }
     }
 
@@ -261,6 +264,7 @@ dependencies {
 
     // Crash reports
     implementation("ch.acra:acra-http:5.8.1")
+    "standardImplementation"("com.google.firebase:firebase-analytics-ktx:19.0.1")
 
     // Text distance
     implementation("info.debatty:java-string-similarity:1.2.1")
