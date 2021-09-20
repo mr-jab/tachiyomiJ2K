@@ -109,7 +109,7 @@
         android:ellipsize="end"
         android:maxLines="2"
         android:text="@string/author"
-        android:textAppearance="@style/TextAppearance.Medium"
+        android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
         android:textColor="?android:attr/textColorSecondary"
         android:textIsSelectable="false"
         app:layout_constraintEnd_toEndOf="parent"

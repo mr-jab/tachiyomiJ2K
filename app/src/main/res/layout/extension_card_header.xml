@@ -60,7 +60,7 @@
             android:maxLines="2"
             android:padding="6dp"
             android:textAlignment="textEnd"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="14sp"
             android:textStyle="normal"

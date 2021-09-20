@@ -40,7 +40,7 @@
         <item name="android:colorControlHighlight">@color/secondary_highlight</item>
         <item name="android:textColorSecondary">@color/text_color_secondary</item>
         <item name="android:textColorHint">@color/text_color_hint</item>
-        <item name="textAppearanceButton">@style/TextAppearance.Widget.Button</item>
+        <item name="textAppearanceButton">@style/TextAppearance.Tachiyomi.Button</item>
         <item name="switchStyle">@style/Widget.Tachiyomi.CompoundButton.Switch</item>
         <item name="sliderStyle">@style/Widget.Tachiyomi.Slider</item>
         <item name="checkboxStyle">@style/Widget.Tachiyomi.CompoundButton.CheckBox</item>
@@ -196,8 +196,10 @@
         <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
     </style>
 
-    <style name="Theme.OSS" parent="Theme.MaterialComponents.DayNight">
-        <item name="colorPrimary">@color/primaryTachiyomi</item>
-        <item name="android:colorEdgeEffect">@color/secondaryTachiyomi</item>
+    <style name="Theme.OSS" parent="Theme.Tachiyomi.Monet">
+        <item name="colorPrimary">?colorPrimaryVariant</item>
+        <item name="android:statusBarColor">?colorPrimaryVariant</item>
+        <item name="windowActionBar">true</item>
+        <item name="windowNoTitle">false</item>
     </style>
 </resources>
