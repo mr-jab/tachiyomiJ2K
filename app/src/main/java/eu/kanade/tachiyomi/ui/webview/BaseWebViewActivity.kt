@@ -160,8 +160,8 @@ open class BaseWebViewActivity : BaseActivity<WebviewActivityBinding>() {
             255
         )
         binding.toolbar.setBackgroundColor(getResourceColor(R.attr.colorSecondary))
-        binding.toolbar.popupTheme = if (lightMode) R.style.ThemeOverlay_MaterialComponents else R
-            .style.ThemeOverlay_MaterialComponents_Dark
+        binding.toolbar.popupTheme = if (lightMode) R.style.ThemeOverlay_Material3 else R
+            .style.ThemeOverlay_Material3_Dark
         val tintColor = getResourceColor(R.attr.actionBarTintColor)
         binding.toolbar.navigationIcon?.setTint(tintColor)
         binding.toolbar.overflowIcon?.mutate()
