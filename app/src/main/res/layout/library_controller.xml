@@ -62,7 +62,7 @@
         android:layout_height="match_parent"
         app:fastScrollerBubbleEnabled="true" />
 
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
         android:id="@+id/header_card"
         android:layout_marginTop="6dp"
         app:cardCornerRadius="16dp"
@@ -85,14 +85,14 @@
             android:inputType="none"
             android:maxLines="1"
             android:textAlignment="center"
-            android:paddingStart="32dp"
-            android:paddingEnd="32dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
             android:paddingTop="4dp"
             android:paddingBottom="4dp"
             android:textColor="?actionBarTintColor"
             android:textSize="14sp"
             tools:text="Category" />
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 
     <eu.kanade.tachiyomi.widget.EmptyView
         android:id="@+id/empty_view"
