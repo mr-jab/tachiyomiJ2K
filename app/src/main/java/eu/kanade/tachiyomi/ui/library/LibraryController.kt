@@ -8,7 +8,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -435,9 +434,11 @@ class LibraryController(
         val icon = (activityBinding.bottomNav ?: activityBinding.sideNav)?.getItemView(R.id.nav_library) ?: return
         filterTooltip =
             ViewTooltip.on(activity, icon).autoHide(false, 0L).align(ViewTooltip.ALIGN.START)
-                .position(ViewTooltip.Position.TOP).text(R.string.tap_library_to_show_filters)
+                .position(ViewTooltip.Position.TOP)
+                .text(R.string.tap_library_to_show_filters)
+                .textColor(activity.getResourceColor(R.attr.colorOnSecondary))
                 .color(activity.getResourceColor(R.attr.colorSecondary))
-                .textSize(TypedValue.COMPLEX_UNIT_SP, 15f).textColor(Color.WHITE).withShadow(false)
+                .textSize(TypedValue.COMPLEX_UNIT_SP, 15f).withShadow(false)
                 .corner(30).arrowWidth(15).arrowHeight(15).distanceWithView(0)
 
         filterTooltip?.show()

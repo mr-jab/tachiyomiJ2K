@@ -29,7 +29,12 @@ class LibraryBadge @JvmOverloads constructor(context: Context, attrs: AttributeS
         shapeAppearanceModel = shapeAppearanceModel.setCorners(radius, radius)
     }
 
-    fun setUnreadDownload(unread: Int, downloads: Int, showTotalChapters: Boolean) {
+    fun setUnreadDownload(
+        unread: Int,
+        downloads: Int,
+        showTotalChapters: Boolean,
+        changeShape: Boolean
+    ) {
         // Update the unread count and its visibility.
 
         val unreadBadgeBackground = if (showTotalChapters) {
@@ -69,21 +74,26 @@ class LibraryBadge @JvmOverloads constructor(context: Context, attrs: AttributeS
             setBackgroundColor(context.getResourceColor(R.attr.colorTertiary))
         }
 
-        if (binding.downloadText.isVisible) {
-            binding.downloadText.background =
-                MaterialShapeDrawable(shapeAppearanceModel.setCorners(topStart = radius)).apply {
-                    this.fillColor =
-                        ColorStateList.valueOf(context.getResourceColor(R.attr.colorTertiary))
-                }
-            binding.unreadText.background =
-                MaterialShapeDrawable(shapeAppearanceModel.setCorners(bottomEnd = radius)).apply {
-                    this.fillColor = ColorStateList.valueOf(unreadBadgeBackground)
-                }
+        if (changeShape) {
+            if (binding.downloadText.isVisible) {
+                binding.downloadText.background =
+                    MaterialShapeDrawable(shapeAppearanceModel.setCorners(topStart = radius)).apply {
+                        this.fillColor =
+                            ColorStateList.valueOf(context.getResourceColor(R.attr.colorTertiary))
+                    }
+                binding.unreadText.background =
+                    MaterialShapeDrawable(shapeAppearanceModel.setCorners(bottomEnd = radius)).apply {
+                        this.fillColor = ColorStateList.valueOf(unreadBadgeBackground)
+                    }
+            } else {
+                binding.unreadText.background =
+                    MaterialShapeDrawable(shapeAppearanceModel.setCorners(radius, radius)).apply {
+                        this.fillColor = ColorStateList.valueOf(unreadBadgeBackground)
+                    }
+            }
+            shapeAppearanceModel = shapeAppearanceModel.setCorners(radius, radius)
         } else {
-            binding.unreadText.background =
-                MaterialShapeDrawable(shapeAppearanceModel.setCorners(radius, radius)).apply {
-                    this.fillColor = ColorStateList.valueOf(unreadBadgeBackground)
-                }
+            shapeAppearanceModel = shapeAppearanceModel.withCornerSize(radius)
         }
 
         // Show the badge card if unread or downloads exists
@@ -104,7 +114,7 @@ class LibraryBadge @JvmOverloads constructor(context: Context, attrs: AttributeS
     }
 
     fun setChapters(chapters: Int?) {
-        setUnreadDownload(chapters ?: 0, 0, chapters != null)
+        setUnreadDownload(chapters ?: 0, 0, chapters != null, true)
     }
 
     fun setInLibrary(inLibrary: Boolean) {
