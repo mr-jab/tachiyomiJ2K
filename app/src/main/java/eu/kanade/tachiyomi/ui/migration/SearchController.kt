@@ -34,9 +34,6 @@ class SearchController(
 ),
     BottomNavBarInterface {
 
-    private var progress = 1
-    var totalProgress = 0
-
     /**
      * Called when controller is initialized.
      */
@@ -56,64 +53,8 @@ class SearchController(
         bundle.getLongArray(SOURCES) ?: LongArray(0)
     )
 
-    override fun getTitle(): String? {
-        if (totalProgress > 1) {
-            return "($progress/$totalProgress) ${super.getTitle()}"
-        } else {
-            return super.getTitle()
-        }
-    }
-
     override fun createPresenter(): GlobalSearchPresenter {
         return SearchPresenter(initialQuery, manga!!, sources = sources)
-    }
-
-    /*override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        if (totalProgress > 1) {
-            val menuItem = menu.add(Menu.NONE, 1, Menu.NONE, R.string.action_skip_manga)
-            menuItem.icon = VectorDrawableCompat.create(resources!!, R.drawable
-                .baseline_skip_next_white_24, null)
-            menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
-        }
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            1 -> {
-                newManga = manga
-                migrateManga()
-            }
-        }
-        return true
-    }*/
-
-    fun migrateManga() {
-        val target = targetController as? MigrationInterface ?: return
-        val manga = manga ?: return
-        val newManga = newManga ?: return
-
-        val nextManga = target.migrateManga(manga, newManga, true)
-        replaceWithNewSearchController(nextManga)
-    }
-
-    fun copyManga() {
-        val target = targetController as? MigrationInterface ?: return
-        val manga = manga ?: return
-        val newManga = newManga ?: return
-
-        val nextManga = target.migrateManga(manga, newManga, false)
-        replaceWithNewSearchController(nextManga)
-    }
-
-    private fun replaceWithNewSearchController(manga: Manga?) {
-        if (manga != null) {
-            // router.popCurrentController()
-            val searchController = SearchController(manga)
-            searchController.targetController = targetController
-            searchController.progress = progress + 1
-            searchController.totalProgress = totalProgress
-            router.replaceTopController(searchController.withFadeTransaction())
-        } else router.popController(this)
     }
 
     override fun onMangaClick(manga: Manga) {
