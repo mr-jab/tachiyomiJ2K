@@ -17,7 +17,6 @@ import eu.kanade.tachiyomi.ui.migration.manga.process.MigrationListController
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchCardAdapter
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchController
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchPresenter
-import eu.kanade.tachiyomi.util.view.withFadeTransaction
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
