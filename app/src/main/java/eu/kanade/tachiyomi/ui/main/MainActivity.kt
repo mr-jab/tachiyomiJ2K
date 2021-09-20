@@ -537,10 +537,11 @@ open class MainActivity : BaseActivity<MainActivityBinding>(), DownloadServiceLi
                     .titleTextSize(
                         20
                     )
-                    .titleTextColor(android.R.color.white).descriptionTextSize(16)
-                    .descriptionTextColor(R.color.md_white_1000_76)
+                    .titleTextColorInt(getResourceColor(R.attr.colorOnSecondary)).descriptionTextSize(16)
+                    .descriptionTextColorInt(getResourceColor(R.attr.colorOnSecondary))
                     .icon(contextCompatDrawable(R.drawable.ic_recent_read_32dp))
-                    .targetCircleColor(android.R.color.white).targetRadius(45),
+                    .targetCircleColor(android.R.color.white)
+                    .targetRadius(45),
                 object : TapTargetView.Listener() {
                     override fun onTargetClick(view: TapTargetView) {
                         super.onTargetClick(view)
