@@ -19,8 +19,22 @@ import eu.kanade.tachiyomi.widget.EndAnimatorListener
 class DownloadButton @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
     FrameLayout(context, attrs) {
 
-    private val activeColor = ColorUtils.blendARGB(
-        context.getResourceColor(R.attr.colorSecondary),
+    var colorSecondary = context.getResourceColor(R.attr.colorSecondary)
+        set(value) {
+            field = value
+            activeColor = ColorUtils.blendARGB(
+                colorSecondary,
+                context.getResourceColor(R.attr.background),
+                0.05f
+            )
+            downloadedColor = ColorUtils.blendARGB(
+                colorSecondary,
+                context.getResourceColor(R.attr.colorOnBackground),
+                0.3f
+            )
+        }
+    private var activeColor = ColorUtils.blendARGB(
+        colorSecondary,
         context.getResourceColor(R.attr.background),
         0.05f
     )
@@ -32,8 +46,8 @@ class DownloadButton @JvmOverloads constructor(context: Context, attrs: Attribut
         context,
         R.color.material_on_surface_disabled
     )
-    private val downloadedColor = ColorUtils.blendARGB(
-        context.getResourceColor(R.attr.colorSecondary),
+    private var downloadedColor = ColorUtils.blendARGB(
+        colorSecondary,
         context.getResourceColor(R.attr.colorOnBackground),
         0.3f
     )

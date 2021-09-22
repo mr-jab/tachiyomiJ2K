@@ -158,6 +158,8 @@ class MangaDetailsController :
     var colorAnimator: ValueAnimator? = null
     val presenter: MangaDetailsPresenter
     var coverColor: Int? = null
+    var accentColor: Int? = null
+    var headerColor: Int? = null
     var toolbarIsColored = false
     private var snack: Snackbar? = null
     val fromCatalogue = args.getBoolean(FROM_CATALOGUE_EXTRA, false)
@@ -191,6 +193,18 @@ class MangaDetailsController :
         super.onViewCreated(view)
         coverColor = null
         fullCoverActive = false
+        accentColor = if (presenter.preferences.themeMangaDetails()) {
+            manga!!.vibrantCoverColor?.let { color ->
+                ColorUtils.blendARGB(
+                    color,
+                    view.context.getResourceColor(R.attr.colorOnSurface),
+                    .35f
+                )
+            }
+        } else {
+            null
+        }
+        setHeaderColorValue()
 
         setTabletMode(view)
         setRecycler(view)
@@ -205,6 +219,27 @@ class MangaDetailsController :
         binding.swipeRefresh.setOnRefreshListener { presenter.refreshAll() }
         updateToolbarTitleAlpha()
         requestFilePermissionsSafe(301, presenter.preferences, presenter.manga.isLocal())
+    }
+
+    private fun setHeaderColorValue(colorToUse: Int? = null) {
+        val context = view?.context ?: return
+        headerColor = if (presenter.preferences.themeMangaDetails()) {
+            (colorToUse ?: manga?.vibrantCoverColor)?.let { color ->
+                val bgArray = FloatArray(3)
+                val accentArray = FloatArray(3)
+                ColorUtils.colorToHSL(context.getResourceColor(R.attr.colorPrimaryVariant), bgArray)
+                ColorUtils.colorToHSL(color, accentArray)
+                ColorUtils.HSLToColor(
+                    floatArrayOf(
+                        accentArray[0],
+                        bgArray[1],
+                        bgArray[2]
+                    )
+                )
+            }
+        } else {
+            null
+        }
     }
 
     /** Check if device is tablet, and use a second recycler to hold the details header if so */
@@ -322,7 +357,7 @@ class MangaDetailsController :
         if (actionMode != null) {
             return
         }
-        val scrollingColor = activity!!.getResourceColor(R.attr.colorPrimaryVariant)
+        val scrollingColor = headerColor ?: activity!!.getResourceColor(R.attr.colorPrimaryVariant)
         val topColor = ColorUtils.setAlphaComponent(scrollingColor, 0)
         val scrollingStatusColor = ColorUtils.setAlphaComponent(scrollingColor, (0.87f * 255).roundToInt())
         colorAnimator?.cancel()
@@ -372,10 +407,46 @@ class MangaDetailsController :
                             val colorBack = view.context.getResourceColor(R.attr.background)
                             // this makes the color more consistent regardless of theme
                             val backDropColor =
-                                ColorUtils.blendARGB(it.getVibrantColor(colorBack), colorBack, .85f)
+                                ColorUtils.blendARGB(
+                                    it.getDominantColor(colorBack),
+                                    colorBack,
+                                    .75f
+                                )
 
-                            coverColor = backDropColor
-                            getHeader()?.setBackDrop(backDropColor)
+                            if (presenter.preferences.themeMangaDetails()) {
+                                launchUI {
+                                    val colorSecondary =
+                                        view.context.getResourceColor(R.attr.colorSecondary)
+                                    val vibrantColor = it.getVibrantColor(colorSecondary)
+                                    if (vibrantColor == colorSecondary) {
+                                        return@launchUI
+                                    }
+                                    manga?.vibrantCoverColor = vibrantColor
+                                    accentColor =
+                                        ColorUtils.blendARGB(
+                                            vibrantColor,
+                                            view.context.getResourceColor(R.attr.colorOnSurface),
+                                            .35f
+                                        )
+                                    setHeaderColorValue(vibrantColor)
+                                    getHeader()?.updateColors()
+                                    if (adapter?.itemCount ?: 0 > 1) {
+                                        (presenter.chapters).forEach { chapter ->
+                                            val chapterHolder =
+                                                binding.recycler.findViewHolderForItemId(chapter.id!!) as? ChapterHolder
+                                                    ?: return@forEach
+                                            chapterHolder.notifyStatus(
+                                                chapter.status,
+                                                isLocked(),
+                                                chapter.progress
+                                            )
+                                        }
+                                    }
+                                }
+                            } else {
+                                coverColor = backDropColor
+                                getHeader()?.setBackDrop(backDropColor)
+                            }
                         }
                     }
                     binding.mangaCoverFull.setImageDrawable(drawable)
@@ -417,7 +488,7 @@ class MangaDetailsController :
 
     private fun setStatusBarAndToolbar() {
         val topColor = Color.TRANSPARENT
-        val scrollingColor = activity!!.getResourceColor(R.attr.colorPrimaryVariant)
+        val scrollingColor = headerColor ?: activity!!.getResourceColor(R.attr.colorPrimaryVariant)
         val scrollingStatusColor = ColorUtils.setAlphaComponent(scrollingColor, (0.87f * 255).roundToInt())
         activity?.window?.statusBarColor = if (toolbarIsColored) scrollingStatusColor else topColor
         activityBinding?.appBar?.setBackgroundColor(
@@ -1064,6 +1135,7 @@ class MangaDetailsController :
 
     //region Interface methods
     override fun coverColor(): Int? = coverColor
+    override fun accentColor(): Int? = accentColor
     override fun topCoverHeight(): Int = headerHeight
 
     override fun startDownloadNow(position: Int) {

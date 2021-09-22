@@ -1,8 +1,11 @@
 package eu.kanade.tachiyomi.data.image.coil
 
 import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.widget.ImageView
+import androidx.palette.graphics.Palette
 import coil.ImageLoader
 import coil.imageLoader
 import coil.memory.MemoryCache
@@ -19,6 +22,20 @@ class LibraryMangaImageTarget(
 ) : ImageViewTarget(view) {
 
     private val coverCache: CoverCache by injectLazy()
+
+    override fun onSuccess(result: Drawable) {
+        super.onSuccess(result)
+        if (manga.vibrantCoverColor == null) {
+            val bitmap = (drawable as? BitmapDrawable)?.bitmap ?: return
+            Palette.from(bitmap).generate {
+                if (it == null) return@generate
+                val color = it.getVibrantColor(Color.TRANSPARENT)
+                if (color != Color.TRANSPARENT) {
+                    manga.vibrantCoverColor = color
+                }
+            }
+        }
+    }
 
     override fun onError(error: Drawable?) {
         super.onError(error)

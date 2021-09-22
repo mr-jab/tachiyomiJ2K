@@ -152,6 +152,7 @@ class ChapterHolder(
             return
         }
         isVisible = !localSource
+        adapter.delegate.accentColor()?.let { colorSecondary = it }
         setDownloadStatus(status, progress, animated)
     }
 }
