@@ -22,6 +22,7 @@ import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.core.widget.TextViewCompat
+import androidx.transition.TransitionSet
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import coil.request.CachePolicy
 import eu.kanade.tachiyomi.util.system.isInNightMode
@@ -62,6 +63,7 @@ class MangaHeaderHolder(
     private var showReadingButton = true
     private var showMoreButton = true
     var hadSelection = false
+    private var canCollapse = true
 
     init {
 
@@ -179,7 +181,10 @@ class MangaHeaderHolder(
             binding.mangaAuthor.maxLines = Integer.MAX_VALUE
             binding.mangaSummary.requestFocus()
             if (animated) {
-                val transition = androidx.transition.ChangeBounds()
+                val transition = TransitionSet()
+                    .addTransition(androidx.transition.ChangeBounds())
+                    .addTransition(androidx.transition.Fade())
+                    .addTransition(androidx.transition.Slide())
                 transition.duration = binding.root.resources.getInteger(
                     android.R.integer.config_shortAnimTime
                 ).toLong()
@@ -193,12 +198,30 @@ class MangaHeaderHolder(
 
     private fun collapseDesc(animated: Boolean = false) {
         binding ?: return
-        if (isTablet) return
+        if (isTablet || !canCollapse) return
         binding.moreButtonGroup.isVisible = !isTablet
         if (animated) {
-            val animVector = AnimatedVectorDrawableCompat.create(binding.root.context, R.drawable.anim_expand_less_to_more)
-            binding.moreButton.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, animVector, null)
+            val animVector = AnimatedVectorDrawableCompat.create(
+                binding.root.context,
+                R.drawable.anim_expand_less_to_more
+            )
+            binding.moreButton.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                null,
+                null,
+                animVector,
+                null
+            )
             animVector?.start()
+            val transition = TransitionSet()
+                .addTransition(androidx.transition.ChangeBounds())
+                .addTransition(androidx.transition.Fade())
+            transition.duration = binding.root.resources.getInteger(
+                android.R.integer.config_shortAnimTime
+            ).toLong()
+            androidx.transition.TransitionManager.beginDelayedTransition(
+                adapter.controller.binding.recycler,
+                transition
+            )
         }
         binding.mangaSummary.setTextIsSelectable(false)
         binding.mangaSummary.isClickable = true
@@ -220,7 +243,7 @@ class MangaHeaderHolder(
                 desc.isNullOrBlank() -> itemView.context.getString(R.string.no_description)
                 binding.mangaSummary.maxLines != Int.MAX_VALUE -> desc.replace(
                     Regex(
-                        "[\\r\\n]{2,}",
+                        "[\\r\\n\\s*]{2,}",
                         setOf(RegexOption.MULTILINE)
                     ),
                     "\n"
@@ -268,15 +291,14 @@ class MangaHeaderHolder(
         setDescription()
 
         binding.mangaSummary.post {
-//            if (binding.subItemGroup.isVisible) {
-//                if ((binding.mangaSummary.lineCount < 3 && manga.genre.isNullOrBlank()) || binding.lessButton.isVisible) {
-//                    binding.mangaSummary.setTextIsSelectable(true)
-//                    binding.moreButtonGroup.isVisible = false
-//                    showMoreButton = binding.lessButton.isVisible
-//                } else {
-//                    binding.moreButtonGroup.isVisible = true
-//                }
-//            }
+            if (binding.subItemGroup.isVisible) {
+                if ((binding.mangaSummary.lineCount < 3 && manga.genre.isNullOrBlank()) && binding.moreButton.isVisible) {
+                    expandDesc()
+                    binding.lessButton.isVisible = false
+                    showMoreButton = binding.lessButton.isVisible
+                    canCollapse = false
+                }
+            }
             if (adapter.hasFilter()) collapse()
             else expand()
         }
@@ -559,6 +581,7 @@ class MangaHeaderHolder(
 
     fun collapse() {
         binding ?: return
+        if (!canCollapse) return
         binding.subItemGroup.isVisible = false
         binding.startReadingButton.isVisible = false
         if (binding.moreButton.isVisible || binding.moreButton.isInvisible) {
