@@ -229,13 +229,18 @@ class MangaDetailsController :
                 val accentArray = FloatArray(3)
                 ColorUtils.colorToHSL(context.getResourceColor(R.attr.colorPrimaryVariant), bgArray)
                 ColorUtils.colorToHSL(color, accentArray)
-                ColorUtils.HSLToColor(
+                val newColor = ColorUtils.HSLToColor(
                     floatArrayOf(
                         accentArray[0],
                         bgArray[1],
                         bgArray[2]
                     )
                 )
+                activity?.window?.navigationBarColor = ColorUtils.setAlphaComponent(
+                    newColor,
+                    Color.alpha(activity?.window?.navigationBarColor ?: Color.BLACK)
+                )
+                newColor
             }
         } else {
             null

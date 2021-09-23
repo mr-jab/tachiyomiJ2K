@@ -25,11 +25,7 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
-import androidx.core.view.GestureDetectorCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.isInvisible
-import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
+import androidx.core.view.*
 import androidx.lifecycle.Lifecycle
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
@@ -215,19 +211,15 @@ class ReaderActivity :
         a.recycle()
         setNotchCutoutMode()
 
-        var systemUiFlag = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            systemUiFlag = systemUiFlag.or(View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR)
-        }
+        val wic = WindowInsetsControllerCompat(window, binding.readerLayout)
+        wic.isAppearanceLightStatusBars = lightStatusBar
+        wic.isAppearanceLightNavigationBars = lightStatusBar
+
         binding.appBar.setBackgroundColor(contextCompatColor(R.color.surface_alpha))
         ViewCompat.setBackgroundTintList(
             binding.readerNav.root,
             ColorStateList.valueOf(contextCompatColor(R.color.surface_alpha))
         )
-        binding.readerLayout.systemUiVisibility = when (lightStatusBar) {
-            true -> binding.readerLayout.systemUiVisibility.or(systemUiFlag)
-            false -> binding.readerLayout.systemUiVisibility.rem(systemUiFlag)
-        }
 
         if (presenter.needsInit()) {
             fromUrl = handleIntentAction(intent)

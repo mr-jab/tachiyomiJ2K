@@ -1,10 +1,10 @@
 package eu.kanade.tachiyomi.widget
 
 import android.app.Activity
-import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
@@ -31,11 +31,12 @@ abstract class E2EBottomSheetDialog<VB : ViewBinding>(activity: Activity) :
 
         val contentView = binding.root
 
-        window?.navigationBarColor = activity.window.navigationBarColor
-        val isLight = (activity.window?.decorView?.systemUiVisibility ?: 0) and View
-            .SYSTEM_UI_FLAG_LIGHT_STATUS_BAR == View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && isLight) {
-            window?.decorView?.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+        val aWic = WindowInsetsControllerCompat(activity.window, activity.window.decorView)
+        val isLight = aWic.isAppearanceLightStatusBars
+        window?.let { window ->
+            val wic = WindowInsetsControllerCompat(window, window.decorView)
+            window.navigationBarColor = activity.window.navigationBarColor
+            wic.isAppearanceLightNavigationBars = isLight
         }
         val insets = activity.window.decorView.rootWindowInsets
         (contentView.parent as View).background = null

@@ -168,9 +168,11 @@ open class MainActivity : BaseActivity<MainActivityBinding>(), DownloadServiceLi
 
         binding.toolbar.overflowIcon?.setTint(getResourceColor(R.attr.actionBarTintColor))
 
-        val a = obtainStyledAttributes(intArrayOf(android.R.attr.windowLightStatusBar))
+        val a = obtainStyledAttributes(intArrayOf(android.R.attr.windowLightStatusBar, android.R.attr.windowLightStatusBar))
         val wic = WindowInsetsControllerCompat(window, window.decorView)
-        wic.isAppearanceLightStatusBars = a.getBoolean(0, false)
+        val isLight = a.getBoolean(0, false)
+        wic.isAppearanceLightStatusBars = isLight
+        wic.isAppearanceLightNavigationBars = isLight
         a.recycle()
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {

@@ -12,6 +12,7 @@ import android.view.View
 import android.view.animation.DecelerateInterpolator
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.addListener
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.updateLayoutParams
 import androidx.transition.ChangeBounds
 import androidx.transition.ChangeImageTransform
@@ -140,12 +141,9 @@ class FullCoverDialog(val controller: MangaDetailsController, drawable: Drawable
         window?.let { window ->
             window.navigationBarColor = Color.TRANSPARENT
             window.decorView.fitsSystemWindows = true
-            window.decorView.systemUiVisibility = window.decorView.systemUiVisibility
-                .rem(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                window.decorView.systemUiVisibility = window.decorView.systemUiVisibility
-                    .rem(View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR)
-            }
+            val wic = WindowInsetsControllerCompat(window, window.decorView)
+            wic.isAppearanceLightStatusBars = false
+            wic.isAppearanceLightNavigationBars = false
         }
     }
 
