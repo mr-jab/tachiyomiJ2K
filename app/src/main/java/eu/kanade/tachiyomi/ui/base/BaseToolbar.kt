@@ -4,13 +4,15 @@ import android.content.Context
 import android.util.AttributeSet
 import android.widget.TextView
 import androidx.annotation.DrawableRes
-import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
 import androidx.core.view.isVisible
+import com.bluelinelabs.conductor.Router
 import com.google.android.material.appbar.MaterialToolbar
 import eu.kanade.tachiyomi.R
 
 open class BaseToolbar @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
     MaterialToolbar(context, attrs) {
+
+    var router: Router? = null
 
     lateinit var toolbarTitle: TextView
         protected set
@@ -36,6 +38,11 @@ open class BaseToolbar @JvmOverloads constructor(context: Context, attrs: Attrib
 
     override fun setTitle(title: CharSequence?) {
         setCustomTitle(title)
+    }
+
+    override fun setTitleTextColor(color: Int) {
+        super.setTitleTextColor(color)
+        if (::toolbarTitle.isInitialized) toolbarTitle.setTextColor(color)
     }
 
     protected open fun setCustomTitle(title: CharSequence?) {
@@ -70,7 +77,7 @@ open class BaseToolbar @JvmOverloads constructor(context: Context, attrs: Attrib
     @DrawableRes
     private fun getDropdownRes(): Int {
         return when {
-            incognito && navigationIcon !is DrawerArrowDrawable -> R.drawable.ic_blank_28dp
+            incognito && router?.backstackSize ?: 1 <= 0 -> R.drawable.ic_blank_28dp
             else -> 0
         }
     }

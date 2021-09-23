@@ -9,7 +9,6 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -26,15 +25,10 @@ import android.view.WindowInsets
 import android.view.WindowManager
 import android.webkit.WebView
 import androidx.annotation.IdRes
-import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
 import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.net.toUri
-import androidx.core.view.GestureDetectorCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
+import androidx.core.view.*
 import androidx.lifecycle.lifecycleScope
 import com.bluelinelabs.conductor.Conductor
 import com.bluelinelabs.conductor.Controller
@@ -108,10 +102,9 @@ open class MainActivity : BaseActivity<MainActivityBinding>(), DownloadServiceLi
 
     protected lateinit var router: Router
 
-    var drawerArrow: DrawerArrowDrawable? = null
-        private set
-    private var searchDrawable: Drawable? = null
-    private var dismissDrawable: Drawable? = null
+    private val searchDrawable by lazy { contextCompatDrawable(R.drawable.ic_search_24dp) }
+    protected val backDrawable by lazy { contextCompatDrawable(R.drawable.ic_arrow_back_24dp) }
+    private val dismissDrawable by lazy { contextCompatDrawable(R.drawable.ic_close_24dp) }
     private var gestureDetector: GestureDetectorCompat? = null
 
     private var snackBar: Snackbar? = null
@@ -173,17 +166,12 @@ open class MainActivity : BaseActivity<MainActivityBinding>(), DownloadServiceLi
 
         setContentView(binding.root)
 
-        drawerArrow = DrawerArrowDrawable(this)
-        drawerArrow?.color = getResourceColor(R.attr.actionBarTintColor)
         binding.toolbar.overflowIcon?.setTint(getResourceColor(R.attr.actionBarTintColor))
-        searchDrawable = ContextCompat.getDrawable(
-            this,
-            R.drawable.ic_search_24dp
-        )
-        dismissDrawable = ContextCompat.getDrawable(
-            this,
-            R.drawable.ic_close_24dp
-        )
+
+        val a = obtainStyledAttributes(intArrayOf(android.R.attr.windowLightStatusBar))
+        val wic = WindowInsetsControllerCompat(window, window.decorView)
+        wic.isAppearanceLightStatusBars = a.getBoolean(0, false)
+        a.recycle()
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
             window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
@@ -265,6 +253,10 @@ open class MainActivity : BaseActivity<MainActivityBinding>(), DownloadServiceLi
 
         router = Conductor.attachRouter(this, container, savedInstanceState)
 
+        arrayOf(binding.toolbar, binding.cardToolbar).forEach { toolbar ->
+            toolbar.setNavigationIconTint(getResourceColor(R.attr.actionBarTintColor))
+            toolbar.router = router
+        }
         if (router.hasRootController()) {
             nav.selectedItemId =
                 when (router.backstack.firstOrNull()?.controller) {
@@ -375,7 +367,8 @@ open class MainActivity : BaseActivity<MainActivityBinding>(), DownloadServiceLi
 
         syncActivityViewWithController(router.backstack.lastOrNull()?.controller)
 
-        binding.toolbar.navigationIcon = if (router.backstackSize > 1) drawerArrow else searchDrawable
+        val navIcon = if (router.backstackSize > 1) backDrawable else searchDrawable
+        binding.toolbar.navigationIcon = navIcon
         (router.backstack.lastOrNull()?.controller as? BaseController<*>)?.setTitle()
         (router.backstack.lastOrNull()?.controller as? SettingsController)?.setTitle()
 
@@ -844,15 +837,10 @@ open class MainActivity : BaseActivity<MainActivityBinding>(), DownloadServiceLi
         }
         setFloatingToolbar(canShowFloatingToolbar(to))
         val onRoot = router.backstackSize == 1
-        if (onRoot) {
-            binding.toolbar.navigationIcon = searchDrawable
-            binding.cardToolbar.navigationIcon = searchDrawable
-        } else {
-            binding.toolbar.navigationIcon = drawerArrow
-            binding.cardToolbar.navigationIcon = drawerArrow
-        }
+        val navIcon = if (onRoot) searchDrawable else backDrawable
+        binding.toolbar.navigationIcon = navIcon
+        binding.cardToolbar.navigationIcon = navIcon
         binding.cardToolbar.subtitle = null
-        drawerArrow?.progress = 1f
 
         nav.visibility = if (!hideBottomNav) View.VISIBLE else nav.visibility
         if (nav == binding.sideNav) {
