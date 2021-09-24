@@ -534,9 +534,9 @@ class BrowseController :
                         SettingsExtensionsController()
                     } else SettingsSourcesController()
                 router.pushController(
-                    (RouterTransaction.with(controller)).popChangeHandler(
-                        SettingsSourcesFadeChangeHandler()
-                    ).pushChangeHandler(FadeChangeHandler())
+                    RouterTransaction.with(controller)
+                        .popChangeHandler(SettingsSourcesFadeChangeHandler())
+                        .pushChangeHandler(FadeChangeHandler())
                 )
             }
             R.id.action_migration_guide -> {

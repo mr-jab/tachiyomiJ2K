@@ -23,7 +23,6 @@ import android.view.WindowInsets
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.TextView
-import androidx.annotation.ColorRes
 import androidx.annotation.FloatRange
 import androidx.annotation.IdRes
 import androidx.annotation.Px
@@ -52,7 +51,6 @@ import com.google.android.material.snackbar.Snackbar
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.lang.tintText
 import eu.kanade.tachiyomi.util.system.ThemeUtil
-import eu.kanade.tachiyomi.util.system.contextCompatColor
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.pxToDp
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
@@ -301,17 +299,8 @@ fun SwipeRefreshLayout.setStyle() {
 
 fun MaterialButton.resetStrokeColor() {
     strokeColor = ColorStateList.valueOf(
-        ColorUtils.setAlphaComponent(
-            context.getResourceColor(
-                R.attr.colorOnSurface
-            ),
-            31
-        )
+        ColorUtils.setAlphaComponent(context.getResourceColor(R.attr.colorOnSurface), 31)
     )
-}
-
-fun TextView.setTextColorRes(@ColorRes id: Int) {
-    setTextColor(context.contextCompatColor(id))
 }
 
 @SuppressLint("RestrictedApi")

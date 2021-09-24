@@ -39,11 +39,7 @@ import eu.kanade.tachiyomi.ui.main.BottomSheetController
 import eu.kanade.tachiyomi.ui.main.FloatingSearchInterface
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaDetailsController
-import eu.kanade.tachiyomi.util.system.dpToPx
-import eu.kanade.tachiyomi.util.system.getResourceColor
-import eu.kanade.tachiyomi.util.system.isTablet
-import eu.kanade.tachiyomi.util.system.materialAlertDialog
-import eu.kanade.tachiyomi.util.system.toast
+import eu.kanade.tachiyomi.util.system.*
 import uy.kohesive.injekt.injectLazy
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -116,9 +112,7 @@ fun Controller.liftAppbarWith(recycler: RecyclerView, padView: Boolean = false) 
         recycler.applyBottomAnimatedInsets(setPadding = true)
         recycler.doOnApplyWindowInsets { view, insets, _ ->
             val headerHeight = insets.systemWindowInsetTop + appBarHeight
-            view.updatePaddingRelative(
-                top = headerHeight
-            )
+            view.updatePaddingRelative(top = headerHeight)
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
                 view.updatePaddingRelative(
                     bottom = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
