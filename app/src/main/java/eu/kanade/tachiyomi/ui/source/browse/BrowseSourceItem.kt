@@ -16,6 +16,7 @@ import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.MangaGridItemBinding
+import eu.kanade.tachiyomi.util.system.contextCompatDrawable
 import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 
@@ -51,9 +52,8 @@ class BrowseSourceItem(
                         bottomMargin = 6.dpToPx
                     }
                 } else {
-                    binding.constraintLayout.background = ContextCompat.getDrawable(
-                        context,
-                        R.drawable.library_confortable_grid_selector
+                    binding.constraintLayout.background = context.contextCompatDrawable(
+                        R.drawable.library_comfortable_grid_selector
                     )
                 }
                 binding.constraintLayout.layoutParams = FrameLayout.LayoutParams(
