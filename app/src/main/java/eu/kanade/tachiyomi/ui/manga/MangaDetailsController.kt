@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.*
 import android.view.inputmethod.InputMethodManager
+import androidx.annotation.ColorInt
 import androidx.annotation.FloatRange
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
@@ -205,16 +206,17 @@ class MangaDetailsController :
         } else {
             null
         }
-        setRefreshStyle()
     }
 
     private fun setRefreshStyle() {
         with(binding.swipeRefresh) {
-            if (presenter.preferences.themeMangaDetails()) {
-                accentColor?.let {
-                    setColorSchemeColors(context.getResourceColor(android.R.attr.textColorPrimaryInverse))
-                    setProgressBackgroundColorSchemeColor(it)
-                }
+            if (presenter.preferences.themeMangaDetails() && accentColor != null && headerColor != null) {
+                val newColor = makeColorFrom(
+                    hueOf = accentColor!!,
+                    satAndLumOf = context.getResourceColor(R.attr.actionBarTintColor)
+                )
+                setColorSchemeColors(newColor)
+                setProgressBackgroundColorSchemeColor(headerColor!!)
             } else {
                 setStyle()
             }
@@ -225,17 +227,8 @@ class MangaDetailsController :
         val context = view?.context ?: return
         headerColor = if (presenter.preferences.themeMangaDetails()) {
             (colorToUse ?: manga?.vibrantCoverColor)?.let { color ->
-                val bgArray = FloatArray(3)
-                val accentArray = FloatArray(3)
-                ColorUtils.colorToHSL(context.getResourceColor(R.attr.colorPrimaryVariant), bgArray)
-                ColorUtils.colorToHSL(color, accentArray)
-                val newColor = ColorUtils.HSLToColor(
-                    floatArrayOf(
-                        accentArray[0],
-                        bgArray[1],
-                        bgArray[2]
-                    )
-                )
+                val newColor =
+                    makeColorFrom(color, context.getResourceColor(R.attr.colorPrimaryVariant))
                 activity?.window?.navigationBarColor = ColorUtils.setAlphaComponent(
                     newColor,
                     Color.alpha(activity?.window?.navigationBarColor ?: Color.BLACK)
@@ -245,6 +238,22 @@ class MangaDetailsController :
         } else {
             null
         }
+        setRefreshStyle()
+    }
+
+    @ColorInt
+    private fun makeColorFrom(@ColorInt hueOf: Int, @ColorInt satAndLumOf: Int): Int {
+        val satLumArray = FloatArray(3)
+        val hueArray = FloatArray(3)
+        ColorUtils.colorToHSL(satAndLumOf, satLumArray)
+        ColorUtils.colorToHSL(hueOf, hueArray)
+        return ColorUtils.HSLToColor(
+            floatArrayOf(
+                hueArray[0],
+                satLumArray[1],
+                satLumArray[2]
+            )
+        )
     }
 
     /** Check if device is tablet, and use a second recycler to hold the details header if so */
