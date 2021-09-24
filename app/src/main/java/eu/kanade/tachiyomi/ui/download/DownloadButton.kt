@@ -83,7 +83,7 @@ class DownloadButton @JvmOverloads constructor(context: Context, attrs: Attribut
     private var isAnimating = false
     private var iconAnimation: ObjectAnimator? = null
 
-    lateinit var binding: DownloadButtonBinding
+    private lateinit var binding: DownloadButtonBinding
 
     override fun onFinishInflate() {
         super.onFinishInflate()
