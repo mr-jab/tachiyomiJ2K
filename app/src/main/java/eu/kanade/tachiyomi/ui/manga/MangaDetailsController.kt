@@ -427,9 +427,10 @@ class MangaDetailsController :
                                 ColorUtils.blendARGB(
                                     it.getDominantColor(colorBack),
                                     colorBack,
-                                    .75f
+                                    .66f
                                 )
 
+                            coverColor = backDropColor
                             if (presenter.preferences.themeMangaDetails()) {
                                 launchUI {
                                     val colorSecondary =
@@ -456,7 +457,6 @@ class MangaDetailsController :
                                     }
                                 }
                             } else {
-                                coverColor = backDropColor
                                 getHeader()?.setBackDrop(backDropColor)
                             }
                         }

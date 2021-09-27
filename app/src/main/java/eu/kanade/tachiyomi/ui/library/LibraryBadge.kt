@@ -75,6 +75,7 @@ class LibraryBadge @JvmOverloads constructor(context: Context, attrs: AttributeS
         }
 
         if (changeShape) {
+            shapeAppearanceModel = shapeAppearanceModel.setCorners(radius, radius)
             if (binding.downloadText.isVisible) {
                 binding.downloadText.background =
                     MaterialShapeDrawable(shapeAppearanceModel.setCorners(topStart = radius)).apply {
@@ -90,8 +91,10 @@ class LibraryBadge @JvmOverloads constructor(context: Context, attrs: AttributeS
                     MaterialShapeDrawable(shapeAppearanceModel.setCorners(radius, radius)).apply {
                         this.fillColor = ColorStateList.valueOf(unreadBadgeBackground)
                     }
+                if (unread == -1) {
+                    shapeAppearanceModel = shapeAppearanceModel.withCornerSize(radius)
+                }
             }
-            shapeAppearanceModel = shapeAppearanceModel.setCorners(radius, radius)
         } else {
             shapeAppearanceModel = shapeAppearanceModel.withCornerSize(radius)
         }
@@ -135,14 +138,17 @@ class LibraryBadge @JvmOverloads constructor(context: Context, attrs: AttributeS
         @Dimension bottomEnd: Float = 0f
     ): ShapeAppearanceModel {
         return toBuilder()
-            .setAllCornerSizes(0f)
             .apply {
                 if (context.resources.isLTR) {
                     setTopLeftCorner(CornerFamily.ROUNDED, topStart)
+                    setBottomLeftCorner(CornerFamily.ROUNDED, if (topStart > 0) 4f.dpToPx else 0f)
                     setBottomRightCorner(CornerFamily.ROUNDED, bottomEnd)
+                    setTopRightCorner(CornerFamily.ROUNDED, if (bottomEnd > 0) 4f.dpToPx else 0f)
                 } else {
-                    setTopRightCorner(CornerFamily.ROUNDED, topStart)
-                    setBottomLeftCorner(CornerFamily.ROUNDED, bottomEnd)
+                    setTopLeftCorner(CornerFamily.ROUNDED, if (topStart > 0) 4f.dpToPx else 0f)
+                    setBottomLeftCorner(CornerFamily.ROUNDED, topStart)
+                    setBottomRightCorner(CornerFamily.ROUNDED, if (bottomEnd > 0) 4f.dpToPx else 0f)
+                    setTopRightCorner(CornerFamily.ROUNDED, bottomEnd)
                 }
             }
             .build()
