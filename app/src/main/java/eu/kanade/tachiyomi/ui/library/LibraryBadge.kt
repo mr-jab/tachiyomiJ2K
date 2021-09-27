@@ -3,18 +3,15 @@ package eu.kanade.tachiyomi.ui.library
 import android.content.Context
 import android.content.res.ColorStateList
 import android.util.AttributeSet
-import androidx.annotation.Dimension
 import androidx.core.view.isVisible
 import com.google.android.material.card.MaterialCardView
-import com.google.android.material.shape.CornerFamily
 import com.google.android.material.shape.MaterialShapeDrawable
-import com.google.android.material.shape.ShapeAppearanceModel
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.UnreadDownloadBadgeBinding
 import eu.kanade.tachiyomi.util.system.contextCompatColor
 import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.getResourceColor
-import eu.kanade.tachiyomi.util.system.isLTR
+import eu.kanade.tachiyomi.util.view.makeShapeCorners
 import eu.kanade.tachiyomi.util.view.updatePaddingRelative
 
 class LibraryBadge @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
@@ -26,7 +23,7 @@ class LibraryBadge @JvmOverloads constructor(context: Context, attrs: AttributeS
         super.onFinishInflate()
         binding = UnreadDownloadBadgeBinding.bind(this)
 
-        shapeAppearanceModel = shapeAppearanceModel.setCorners(radius, radius)
+        shapeAppearanceModel = makeShapeCorners(radius, radius)
     }
 
     fun setUnreadDownload(
@@ -75,23 +72,26 @@ class LibraryBadge @JvmOverloads constructor(context: Context, attrs: AttributeS
         }
 
         if (changeShape) {
+            shapeAppearanceModel = makeShapeCorners(radius, radius)
             if (binding.downloadText.isVisible) {
                 binding.downloadText.background =
-                    MaterialShapeDrawable(shapeAppearanceModel.setCorners(topStart = radius)).apply {
+                    MaterialShapeDrawable(makeShapeCorners(topStart = radius)).apply {
                         this.fillColor =
                             ColorStateList.valueOf(context.getResourceColor(R.attr.colorTertiary))
                     }
                 binding.unreadText.background =
-                    MaterialShapeDrawable(shapeAppearanceModel.setCorners(bottomEnd = radius)).apply {
+                    MaterialShapeDrawable(makeShapeCorners(bottomEnd = radius)).apply {
                         this.fillColor = ColorStateList.valueOf(unreadBadgeBackground)
                     }
             } else {
                 binding.unreadText.background =
-                    MaterialShapeDrawable(shapeAppearanceModel.setCorners(radius, radius)).apply {
+                    MaterialShapeDrawable(makeShapeCorners(radius, radius)).apply {
                         this.fillColor = ColorStateList.valueOf(unreadBadgeBackground)
                     }
+                if (unread == -1) {
+                    shapeAppearanceModel = shapeAppearanceModel.withCornerSize(radius)
+                }
             }
-            shapeAppearanceModel = shapeAppearanceModel.setCorners(radius, radius)
         } else {
             shapeAppearanceModel = shapeAppearanceModel.withCornerSize(radius)
         }
@@ -124,27 +124,9 @@ class LibraryBadge @JvmOverloads constructor(context: Context, attrs: AttributeS
         binding.unreadText.isVisible = inLibrary
         binding.unreadText.text = resources.getText(R.string.in_library)
         binding.unreadText.background =
-            MaterialShapeDrawable(shapeAppearanceModel.setCorners(radius, radius)).apply {
+            MaterialShapeDrawable(makeShapeCorners(radius, radius)).apply {
                 this.fillColor =
                     ColorStateList.valueOf(context.getResourceColor(R.attr.colorSecondary))
             }
-    }
-
-    private fun ShapeAppearanceModel.setCorners(
-        @Dimension topStart: Float = 0f,
-        @Dimension bottomEnd: Float = 0f
-    ): ShapeAppearanceModel {
-        return toBuilder()
-            .setAllCornerSizes(0f)
-            .apply {
-                if (context.resources.isLTR) {
-                    setTopLeftCorner(CornerFamily.ROUNDED, topStart)
-                    setBottomRightCorner(CornerFamily.ROUNDED, bottomEnd)
-                } else {
-                    setTopRightCorner(CornerFamily.ROUNDED, topStart)
-                    setBottomLeftCorner(CornerFamily.ROUNDED, bottomEnd)
-                }
-            }
-            .build()
     }
 }

@@ -102,13 +102,17 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <include
-                layout="@layout/unread_download_badge"
-                android:id="@+id/unread_download_badge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
         </com.google.android.material.card.MaterialCardView>
+
+        <include
+            layout="@layout/unread_download_badge"
+            android:id="@+id/unread_download_badge"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="3dp"
+            android:layout_marginStart="3dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
         <View
             android:id="@+id/badge_guide"
