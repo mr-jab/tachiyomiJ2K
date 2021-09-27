@@ -201,7 +201,17 @@ class MangaDetailsController :
         val context = view?.context ?: return
         accentColor = if (presenter.preferences.themeMangaDetails()) {
             (colorToUse ?: manga?.vibrantCoverColor)?.let {
-                ColorUtils.blendARGB(it, context.getResourceColor(R.attr.colorOnSurface), .35f)
+                val luminance = ColorUtils.calculateLuminance(it).toFloat()
+                if (if (!context.isInNightMode()) luminance > 0.4 else luminance <= 0.6) {
+                    ColorUtils.blendARGB(
+                        it,
+                        context.contextCompatColor(R.color.colorOnDownloadBadgeDayNight),
+                        (if (!context.isInNightMode()) luminance else -(luminance - 1))
+                            .toFloat() * 0.33f
+                    )
+                } else {
+                    it
+                }
             }
         } else {
             null
@@ -423,13 +433,17 @@ class MangaDetailsController :
                             if (it == null) return@generate
                             val colorBack = view.context.getResourceColor(R.attr.background)
                             // this makes the color more consistent regardless of theme
+                            val dominant = it.getDominantColor(colorBack)
+                            val domLum = ColorUtils.calculateLuminance(dominant)
+                            val lumWrongForTheme = (if (view.context.isInNightMode()) domLum > 0.8 else domLum <= 0.2)
                             val backDropColor =
                                 ColorUtils.blendARGB(
                                     it.getDominantColor(colorBack),
                                     colorBack,
-                                    .75f
+                                    if (lumWrongForTheme) 0.9f else 0.65f
                                 )
 
+                            coverColor = backDropColor
                             if (presenter.preferences.themeMangaDetails()) {
                                 launchUI {
                                     val colorSecondary =
@@ -456,7 +470,6 @@ class MangaDetailsController :
                                     }
                                 }
                             } else {
-                                coverColor = backDropColor
                                 getHeader()?.setBackDrop(backDropColor)
                             }
                         }
