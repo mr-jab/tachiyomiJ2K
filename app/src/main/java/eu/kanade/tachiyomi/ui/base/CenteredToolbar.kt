@@ -28,8 +28,8 @@ class CenteredToolbar@JvmOverloads constructor(context: Context, attrs: Attribut
     override fun setCustomTitle(title: CharSequence?) {
         super.setCustomTitle(title)
         toolbarTitle.updateLayoutParams<LayoutParams> {
-            gravity = if (router?.backstackSize ?: 0 > 1) Gravity.START else Gravity.CENTER
+            gravity = if (!onRoot) Gravity.START else Gravity.CENTER
         }
-        toolbarTitle.compoundDrawablePadding = if (router?.backstackSize ?: 0 > 1) 6.dpToPx else 0
+        toolbarTitle.compoundDrawablePadding = if (!onRoot) 6.dpToPx else 0
     }
 }

@@ -8,11 +8,14 @@ import androidx.core.view.isVisible
 import com.bluelinelabs.conductor.Router
 import com.google.android.material.appbar.MaterialToolbar
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.ui.main.SearchActivity
 
 open class BaseToolbar @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
     MaterialToolbar(context, attrs) {
 
     var router: Router? = null
+    val onRoot: Boolean
+        get() = router?.backstackSize ?: 1 <= 0 && context !is SearchActivity
 
     lateinit var toolbarTitle: TextView
         protected set
@@ -77,7 +80,7 @@ open class BaseToolbar @JvmOverloads constructor(context: Context, attrs: Attrib
     @DrawableRes
     private fun getDropdownRes(): Int {
         return when {
-            incognito && router?.backstackSize ?: 1 <= 0 -> R.drawable.ic_blank_28dp
+            incognito && onRoot -> R.drawable.ic_blank_28dp
             else -> 0
         }
     }
