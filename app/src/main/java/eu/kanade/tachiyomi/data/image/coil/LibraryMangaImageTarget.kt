@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.data.image.coil
 
 import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.widget.ImageView
@@ -29,10 +28,8 @@ class LibraryMangaImageTarget(
             val bitmap = (drawable as? BitmapDrawable)?.bitmap ?: return
             Palette.from(bitmap).generate {
                 if (it == null) return@generate
-                val color = it.getVibrantColor(Color.TRANSPARENT)
-                if (color != Color.TRANSPARENT) {
-                    manga.vibrantCoverColor = color
-                }
+                val color = it.getBestColor() ?: return@generate
+                manga.vibrantCoverColor = color
             }
         }
     }
@@ -68,4 +65,18 @@ inline fun ImageView.loadManga(
         .memoryCacheKey(manga.key())
         .build()
     return imageLoader.enqueue(request)
+}
+
+fun Palette.getBestColor(): Int? {
+    val vibPopulation = vibrantSwatch?.population ?: -1
+    val domLum = dominantSwatch?.hsl?.get(2) ?: -1f
+    val mutedPopulation = mutedSwatch?.population ?: -1
+    return when {
+        (dominantSwatch?.hsl?.get(1) ?: 0f) >= .25f &&
+            domLum < .8f && domLum > .2f -> dominantSwatch?.rgb
+        vibPopulation >= mutedPopulation * 0.75f -> vibrantSwatch?.rgb
+        mutedPopulation > vibPopulation * 1.5f &&
+            (mutedSwatch?.hsl?.get(1) ?: 0f) > if (mutedPopulation > vibPopulation * 3f) 0.1f else 0.25f -> mutedSwatch?.rgb
+        else -> vibrantSwatch?.rgb
+    }
 }

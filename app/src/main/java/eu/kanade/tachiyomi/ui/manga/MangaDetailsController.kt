@@ -94,6 +94,7 @@ import kotlin.math.max
 import kotlin.math.roundToInt
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import eu.kanade.tachiyomi.data.image.coil.getBestColor
 import eu.kanade.tachiyomi.ui.base.MiniSearchView
 import eu.kanade.tachiyomi.util.system.*
 
@@ -446,12 +447,8 @@ class MangaDetailsController :
                             coverColor = backDropColor
                             if (presenter.preferences.themeMangaDetails()) {
                                 launchUI {
-                                    val colorSecondary =
-                                        view.context.getResourceColor(R.attr.colorSecondary)
-                                    val vibrantColor = it.getVibrantColor(colorSecondary)
-                                    if (vibrantColor == colorSecondary) {
-                                        return@launchUI
-                                    }
+                                    view.context.getResourceColor(R.attr.colorSecondary)
+                                    val vibrantColor = it.getBestColor() ?: return@launchUI
                                     manga?.vibrantCoverColor = vibrantColor
                                     setAccentColorValue(vibrantColor)
                                     setHeaderColorValue(vibrantColor)
