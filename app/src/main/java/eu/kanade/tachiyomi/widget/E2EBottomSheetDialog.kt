@@ -5,19 +5,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import eu.kanade.tachiyomi.R
 
 /**
  * Edge to Edge BottomSheetDiolag that uses a custom theme and settings to extend pass the nav bar
  */
 @Suppress("LeakingThis")
 abstract class E2EBottomSheetDialog<VB : ViewBinding>(activity: Activity) :
-    BottomSheetDialog(activity, R.style.BottomSheetDialogTheme) {
+    BottomSheetDialog(activity) {
     protected val binding: VB
 
     protected val sheetBehavior: BottomSheetBehavior<*>
@@ -38,14 +36,9 @@ abstract class E2EBottomSheetDialog<VB : ViewBinding>(activity: Activity) :
             window.navigationBarColor = activity.window.navigationBarColor
             wic.isAppearanceLightNavigationBars = isLight
         }
-        val insets = activity.window.decorView.rootWindowInsets
         (contentView.parent as View).background = null
         contentView.post {
             (contentView.parent as View).background = null
-        }
-        contentView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-            leftMargin = insets.systemWindowInsetLeft
-            rightMargin = insets.systemWindowInsetRight
         }
         contentView.requestLayout()
     }

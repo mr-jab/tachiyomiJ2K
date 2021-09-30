@@ -46,13 +46,14 @@
         <item name="checkboxStyle">@style/Widget.Tachiyomi.CompoundButton.CheckBox</item>
         <item name="radioButtonStyle">@style/Widget.Tachiyomi.CompoundButton.RadioButton</item>
         <item name="bottomNavigationStyle">@style/Widget.Tachiyomi.BottomNavigationView</item>
+        <item name="navigationRailStyle">@style/Widget.Tachiyomi.NavigationRail</item>
         <item name="elevationOverlayEnabled">false</item>
 
         <!-- Themes -->
         <item name="windowActionModeOverlay">true</item>
+        <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme</item>
         <item name="actionBarTheme">@style/Theme.ActionBar.DayNight</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
-        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Tachiyomi.MaterialAlertDialog</item>
 
         <!-- Custom Attributes-->
         <item name="actionBarTintColor">?attr/colorOnBackground</item>

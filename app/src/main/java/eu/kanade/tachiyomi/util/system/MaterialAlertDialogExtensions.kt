@@ -1,9 +1,7 @@
 package eu.kanade.tachiyomi.util.system
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.DialogInterface
-import android.text.style.TextAppearanceSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,14 +9,10 @@ import androidx.annotation.CheckResult
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatCheckedTextView
-import androidx.core.text.buildSpannedString
-import androidx.core.text.color
-import androidx.core.text.inSpans
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.textview.MaterialTextView
-import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.databinding.CustomDialogTitleMessageBinding
 import eu.kanade.tachiyomi.databinding.DialogQuadstateBinding
 import eu.kanade.tachiyomi.widget.materialdialogs.TriStateMultiChoiceDialogAdapter
 import eu.kanade.tachiyomi.widget.materialdialogs.TriStateMultiChoiceListener
@@ -65,38 +59,12 @@ fun AlertDialog.disableItems(items: Array<String>) {
     )
 }
 
-@SuppressLint("ResourceType")
 fun MaterialAlertDialogBuilder.setCustomTitleAndMessage(title: Int, message: String): MaterialAlertDialogBuilder {
     return setCustomTitle(
-        MaterialTextView(context).apply {
-            setPadding(
-                24.dpToPx,
-                18.dpToPx,
-                24.dpToPx,
-                0
-            )
-            val typedArray = context.obtainStyledAttributes(
-                R.attr.materialAlertDialogTheme,
-                intArrayOf(R.attr.materialAlertDialogTitleTextStyle, R.attr.materialAlertDialogBodyTextStyle)
-            )
-            val attrValue = typedArray.getResourceId(0, 0)
-            val attrValue2 = typedArray.getResourceId(1, 0)
-            typedArray.recycle()
-            var typedArray2 = context.obtainStyledAttributes(attrValue, intArrayOf(android.R.attr.textAppearance))
-            val attrValue3 = typedArray.getResourceId(0, 0)
-            typedArray2.recycle()
-            typedArray2 = context.obtainStyledAttributes(attrValue2, intArrayOf(android.R.attr.textAppearance, android.R.attr.textColor))
-            val attrValue4 = typedArray.getResourceId(0, 0)
-            val attrValue5 = typedArray.getColor(1, 0)
-            typedArray2.recycle()
-            setTextAppearance(attrValue3)
-            text = buildSpannedString {
-                append(context.getString(title))
-                color(attrValue5) {
-                    inSpans(TextAppearanceSpan(context, attrValue4)) { append("\n\n" + message) }
-                }
-            }
-        }
+        (CustomDialogTitleMessageBinding.inflate(LayoutInflater.from(context))).apply {
+            alertTitle.text = context.getString(title)
+            this.message.text = message
+        }.root
     )
 }
 
