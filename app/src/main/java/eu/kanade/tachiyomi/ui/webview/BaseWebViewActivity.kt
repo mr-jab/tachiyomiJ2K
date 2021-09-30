@@ -18,6 +18,8 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.webkit.WebSettingsCompat.*
+import androidx.webkit.WebViewFeature
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.WebviewActivityBinding
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
@@ -106,6 +108,7 @@ open class BaseWebViewActivity : BaseActivity<WebviewActivityBinding>() {
             insets
         }
 
+        setWebDarkMode()
         binding.swipeRefresh.isEnabled = false
 
         if (bundle == null) {
@@ -132,6 +135,21 @@ open class BaseWebViewActivity : BaseActivity<WebviewActivityBinding>() {
         } else {
             bundle?.let {
                 binding.webview.restoreState(it)
+            }
+        }
+    }
+
+    private fun setWebDarkMode() {
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK_STRATEGY)) {
+            setForceDarkStrategy(
+                binding.webview.settings,
+                DARK_STRATEGY_WEB_THEME_DARKENING_ONLY
+            )
+            if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
+                setForceDark(
+                    binding.webview.settings,
+                    if (isInNightMode()) FORCE_DARK_ON else FORCE_DARK_OFF
+                )
             }
         }
     }
@@ -172,6 +190,7 @@ open class BaseWebViewActivity : BaseActivity<WebviewActivityBinding>() {
                 R.attr.colorPrimaryVariant,
             )
         )
+        setWebDarkMode()
         val colorSurface = attrs.getColor(0, 0)
         val actionBarTintColor = attrs.getColor(1, 0)
         val colorPrimaryVariant = attrs.getColor(2, 0)
