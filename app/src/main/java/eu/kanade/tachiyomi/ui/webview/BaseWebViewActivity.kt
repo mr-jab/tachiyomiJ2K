@@ -13,7 +13,11 @@ import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.widget.LinearLayout
 import androidx.core.graphics.ColorUtils
+import androidx.core.graphics.Insets
 import androidx.core.net.toUri
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsCompat.Type.systemBars
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
@@ -61,7 +65,7 @@ open class BaseWebViewActivity : BaseActivity<WebviewActivityBinding>() {
         container.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
         content.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
 
-        container.setOnApplyWindowInsetsListener { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(container) { v, insets ->
             val contextView = window?.decorView?.findViewById<View>(R.id.action_mode_bar)
             contextView?.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 leftMargin = insets.systemWindowInsetLeft
@@ -70,15 +74,18 @@ open class BaseWebViewActivity : BaseActivity<WebviewActivityBinding>() {
             // Consume any horizontal insets and pad all content in. There's not much we can do
             // with horizontal insets
             v.updatePadding(
-                left = insets.systemWindowInsetLeft,
-                right = insets.systemWindowInsetRight
+                left = insets.getInsets(systemBars()).left,
+                right = insets.getInsets(systemBars()).right
             )
-            insets.replaceSystemWindowInsets(
-                0,
-                insets.systemWindowInsetTop,
-                0,
-                insets.systemWindowInsetBottom
-            )
+            WindowInsetsCompat.Builder(insets).setInsets(
+                systemBars(),
+                Insets.of(
+                    0,
+                    insets.getInsets(systemBars()).top,
+                    0,
+                    insets.getInsets(systemBars()).bottom
+                )
+            ).build()
         }
         binding.swipeRefresh.setStyle()
         binding.swipeRefresh.setOnRefreshListener {
@@ -90,7 +97,7 @@ open class BaseWebViewActivity : BaseActivity<WebviewActivityBinding>() {
             255
         )
 
-        content.setOnApplyWindowInsetsListener { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(content) { v, insets ->
             // if pure white theme on a device that does not support dark status bar
             /*if (getResourceColor(android.R.attr.statusBarColor) != Color.TRANSPARENT)
                 window.statusBarColor = Color.BLACK
@@ -101,13 +108,13 @@ open class BaseWebViewActivity : BaseActivity<WebviewActivityBinding>() {
                 getResourceColor(R.attr.colorPrimaryVariant)
             }
             v.setPadding(
-                insets.systemWindowInsetLeft,
-                insets.systemWindowInsetTop,
-                insets.systemWindowInsetRight,
+                insets.getInsets(systemBars()).left,
+                insets.getInsets(systemBars()).top,
+                insets.getInsets(systemBars()).right,
                 0
             )
-            if (Build.VERSION.SDK_INT >= 26 && !isInNightMode()) {
-                content.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+            if (!isInNightMode()) {
+                WindowInsetsControllerCompat(window, content).isAppearanceLightNavigationBars = true
             }
             insets
         }
@@ -129,8 +136,8 @@ open class BaseWebViewActivity : BaseActivity<WebviewActivityBinding>() {
                 }
             }
             val marginB = binding.webview.marginBottom
-            binding.swipeRefresh.setOnApplyWindowInsetsListener { v, insets ->
-                val bottomInset = insets.systemWindowInsetBottom
+            ViewCompat.setOnApplyWindowInsetsListener(binding.swipeRefresh) { v, insets ->
+                val bottomInset = insets.getInsets(systemBars()).bottom
                 v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                     bottomMargin = marginB + bottomInset
                 }

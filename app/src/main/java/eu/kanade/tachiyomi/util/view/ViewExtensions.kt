@@ -23,7 +23,10 @@ import android.view.WindowInsets
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.TextView
-import androidx.annotation.*
+import androidx.annotation.Dimension
+import androidx.annotation.FloatRange
+import androidx.annotation.IdRes
+import androidx.annotation.RequiresApi
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.animation.addListener
@@ -34,6 +37,7 @@ import androidx.core.view.WindowInsetsAnimationCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.forEach
 import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePaddingRelative
 import androidx.interpolator.view.animation.FastOutLinearInInterpolator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
@@ -50,7 +54,11 @@ import com.google.android.material.shape.ShapeAppearanceModel
 import com.google.android.material.snackbar.Snackbar
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.lang.tintText
-import eu.kanade.tachiyomi.util.system.*
+import eu.kanade.tachiyomi.util.system.ThemeUtil
+import eu.kanade.tachiyomi.util.system.dpToPx
+import eu.kanade.tachiyomi.util.system.getResourceColor
+import eu.kanade.tachiyomi.util.system.isLTR
+import eu.kanade.tachiyomi.util.system.pxToDp
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import kotlin.math.max
 import kotlin.math.pow
@@ -247,15 +255,6 @@ fun View.requestApplyInsetsWhenAttached() {
     }
 }
 
-inline fun View.updatePadding(
-    @Px left: Int = paddingLeft,
-    @Px top: Int = paddingTop,
-    @Px right: Int = paddingRight,
-    @Px bottom: Int = paddingBottom
-) {
-    setPadding(left, top, right, bottom)
-}
-
 private fun createStateForView(view: View) = ViewPaddingState(
     view.paddingLeft,
     view.paddingTop,
@@ -273,15 +272,6 @@ data class ViewPaddingState(
     val start: Int,
     val end: Int
 )
-
-inline fun View.updatePaddingRelative(
-    @Px start: Int = paddingStart,
-    @Px top: Int = paddingTop,
-    @Px end: Int = paddingEnd,
-    @Px bottom: Int = paddingBottom
-) {
-    setPaddingRelative(start, top, end, bottom)
-}
 
 fun setBottomEdge(view: View, activity: Activity) {
     val marginB = view.marginBottom
