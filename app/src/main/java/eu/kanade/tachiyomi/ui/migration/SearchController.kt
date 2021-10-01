@@ -14,9 +14,9 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.main.BottomNavBarInterface
 import eu.kanade.tachiyomi.ui.migration.manga.process.MigrationListController
-import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchCardAdapter
-import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchController
-import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchPresenter
+import eu.kanade.tachiyomi.ui.source.globalsearch.GlobalSearchCardAdapter
+import eu.kanade.tachiyomi.ui.source.globalsearch.GlobalSearchController
+import eu.kanade.tachiyomi.ui.source.globalsearch.GlobalSearchPresenter
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
