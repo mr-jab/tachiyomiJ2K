@@ -40,7 +40,11 @@ import eu.kanade.tachiyomi.ui.main.BottomSheetController
 import eu.kanade.tachiyomi.ui.main.FloatingSearchInterface
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaDetailsController
-import eu.kanade.tachiyomi.util.system.*
+import eu.kanade.tachiyomi.util.system.dpToPx
+import eu.kanade.tachiyomi.util.system.getResourceColor
+import eu.kanade.tachiyomi.util.system.isTablet
+import eu.kanade.tachiyomi.util.system.materialAlertDialog
+import eu.kanade.tachiyomi.util.system.toast
 import uy.kohesive.injekt.injectLazy
 import kotlin.math.abs
 import kotlin.math.roundToInt
