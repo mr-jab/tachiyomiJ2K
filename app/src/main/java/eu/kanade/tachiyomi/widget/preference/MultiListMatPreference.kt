@@ -5,10 +5,10 @@ import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
 import androidx.appcompat.app.AlertDialog
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import androidx.appcompat.widget.AppCompatCheckedTextView
 import androidx.core.view.children
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.util.system.disableItems
 
 class MultiListMatPreference @JvmOverloads constructor(
