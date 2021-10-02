@@ -515,6 +515,7 @@ open class MainActivity : BaseActivity<MainActivityBinding>(), DownloadServiceLi
         super.onResume()
         getAppUpdates()
         getExtensionUpdates(false)
+        setExtensionsBadge()
         DownloadService.callListeners()
         showDLQueueTutorial()
     }

@@ -191,8 +191,7 @@ interface Manga : SManga {
     fun isLongStrip(): Boolean {
         val currentTags =
             genre?.split(",")?.map { it.trim().lowercase(Locale.US) } ?: emptyList()
-        val sourceName by lazy { Injekt.get<SourceManager>().getOrStub(source).name }
-        return currentTags.any { it == "long strip" } || sourceName.contains("webtoon", true)
+        return currentTags.any { it == "long strip" }
     }
 
     fun isManhwaTag(tag: String): Boolean {
@@ -219,7 +218,8 @@ interface Manga : SManga {
             sourceName.contains("cyanide", true) ||
             sourceName.contains("xkcd", true) ||
             sourceName.contains("tapas", true) ||
-            sourceName.contains("ComicExtra", true)
+            sourceName.contains("ComicExtra", true) ||
+            sourceName.contains("Read Comics Online", true)
     }
 
     fun isOneShotOrCompleted(db: DatabaseHelper): Boolean {
