@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.databinding.CustomDialogTitleMessageBinding
 import eu.kanade.tachiyomi.databinding.DialogQuadstateBinding
+import eu.kanade.tachiyomi.widget.TriStateCheckBox
 import eu.kanade.tachiyomi.widget.materialdialogs.TriStateMultiChoiceDialogAdapter
 import eu.kanade.tachiyomi.widget.materialdialogs.TriStateMultiChoiceListener
 
@@ -69,7 +70,7 @@ fun MaterialAlertDialogBuilder.setCustomTitleAndMessage(title: Int, message: Str
 }
 
 /**
- * A variant of listItemsMultiChoice that allows for checkboxes that supports 4 states instead.
+ * A variant of listItemsMultiChoice that allows for checkboxes that supports 3 states instead.
  */
 @CheckResult
 internal fun MaterialAlertDialogBuilder.setTriStateItems(
@@ -77,7 +78,8 @@ internal fun MaterialAlertDialogBuilder.setTriStateItems(
     items: List<CharSequence>,
     disabledIndices: IntArray? = null,
     initialSelection: IntArray = IntArray(items.size),
-    selection: TriStateMultiChoiceListener
+    skipChecked: Boolean = false,
+    selection: TriStateMultiChoiceListener,
 ): MaterialAlertDialogBuilder {
     val binding = DialogQuadstateBinding.inflate(LayoutInflater.from(context))
     binding.list.layoutManager = LinearLayoutManager(context)
@@ -86,6 +88,7 @@ internal fun MaterialAlertDialogBuilder.setTriStateItems(
         items = items,
         disabledItems = disabledIndices,
         initialSelection = initialSelection,
+        skipChecked = skipChecked,
         listener = selection
     )
     val updateScrollIndicators = {
@@ -104,6 +107,27 @@ internal fun MaterialAlertDialogBuilder.setTriStateItems(
         binding.message.isVisible = true
     }
     return setView(binding.root)
+}
+
+internal fun MaterialAlertDialogBuilder.setNegativeStateItems(
+    items: List<CharSequence>,
+    initialSelection: BooleanArray = BooleanArray(items.size),
+    listener: DialogInterface.OnMultiChoiceClickListener
+): MaterialAlertDialogBuilder {
+    return setTriStateItems(
+        items = items,
+        initialSelection = initialSelection.map {
+            if (it) {
+                TriStateCheckBox.State.INVERSED.ordinal
+            } else {
+                TriStateCheckBox.State.UNCHECKED.ordinal
+            }
+        }
+            .toIntArray(),
+        skipChecked = true
+    ) { _, _, _, index, state ->
+        listener.onClick(null, index, state == TriStateCheckBox.State.INVERSED.ordinal)
+    }
 }
 
 val DialogInterface.isPromptChecked: Boolean

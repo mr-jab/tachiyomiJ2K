@@ -12,17 +12,32 @@ private object CheckPayload
 private object InverseCheckPayload
 private object UncheckPayload
 
-internal typealias TriStateMultiChoiceListener = ((adapter: TriStateMultiChoiceDialogAdapter, indices: IntArray, items: List<CharSequence>) -> Unit)?
+internal typealias TriStateMultiChoiceListener = (
+    (
+        adapter: TriStateMultiChoiceDialogAdapter,
+        indices: IntArray,
+        items: List<CharSequence>,
+        selectedIndex: Int,
+        selectedState: Int
+    ) -> Unit
+)?
 
 internal class TriStateMultiChoiceDialogAdapter(
     private var dialog: MaterialAlertDialogBuilder,
     internal var items: List<CharSequence>,
     disabledItems: IntArray?,
     initialSelection: IntArray,
-    internal var listener: TriStateMultiChoiceListener
+    private val skipChecked: Boolean = false,
+    internal var listener: TriStateMultiChoiceListener,
 ) : RecyclerView.Adapter<TriStateMultiChoiceViewHolder>() {
 
     private val states = TriStateCheckBox.State.values()
+    private val defaultOrdinal
+        get() = if (skipChecked) {
+            TriStateCheckBox.State.INVERSED.ordinal
+        } else {
+            TriStateCheckBox.State.CHECKED.ordinal
+        }
 
     private var currentSelection: IntArray = initialSelection
         set(value) {
@@ -53,14 +68,14 @@ internal class TriStateMultiChoiceDialogAdapter(
         newSelection[index] = when (currentSelection[index]) {
             TriStateCheckBox.State.CHECKED.ordinal -> TriStateCheckBox.State.INVERSED.ordinal
             TriStateCheckBox.State.INVERSED.ordinal -> TriStateCheckBox.State.UNCHECKED.ordinal
-            // INDETERMINATE or UNCHECKED
-            else -> TriStateCheckBox.State.CHECKED.ordinal
+            // UNCHECKED
+            else -> defaultOrdinal
         }
         currentSelection = newSelection.toIntArray()
-        val selectedItems = this.items.filterIndexed { index, _ ->
-            currentSelection[index] != 0
+        val selectedItems = this.items.filterIndexed { i, _ ->
+            currentSelection[i] != 0
         }
-        listener?.invoke(this, currentSelection, selectedItems)
+        listener?.invoke(this, currentSelection, selectedItems, index, newSelection[index])
     }
 
     override fun onCreateViewHolder(
@@ -114,31 +129,10 @@ internal class TriStateMultiChoiceDialogAdapter(
         super.onBindViewHolder(holder, position, payloads)
     }
 
-//
-//    override fun positiveButtonClicked() {
-// //        selection.invoke(currentSelection)
-//    }
-//
-//    override fun replaceItems(
-//        items: List<CharSequence>,
-//        listener: QuadStateMultiChoiceListener?
-//    ) {
-//        this.items = items
-//        if (listener != null) {
-//            this.selection = listener
-//        }
-//        this.notifyDataSetChanged()
-//    }
-//
-//    override fun disableItems(indices: IntArray) {
-//        this.disabledIndices = indices
-//        notifyDataSetChanged()
-//    }
-//
     fun checkItems(indices: IntArray) {
         val newSelection = this.currentSelection.toMutableList()
         for (index in indices) {
-            newSelection[index] = TriStateCheckBox.State.CHECKED.ordinal
+            newSelection[index] = defaultOrdinal
         }
         this.currentSelection = newSelection.toIntArray()
     }
@@ -150,38 +144,4 @@ internal class TriStateMultiChoiceDialogAdapter(
         }
         this.currentSelection = newSelection.toIntArray()
     }
-//
-//    override fun toggleItems(indices: IntArray) {
-//        val newSelection = this.currentSelection.toMutableList()
-//        for (index in indices) {
-//            if (this.disabledIndices.contains(index)) {
-//                continue
-//            }
-//
-//            if (this.currentSelection[index] != TriStateCheckBox.State.CHECKED.ordinal) {
-//                newSelection[index] = TriStateCheckBox.State.CHECKED.ordinal
-//            } else {
-//                newSelection[index] = TriStateCheckBox.State.UNCHECKED.ordinal
-//            }
-//        }
-//        this.currentSelection = newSelection.toIntArray()
-//    }
-//
-//    override fun checkAllItems() {
-//        this.currentSelection = IntArray(itemCount) { TriStateCheckBox.State.CHECKED.ordinal }
-//    }
-//
-//    override fun uncheckAllItems() {
-//        this.currentSelection = IntArray(itemCount) { TriStateCheckBox.State.UNCHECKED.ordinal }
-//    }
-//
-//    override fun toggleAllChecked() {
-//        if (this.currentSelection.any { it != TriStateCheckBox.State.CHECKED.ordinal }) {
-//            checkAllItems()
-//        } else {
-//            uncheckAllItems()
-//        }
-//    }
-//
-//    override fun isItemChecked(index: Int) = this.currentSelection[index] == TriStateCheckBox.State.CHECKED.ordinal
 }

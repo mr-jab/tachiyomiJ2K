@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaDetailsController
 import eu.kanade.tachiyomi.util.chapter.ChapterUtil
 import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.materialAlertDialog
+import eu.kanade.tachiyomi.util.system.setNegativeStateItems
 import eu.kanade.tachiyomi.util.view.setBottomEdge
 import eu.kanade.tachiyomi.widget.E2EBottomSheetDialog
 import eu.kanade.tachiyomi.widget.SortTextView
@@ -155,16 +156,17 @@ class ChaptersSortBottomSheet(controller: MangaDetailsController) :
         binding.filterGroupsButton.isVisible = presenter.allChapterScanlators.size > 1
 
         binding.filterGroupsButton.setOnClickListener {
-            val scanlators = presenter.allChapterScanlators.toTypedArray()
+            val scanlators = presenter.allChapterScanlators.toList()
             val filteredScanlators =
                 (
-                    presenter.manga.filtered_scanlators?.let { ChapterUtil.getScanlators(it) }?.toMutableSet()
+                    presenter.manga.filtered_scanlators?.let { ChapterUtil.getScanlators(it) }
+                        ?.toMutableSet()
                         ?: mutableSetOf()
                     )
             val preselected = scanlators.map { it in filteredScanlators }.toBooleanArray()
             activity.materialAlertDialog()
                 .setTitle(R.string.filter_groups)
-                .setMultiChoiceItems(scanlators, preselected) { _, pos, checked ->
+                .setNegativeStateItems(scanlators, preselected) { _, pos, checked ->
                     if (checked) {
                         filteredScanlators.add(scanlators[pos])
                     } else {

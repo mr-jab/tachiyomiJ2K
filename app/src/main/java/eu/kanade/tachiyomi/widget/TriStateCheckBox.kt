@@ -157,7 +157,12 @@ class TriStateCheckBox constructor(context: Context, attrs: AttributeSet?) :
                     backgroundTintList = checkedColor
                 }
                 State.INVERSED -> {
-                    setAnimVectorCompat(R.drawable.anim_check_box_checked_to_x_24dp)
+                    setAnimVectorCompat(
+                        when (oldState) {
+                            State.CHECKED -> R.drawable.anim_check_box_checked_to_x_24dp
+                            else -> R.drawable.anim_checkbox_blank_to_x_24dp
+                        }
+                    )
                     backgroundTintList = inverseColor
                 }
             }
@@ -188,8 +193,7 @@ class TriStateCheckBox constructor(context: Context, attrs: AttributeSet?) :
     enum class State {
         UNCHECKED,
         CHECKED,
-        INVERSED,
-        ;
+        INVERSED
     }
 
     /**
