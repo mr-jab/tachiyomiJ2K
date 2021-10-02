@@ -79,7 +79,7 @@ internal fun MaterialAlertDialogBuilder.setTriStateItems(
     disabledIndices: IntArray? = null,
     initialSelection: IntArray = IntArray(items.size),
     skipChecked: Boolean = false,
-    selection: TriStateMultiChoiceListener,
+    selection: TriStateMultiChoiceListener?,
 ): MaterialAlertDialogBuilder {
     val binding = DialogQuadstateBinding.inflate(LayoutInflater.from(context))
     binding.list.layoutManager = LinearLayoutManager(context)

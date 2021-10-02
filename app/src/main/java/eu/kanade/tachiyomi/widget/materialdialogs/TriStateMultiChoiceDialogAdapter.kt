@@ -13,14 +13,12 @@ private object InverseCheckPayload
 private object UncheckPayload
 
 internal typealias TriStateMultiChoiceListener = (
-    (
-        adapter: TriStateMultiChoiceDialogAdapter,
-        indices: IntArray,
-        items: List<CharSequence>,
-        selectedIndex: Int,
-        selectedState: Int
-    ) -> Unit
-)?
+    adapter: TriStateMultiChoiceDialogAdapter,
+    indices: IntArray,
+    items: List<CharSequence>,
+    selectedIndex: Int,
+    selectedState: Int
+) -> Unit
 
 internal class TriStateMultiChoiceDialogAdapter(
     private var dialog: MaterialAlertDialogBuilder,
@@ -28,7 +26,7 @@ internal class TriStateMultiChoiceDialogAdapter(
     disabledItems: IntArray?,
     initialSelection: IntArray,
     private val skipChecked: Boolean = false,
-    internal var listener: TriStateMultiChoiceListener,
+    internal var listener: TriStateMultiChoiceListener?,
 ) : RecyclerView.Adapter<TriStateMultiChoiceViewHolder>() {
 
     private val states = TriStateCheckBox.State.values()
@@ -114,15 +112,15 @@ internal class TriStateMultiChoiceDialogAdapter(
     ) {
         when (payloads.firstOrNull()) {
             CheckPayload -> {
-                holder.controlView.animateDrawableToState(TriStateCheckBox.State.CHECKED)
+                holder.controlView.setState(TriStateCheckBox.State.CHECKED, true)
                 return
             }
             InverseCheckPayload -> {
-                holder.controlView.animateDrawableToState(TriStateCheckBox.State.INVERSED)
+                holder.controlView.setState(TriStateCheckBox.State.INVERSED, true)
                 return
             }
             UncheckPayload -> {
-                holder.controlView.animateDrawableToState(TriStateCheckBox.State.UNCHECKED)
+                holder.controlView.setState(TriStateCheckBox.State.UNCHECKED, true)
                 return
             }
         }

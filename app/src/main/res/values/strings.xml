@@ -962,6 +962,7 @@
     <string name="include_">Include: %s</string>
     <string name="install">Install</string>
     <string name="keep">Keep</string>
+    <string name="keep_in_">Keep in %1$s</string>
     <string name="left">Left</string>
     <string name="less">Less</string>
     <string name="loading">Loading…</string>
@@ -1001,6 +1002,7 @@
     <string name="preview">Preview</string>
     <string name="previous">Previous</string>
     <string name="remove">Remove</string>
+    <string name="remove_from_">Remove from %1$s</string>
     <string name="reorder">Reorder</string>
     <string name="reset">Reset</string>
     <string name="restore">Restore</string>

@@ -17,6 +17,22 @@ import kotlin.math.roundToInt
 class TriStateCheckBox constructor(context: Context, attrs: AttributeSet?) :
     FrameLayout(context, attrs) {
 
+    var useIndeterminateForInverse: Boolean = false
+        set(value) {
+            field = value
+            if (if (field) state == State.INVERSED else state == State.INDETERMINATE) {
+                state = if (!field) State.INVERSED else State.INDETERMINATE
+            }
+        }
+
+    var skipInversed: Boolean = false
+        set(value) {
+            field = value
+            if (field && (state == State.INVERSED || state == State.INDETERMINATE)) {
+                state = State.UNCHECKED
+            }
+        }
+
     var text: CharSequence
         get() {
             return binding.textView.text
@@ -59,6 +75,7 @@ class TriStateCheckBox constructor(context: Context, attrs: AttributeSet?) :
     private val uncheckedColor = ColorStateList.valueOf(context.getResourceColor(R.attr.colorControlNormal))
     private val checkedColor = ColorStateList.valueOf(context.getResourceColor(R.attr.colorSecondary))
     private val inverseColor = ColorStateList.valueOf(context.getResourceColor(R.attr.colorSecondaryVariant))
+    private val indeterColor = ColorStateList.valueOf(context.getResourceColor(R.attr.colorPrimary))
     private val disabledColor = ColorStateList.valueOf(
         ColorUtils.setAlphaComponent(context.getResourceColor(R.attr.colorControlNormal), (disabledAlpha * 255).roundToInt())
     )
@@ -91,20 +108,28 @@ class TriStateCheckBox constructor(context: Context, attrs: AttributeSet?) :
         }
 
         setOnClickListener {
-            setState(
-                when (state) {
-                    State.CHECKED -> State.INVERSED
-                    State.UNCHECKED -> State.CHECKED
-                    else -> State.UNCHECKED
-                },
-                true
-            )
+            goToNextStep()
             mOnCheckedChangeListener?.onCheckedChanged(this, state)
         }
         isClickable = a.getBoolean(R.styleable.TriStateCheckBox_android_clickable, true)
         isFocusable = a.getBoolean(R.styleable.TriStateCheckBox_android_focusable, true)
 
         a.recycle()
+    }
+
+    fun goToNextStep() {
+        setState(
+            when (state) {
+                State.CHECKED -> when {
+                    skipInversed -> State.UNCHECKED
+                    useIndeterminateForInverse -> State.INDETERMINATE
+                    else -> State.INVERSED
+                }
+                State.UNCHECKED -> State.CHECKED
+                else -> State.UNCHECKED
+            },
+            true
+        )
     }
 
     override fun setEnabled(enabled: Boolean) {
@@ -137,7 +162,7 @@ class TriStateCheckBox constructor(context: Context, attrs: AttributeSet?) :
         mOnCheckedChangeListener = listener
     }
 
-    fun animateDrawableToState(state: State) {
+    private fun animateDrawableToState(state: State) {
         val oldState = this.state
         if (state == oldState) return
         this.state = state
@@ -146,6 +171,7 @@ class TriStateCheckBox constructor(context: Context, attrs: AttributeSet?) :
                 State.UNCHECKED -> {
                     setAnimVectorCompat(
                         when (oldState) {
+                            State.INDETERMINATE -> R.drawable.anim_checkbox_indeterminate_to_blank_24dp
                             State.INVERSED -> R.drawable.anim_check_box_x_to_blank_24dp
                             else -> R.drawable.anim_check_box_checked_to_blank_24dp
                         }
@@ -164,6 +190,10 @@ class TriStateCheckBox constructor(context: Context, attrs: AttributeSet?) :
                         }
                     )
                     backgroundTintList = inverseColor
+                }
+                State.INDETERMINATE -> {
+                    setAnimVectorCompat(R.drawable.anim_check_box_checked_to_indeterminate_24dp)
+                    backgroundTintList = indeterColor
                 }
             }
             if (this@TriStateCheckBox.isEnabled) imageTintList = backgroundTintList
@@ -185,6 +215,10 @@ class TriStateCheckBox constructor(context: Context, attrs: AttributeSet?) :
                     setVectorCompat(R.drawable.ic_check_box_x_24dp)
                     inverseColor
                 }
+                State.INDETERMINATE -> {
+                    setVectorCompat(R.drawable.ic_check_box_indeterminate_24dp)
+                    indeterColor
+                }
             }
             if (this@TriStateCheckBox.isEnabled) imageTintList = backgroundTintList
         }
@@ -193,7 +227,8 @@ class TriStateCheckBox constructor(context: Context, attrs: AttributeSet?) :
     enum class State {
         UNCHECKED,
         CHECKED,
-        INVERSED
+        INVERSED,
+        INDETERMINATE,
     }
 
     /**
