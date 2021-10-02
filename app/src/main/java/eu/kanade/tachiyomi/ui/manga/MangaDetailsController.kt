@@ -229,7 +229,7 @@ class MangaDetailsController :
                         it,
                         context.contextCompatColor(R.color.colorOnDownloadBadgeDayNight),
                         (if (!context.isInNightMode()) luminance else -(luminance - 1))
-                            .toFloat() * 0.33f
+                            .toFloat() * if (context.isInNightMode()) 0.33f else 0.5f
                     )
                 } else {
                     it
