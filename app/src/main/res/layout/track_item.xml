@@ -222,7 +222,7 @@
 
             <TextView
                 android:id="@+id/track_start_date"
-                style="?textAppearanceBodySmall"
+                style="?textAppearanceBodySecondary"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:background="@drawable/card_item_selector"
@@ -250,7 +250,7 @@
 
             <TextView
                 android:id="@+id/track_finish_date"
-                style="?textAppearanceBodySmall"
+                style="?textAppearanceBodySecondary"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:background="@drawable/card_item_selector"

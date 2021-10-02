@@ -121,7 +121,7 @@
 
     <TextView
         android:id="@+id/manga_status"
-        style="?textAppearanceBodySmall"
+        style="?textAppearanceBodySecondary"
         android:layout_width="wrap_content"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constrainedWidth="true"
@@ -136,7 +136,7 @@
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/manga_source"
-        style="?textAppearanceBodySmall"
+        style="?textAppearanceBodySecondary"
         android:layout_width="wrap_content"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constrainedWidth="true"
@@ -239,7 +239,7 @@
 
     <TextView
         android:id="@+id/manga_summary"
-        style="?textAppearanceBodySmall"
+        style="?textAppearanceBodySecondary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
