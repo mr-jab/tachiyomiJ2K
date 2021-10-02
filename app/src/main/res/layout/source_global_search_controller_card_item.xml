@@ -64,7 +64,7 @@
             android:paddingEnd="5dp"
             android:textSize="13sp"
             android:textColor="?attr/colorOnSecondary"
-            style="@style/TextAppearance.Regular.Caption.Light"
+            style="?textAppearanceCaption"
             android:layout_height="wrap_content"
             android:tint="@color/md_white_1000"
             android:text="@string/in_library"/>
@@ -73,7 +73,7 @@
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/title"
-        style="@style/TextAppearance.Regular.Body1.Light"
+        style="?textAppearanceBodyMedium"
         android:layout_width="110dp"
         android:layout_height="wrap_content"
         android:ellipsize="end"

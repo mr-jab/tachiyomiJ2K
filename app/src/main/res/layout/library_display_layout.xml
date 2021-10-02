@@ -57,7 +57,7 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintHorizontal_chainStyle="packed"
                     app:layout_constraintHorizontal_bias="0.0"
-                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                    style="?textAppearanceBodyMedium"
                     android:textSize="15sp"
                     android:text="@string/grid_size"
                     android:layout_weight="0"

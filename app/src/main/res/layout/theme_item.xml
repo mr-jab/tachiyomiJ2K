@@ -207,7 +207,7 @@
         android:textAlignment="center"
         android:layout_marginStart="6dp"
         android:layout_marginEnd="6dp"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+        android:textAppearance="?textAppearanceCaption"
         app:layout_constraintTop_toBottomOf="@id/theme_selected"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

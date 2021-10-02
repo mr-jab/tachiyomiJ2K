@@ -60,7 +60,7 @@
 
             <TextView
                 android:id="@+id/track_title"
-                style="@style/TextAppearance.MaterialComponents.Headline6"
+                style="?textAppearanceTitleMedium"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:background="@drawable/card_item_selector"
@@ -124,7 +124,7 @@
                 app:layout_constraintTop_toTopOf="parent">
                 <TextView
                     android:id="@+id/track_status"
-                    style="@style/TextAppearance.Regular.Body1.Secondary"
+                    style="?textAppearanceBodySmall"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:background="@drawable/card_item_selector"
@@ -143,7 +143,7 @@
 
                 <TextView
                     android:id="@+id/track_chapters"
-                    style="@style/TextAppearance.Regular.Body1.Secondary"
+                    style="?textAppearanceBodySmall"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:background="@drawable/card_item_selector"
@@ -173,7 +173,7 @@
 
                     <TextView
                         android:id="@+id/track_score"
-                        style="@style/TextAppearance.Regular.Body1.Secondary"
+                        style="?textAppearanceBodySmall"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
@@ -222,7 +222,7 @@
 
             <TextView
                 android:id="@+id/track_start_date"
-                style="@style/TextAppearance.Regular.Body1.Secondary"
+                style="?textAppearanceBodySmall"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:background="@drawable/card_item_selector"
@@ -250,7 +250,7 @@
 
             <TextView
                 android:id="@+id/track_finish_date"
-                style="@style/TextAppearance.Regular.Body1.Secondary"
+                style="?textAppearanceBodySmall"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:background="@drawable/card_item_selector"

@@ -12,7 +12,7 @@
 
     <TextView
         android:id="@+id/chapter_title"
-        style="@style/TextAppearance.Material3.BodyMedium"
+        style="?textAppearanceBodyMedium"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -27,7 +27,7 @@
 
     <TextView
         android:id="@+id/chapter_subtitle"
-        style="@style/TextAppearance.MaterialComponents.Caption"
+        style="?textAppearanceCaption"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"

@@ -58,7 +58,7 @@
 
         <TextView
             android:id="@+id/lang"
-            style="@style/TextAppearance.Regular.Body1.Secondary"
+            style="?textAppearanceBodySmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:maxLines="1"
@@ -76,7 +76,7 @@
 
         <TextView
             android:id="@+id/version"
-            style="@style/TextAppearance.Regular.Body1.Secondary"
+            style="?textAppearanceBodySmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:maxLines="1"
@@ -90,7 +90,7 @@
 
         <TextView
             android:id="@+id/date"
-            style="@style/TextAppearance.Regular.Body1.Secondary"
+            style="?textAppearanceBodySmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:maxLines="1"
@@ -104,7 +104,7 @@
 
         <TextView
             android:id="@+id/warning"
-            style="@style/TextAppearance.Regular.Body1.Secondary"
+            style="?textAppearanceBodySmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"

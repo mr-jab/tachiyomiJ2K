@@ -85,7 +85,7 @@
 
     <TextView
         android:id="@+id/title"
-        style="@style/TextAppearance.Material3.HeadlineSmall"
+        style="?textAppearanceHeadlineSmall"
         android:layout_width="wrap_content"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constrainedWidth="true"
@@ -112,7 +112,7 @@
         android:ellipsize="end"
         android:maxLines="2"
         android:text="@string/author"
-        android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
+        style="?textAppearanceLabelLarge"
         android:textColor="?android:attr/textColorSecondary"
         android:textIsSelectable="false"
         app:layout_constraintEnd_toEndOf="parent"
@@ -121,7 +121,7 @@
 
     <TextView
         android:id="@+id/manga_status"
-        style="@style/TextAppearance.Regular.Body1.Secondary"
+        style="?textAppearanceBodySmall"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
         app:layout_constraintHorizontal_bias="0.0"
@@ -136,7 +136,7 @@
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/manga_source"
-        style="@style/TextAppearance.Regular.Body1.Secondary"
+        style="?textAppearanceBodySmall"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
         app:layout_constraintHorizontal_bias="0.0"
@@ -223,7 +223,7 @@
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/manga_summary_label"
-        style="@style/TextAppearance.Material3.TitleSmall"
+        style="?textAppearanceTitleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -238,7 +238,7 @@
 
     <TextView
         android:id="@+id/manga_summary"
-        style="@style/TextAppearance.Regular.Body1.Secondary"
+        style="?textAppearanceBodySmall"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -382,7 +382,7 @@
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/chapters_title"
-            style="@style/TextAppearance.Material3.TitleSmall"
+            style="?textAppearanceTitleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"

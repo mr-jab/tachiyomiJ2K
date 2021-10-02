@@ -27,7 +27,7 @@
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/sort_title"
-                    style="@style/TextAppearance.Material3.HeadlineSmall"
+                    style="?textAppearanceHeadlineSmall"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"

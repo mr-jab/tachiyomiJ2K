@@ -77,7 +77,7 @@
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/compact_title"
-                style="@style/TextAppearance.Material3.LabelMedium"
+                style="?textAppearanceLabelMedium"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
@@ -133,7 +133,7 @@
             android:layout_height="30sp">
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/title"
-                style="@style/TextAppearance.Material3.BodySmall"
+                style="?textAppearanceBodySmall"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
@@ -144,7 +144,7 @@
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/subtitle"
-                style="@style/TextAppearance.Material3.BodySmall"
+                style="?textAppearanceBodySmall"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@color/library_comfortable_subtitle_selector"
