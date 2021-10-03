@@ -4,7 +4,6 @@ import android.app.Activity
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import androidx.collection.ArraySet
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.WindowInsetsCompat.Type.systemBars
 import androidx.core.view.updateLayoutParams
@@ -65,25 +64,22 @@ class SetCategoriesSheet(
     private val db: DatabaseHelper by injectLazy()
     override var recyclerView: RecyclerView? = binding.categoryRecyclerView
 
-    private val checkedSelections: Set<Int>
-        get() {
-            return (0 until fastAdapter.itemCount).mapNotNullTo(ArraySet()) { i ->
-                i.takeIf { fastAdapter.getItem(i)?.state == TriStateCheckBox.State.CHECKED }
-            }
-        }
-
-    private val indeterminateSelections: Set<Int>
-        get() {
-            return (0 until fastAdapter.itemCount).mapNotNullTo(ArraySet()) { i ->
-                i.takeIf { fastAdapter.getItem(i)?.state == TriStateCheckBox.State.INDETERMINATE }
-            }
-        }
+    private val preCheckedCategories = categories.mapIndexedNotNull { index, category ->
+        category.takeIf { preselected[index] == TriStateCheckBox.State.CHECKED }
+    }
+    private val preIndeterminateCategories = categories.mapIndexedNotNull { index, category ->
+        category.takeIf { preselected[index] == TriStateCheckBox.State.INDETERMINATE }
+    }
+    private val selectedCategories = preIndeterminateCategories + preCheckedCategories
 
     private val selectedItems: Set<AddCategoryItem>
         get() = itemAdapter.adapterItems.filter { it.isSelected }.toSet()
 
     private val checkedItems: Set<AddCategoryItem>
         get() = itemAdapter.adapterItems.filter { it.state == TriStateCheckBox.State.CHECKED }.toSet()
+
+    private val indeterminateItems: Set<AddCategoryItem>
+        get() = itemAdapter.adapterItems.filter { it.state == TriStateCheckBox.State.INDETERMINATE }.toSet()
 
     private val uncheckedItems: Set<AddCategoryItem>
         get() = itemAdapter.adapterItems.filter { !it.isSelected }.toSet()
@@ -154,51 +150,51 @@ class SetCategoriesSheet(
     }
 
     private fun setCategoriesButtons() {
-        val uncheckedCategories = categories.mapIndexedNotNull { index, category ->
-            category.takeIf { preselected[index] != TriStateCheckBox.State.UNCHECKED }
-        }
-        val nothingChecked = checkedSelections.isEmpty() && indeterminateSelections.isNotEmpty()
-        val addingMore = checkedSelections.isNotEmpty() && indeterminateSelections.isNotEmpty()
+        val addingMore = checkedItems.isNotEmpty() &&
+            selectedItems.map { it.category }
+                .containsAll(selectedCategories) &&
+            checkedItems.size > preCheckedCategories.size
         val nothingChanged = itemAdapter.adapterItems.map { it.state }
             .toTypedArray()
             .contentEquals(preselected)
+        val removing = selectedItems.isNotEmpty() && (
+            (
+                // Check that selected items has the previous delta items
+                selectedCategories.containsAll(indeterminateItems.map { it.category }) &&
+                    preIndeterminateCategories.size > indeterminateItems.size
+                ) ||
+                (
+                    // or check that checked items has the previous checked items
+                    preCheckedCategories.containsAll(checkedItems.map { it.category }) &&
+                        preCheckedCategories.size > checkedItems.size
+                    )
+            ) &&
+            // Additional checks in case a delta item is now fully checked
+            preCheckedCategories.size >= checkedItems.size &&
+            preIndeterminateCategories.size >= indeterminateItems.size
+
+        val items = when {
+            addingToLibrary -> checkedItems.map { it.category }
+            addingMore -> checkedItems.map { it.category }.subtract(preCheckedCategories)
+            removing -> selectedCategories.subtract(selectedItems.map { it.category })
+            nothingChanged -> selectedItems.map { it.category }
+            else -> checkedItems.map { it.category }
+        }
         binding.addToCategoriesButton.text = context.getString(
             when {
                 addingToLibrary || (addingMore && !nothingChanged) -> R.string.add_to_
-                nothingChecked && uncheckedCategories.size > indeterminateSelections.size -> {
-                    R.string.remove_from_
-                }
-                nothingChecked || nothingChanged -> R.string.keep_in_
+                removing -> R.string.remove_from_
+                nothingChanged -> R.string.keep_in_
                 else -> R.string.move_to_
             },
-            if (nothingChecked && uncheckedCategories.size > indeterminateSelections.size) {
-                val uncheckedItems = uncheckedItems.map(AddCategoryItem::category)
-                val oldSelections = categories.mapIndexedNotNull { index, category ->
-                    category.takeIf {
-                        preselected[index] != TriStateCheckBox.State.UNCHECKED &&
-                            category in uncheckedItems
-                    }
-                }
-                when (oldSelections.size) {
-                    0 -> context.getString(R.string.default_category).lowercase(Locale.ROOT)
-                    1 -> oldSelections.firstOrNull()?.name ?: ""
-                    else -> context.resources.getQuantityString(
-                        R.plurals.category_plural,
-                        oldSelections.size,
-                        oldSelections.size
-                    )
-                }
-            } else {
-                val items = if (checkedSelections.isEmpty() || nothingChanged) selectedItems else checkedItems
-                when (items.size) {
-                    0 -> context.getString(R.string.default_category).lowercase(Locale.ROOT)
-                    1 -> items.firstOrNull()?.category?.name ?: ""
-                    else -> context.resources.getQuantityString(
-                        R.plurals.category_plural,
-                        items.size,
-                        items.size
-                    )
-                }
+            when (items.size) {
+                0 -> context.getString(R.string.default_category).lowercase(Locale.ROOT)
+                1 -> items.firstOrNull()?.name ?: ""
+                else -> context.resources.getQuantityString(
+                    R.plurals.category_plural,
+                    items.size,
+                    items.size
+                )
             }
         )
     }
