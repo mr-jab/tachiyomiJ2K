@@ -42,6 +42,7 @@ class FullCoverDialog(val controller: MangaDetailsController, drawable: Drawable
         ).toLong()
 
     init {
+        window?.setDimAmount(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) 0.45f else 0.77f)
         setContentView(binding.root)
 
         binding.touchOutside.setOnClickListener {
