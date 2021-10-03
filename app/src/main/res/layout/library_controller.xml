@@ -116,7 +116,8 @@
     <FrameLayout
         android:id="@+id/category_hopper_frame"
         android:layout_width="wrap_content"
-        tools:translationY="400dp"
+        tools:layout_marginBottom="62dp"
+        tools:layout_gravity="bottom|end"
         android:layout_height="wrap_content"
         android:layout_gravity="top|center">
 
