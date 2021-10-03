@@ -159,13 +159,16 @@ class SetCategoriesSheet(
         }
         val nothingChecked = checkedSelections.isEmpty() && indeterminateSelections.isNotEmpty()
         val addingMore = checkedSelections.isNotEmpty() && indeterminateSelections.isNotEmpty()
+        val nothingChanged = itemAdapter.adapterItems.map { it.state }
+            .toTypedArray()
+            .contentEquals(preselected)
         binding.addToCategoriesButton.text = context.getString(
             when {
-                addingToLibrary || addingMore -> R.string.add_to_
+                addingToLibrary || (addingMore && !nothingChanged) -> R.string.add_to_
                 nothingChecked && uncheckedCategories.size > indeterminateSelections.size -> {
                     R.string.remove_from_
                 }
-                nothingChecked -> R.string.keep_in_
+                nothingChecked || nothingChanged -> R.string.keep_in_
                 else -> R.string.move_to_
             },
             if (nothingChecked && uncheckedCategories.size > indeterminateSelections.size) {
@@ -186,7 +189,7 @@ class SetCategoriesSheet(
                     )
                 }
             } else {
-                val items = if (checkedSelections.isEmpty()) selectedItems else checkedItems
+                val items = if (checkedSelections.isEmpty() || nothingChanged) selectedItems else checkedItems
                 when (items.size) {
                     0 -> context.getString(R.string.default_category).lowercase(Locale.ROOT)
                     1 -> items.firstOrNull()?.category?.name ?: ""
