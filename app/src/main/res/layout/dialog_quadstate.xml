@@ -29,6 +29,7 @@
             android:id="@+id/scroll_indicator_up"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:alpha="0.5"
             android:layout_gravity="top" />
 
         <androidx.recyclerview.widget.RecyclerView
@@ -42,6 +43,7 @@
             android:id="@+id/scroll_indicator_down"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:alpha="0.5"
             android:layout_gravity="bottom" />
 
     </FrameLayout>
