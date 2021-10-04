@@ -21,6 +21,7 @@ abstract class E2EBottomSheetDialog<VB : ViewBinding>(activity: Activity) :
     protected val sheetBehavior: BottomSheetBehavior<*>
     protected open var recyclerView: RecyclerView? = null
 
+    private val isLight: Boolean
     init {
         binding = createBinding(activity.layoutInflater)
         setContentView(binding.root)
@@ -30,9 +31,9 @@ abstract class E2EBottomSheetDialog<VB : ViewBinding>(activity: Activity) :
         val contentView = binding.root
 
         val aWic = WindowInsetsControllerCompat(activity.window, activity.window.decorView)
-        val isLight = aWic.isAppearanceLightStatusBars
+        isLight = aWic.isAppearanceLightStatusBars
         window?.let { window ->
-            val wic = WindowInsetsControllerCompat(window, window.decorView)
+            val wic = WindowInsetsControllerCompat(window, binding.root)
             window.navigationBarColor = activity.window.navigationBarColor
             wic.isAppearanceLightNavigationBars = isLight
         }
@@ -58,6 +59,14 @@ abstract class E2EBottomSheetDialog<VB : ViewBinding>(activity: Activity) :
                     }
                 }
             })
+        }
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        window?.let { window ->
+            val wic = WindowInsetsControllerCompat(window, binding.root)
+            wic.isAppearanceLightNavigationBars = isLight
         }
     }
 
