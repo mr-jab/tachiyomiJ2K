@@ -200,19 +200,15 @@
         <item name="trackColorInactive">@color/slider_inactive_track_color</item>
         <item name="trackColorActive">@color/slider_active_track_color</item>
         <item name="thumbColor">@color/slider_active_track_color</item>
-        <item name="labelStyle">@style/Theme.Widget.Tooltip</item>
+        <item name="labelStyle">@style/Theme.Tachiyomi.Tooltip</item>
         <item name="tickColorActive">?colorOnSecondary</item>
-        <item name="tickColorInactive">?android:textColorSecondary</item>
+        <item name="tickColorInactive">@color/slider_tick_inactive</item>
         <item name="haloColor">?colorControlHighlight</item>
     </style>
 
 
-    <style name="Theme.Widget.Tooltip" parent="Widget.Material3.Tooltip">
+    <style name="Theme.Tachiyomi.Tooltip" parent="Widget.Material3.Tooltip">
         <item name="backgroundTint">?colorSecondary</item>
-        <item name="android:textAppearance">@style/Theme.TextAppearance.Tooltip</item>
-    </style>
-
-    <style name="Theme.TextAppearance.Tooltip" parent="@style/TextAppearance.MaterialComponents.Tooltip">
         <item name="android:textColor">?colorOnSecondary</item>
     </style>
 
