@@ -15,6 +15,7 @@ internal class TriStateMultiChoiceViewHolder(
         itemView.setOnClickListener(this)
         controlView.isClickable = false
         controlView.isFocusable = false
+        controlView.setCheckboxBackground(null)
     }
 
     var isEnabled: Boolean
