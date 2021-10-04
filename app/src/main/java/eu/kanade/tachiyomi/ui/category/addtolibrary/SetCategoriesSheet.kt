@@ -151,6 +151,7 @@ class SetCategoriesSheet(
 
     private fun setCategoriesButtons() {
         val addingMore = checkedItems.isNotEmpty() &&
+            selectedCategories.isNotEmpty() &&
             selectedItems.map { it.category }
                 .containsAll(selectedCategories) &&
             checkedItems.size > preCheckedCategories.size
@@ -158,13 +159,13 @@ class SetCategoriesSheet(
             .toTypedArray()
             .contentEquals(preselected)
         val removing = selectedItems.isNotEmpty() && (
+            // Check that selected items has the previous delta items
             (
-                // Check that selected items has the previous delta items
                 selectedCategories.containsAll(indeterminateItems.map { it.category }) &&
                     preIndeterminateCategories.size > indeterminateItems.size
                 ) ||
+                // or check that checked items has the previous checked items
                 (
-                    // or check that checked items has the previous checked items
                     preCheckedCategories.containsAll(checkedItems.map { it.category }) &&
                         preCheckedCategories.size > checkedItems.size
                     )
