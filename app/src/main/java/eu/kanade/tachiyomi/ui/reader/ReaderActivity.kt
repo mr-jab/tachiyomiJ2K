@@ -174,7 +174,6 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
 
     var sheetManageNavColor = false
 
-    private var lightStatusBar = false
     private val wic by lazy { WindowInsetsControllerCompat(window, binding.root) }
     var lastVis = false
 
@@ -213,7 +212,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
         binding = ReaderActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
         val a = obtainStyledAttributes(intArrayOf(android.R.attr.windowLightStatusBar))
-        lightStatusBar = a.getBoolean(0, false)
+        val lightStatusBar = a.getBoolean(0, false)
         a.recycle()
         setNotchCutoutMode()
 
