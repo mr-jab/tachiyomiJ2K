@@ -566,7 +566,7 @@
     <string name="source_unsupported">Source is not supported</string>
     <string name="no_match_found">No match found</string>
     <string name="remove_tracking">Remove tracking from app</string>
-    <string name="cannot_remove_tracking_while_offline">Cannot remove from %1$s while offline</string>
+    <string name="cannot_remove_tracking_while_offline">Tracker cannot be removed from %1$s while offline</string>
     <string name="remove_tracking_from_">Also remove from %1$s</string>
     <string name="remove_previous_tracker">Remove previous tracker?</string>
     <string name="remove_x_from_service_and_add_y">Remove %1$s from %2$s and add %3$s</string>

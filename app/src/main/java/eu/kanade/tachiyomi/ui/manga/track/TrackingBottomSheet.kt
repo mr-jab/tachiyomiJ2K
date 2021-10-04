@@ -40,6 +40,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaDetailsDivider
 import eu.kanade.tachiyomi.util.lang.indexesOf
 import eu.kanade.tachiyomi.util.system.addCheckBoxPrompt
 import eu.kanade.tachiyomi.util.system.dpToPx
+import eu.kanade.tachiyomi.util.system.isOnline
 import eu.kanade.tachiyomi.util.system.isPromptChecked
 import eu.kanade.tachiyomi.util.system.launchIO
 import eu.kanade.tachiyomi.util.system.materialAlertDialog
@@ -430,13 +431,16 @@ class TrackingBottomSheet(private val controller: MangaDetailsController) :
 
         if (item.service.canRemoveFromService()) {
             val serviceName = activity.getString(item.service.nameRes())
-            if (controller.isNotOnline()) {
+            if (!activity.isOnline()) {
                 dialog.setMessage(
                     activity.getString(
                         R.string.cannot_remove_tracking_while_offline,
                         serviceName
                     )
                 )
+                    .setPositiveButton(R.string.remove) { _, _ ->
+                        removeTracker(item, false)
+                    }
             } else {
                 dialog.addCheckBoxPrompt(
                     activity.getString(R.string.remove_tracking_from_, serviceName),
