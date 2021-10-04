@@ -83,7 +83,7 @@
             android:layout_toEndOf="@id/reorder"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textAppearance="?textAppearanceBodySmall"
+            android:textAppearance="?textAppearanceBodySecondary"
             app:layout_constraintEnd_toStartOf="@+id/download_menu"
             android:layout_marginEnd="16dp"
             app:layout_constraintStart_toStartOf="@+id/title"

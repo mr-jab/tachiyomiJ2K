@@ -124,7 +124,7 @@
                 app:layout_constraintTop_toTopOf="parent">
                 <TextView
                     android:id="@+id/track_status"
-                    style="?textAppearanceBodySmall"
+                    style="?textAppearanceBodySecondary"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:background="@drawable/card_item_selector"
@@ -143,7 +143,7 @@
 
                 <TextView
                     android:id="@+id/track_chapters"
-                    style="?textAppearanceBodySmall"
+                    style="?textAppearanceBodySecondary"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:background="@drawable/card_item_selector"
@@ -173,7 +173,7 @@
 
                     <TextView
                         android:id="@+id/track_score"
-                        style="?textAppearanceBodySmall"
+                        style="?textAppearanceBodySecondary"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
