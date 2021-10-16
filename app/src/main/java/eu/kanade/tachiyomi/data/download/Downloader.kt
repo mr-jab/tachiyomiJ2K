@@ -286,9 +286,9 @@ class Downloader(
             // Start downloader if needed
             if (autoStart && wasEmpty) {
                 val largestSourceSize = queue.groupBy { it.source }.maxOfOrNull { it.value.size } ?: 0
-                if (largestSourceSize > PER_SOURCE_QUEUE_WARNING_THRESHOLD) {
-                    notifier.onWarning(context.getString(R.string.notification_size_warning))
-                }
+//                 if (largestSourceSize > PER_SOURCE_QUEUE_WARNING_THRESHOLD) {
+//                     notifier.onWarning(context.getString(R.string.notification_size_warning))
+//                 }
                 DownloadService.start(context)
             } else if (!isRunning && !LibraryUpdateService.isRunning()) {
                 notifier.onDownloadPaused()
