@@ -255,7 +255,7 @@ class LibraryUpdateService(
     private fun addManga(mangaToAdd: List<LibraryManga>) {
         val distinctManga = mangaToAdd.filter { it !in mangaToUpdate }
         mangaToUpdate.addAll(distinctManga)
-        checkIfMassiveUpdate()
+        //checkIfMassiveUpdate()
         distinctManga.groupBy { it.source }.forEach {
             // if added queue items is a new source not in the async list or an async list has
             // finished running
@@ -318,7 +318,7 @@ class LibraryUpdateService(
 
         mangaToUpdate.addAll(mangaToAdd)
         mangaToUpdateMap.putAll(mangaToAdd.groupBy { it.source })
-        checkIfMassiveUpdate()
+        //checkIfMassiveUpdate()
         coroutineScope {
             jobCount.andIncrement
             val list = mangaToUpdateMap.keys.map { source ->
